@@ -13,8 +13,8 @@ module regfile (
     reg [31:0] rf_regs [0:31];
 
     always_comb begin
-        rf_rdata_a = rf_regs[rf_raddr_a];
-        rf_rdata_b = rf_regs[rf_raddr_b];
+        rf_rdata_a = (rf_we && rf_waddr != 0 && rf_waddr == rf_raddr_a) ? rf_wdata : rf_regs[rf_raddr_a];
+        rf_rdata_b = (rf_we && rf_waddr != 0 && rf_waddr == rf_raddr_b) ? rf_wdata : rf_regs[rf_raddr_b];
     end
 
     always_ff @(posedge clk) begin
