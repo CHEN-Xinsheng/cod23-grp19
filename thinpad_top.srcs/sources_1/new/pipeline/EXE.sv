@@ -87,7 +87,6 @@ module EXE (
             mem_we_o <= 0;
             mem_sel_o <= 4'b0;
             mem_dat_o_o <= 32'b0;
-            pc_now_o <= 32'h0;
         end else if (stall_i) begin
         end else if (bubble_i) begin
             alu_result_o <= 32'b0;
@@ -97,7 +96,6 @@ module EXE (
             mem_we_o <= 0;
             mem_sel_o <= 4'b0;
             mem_dat_o_o <= 32'b0;
-            pc_now_o <= 32'h0;
         end else begin
             alu_result_o <= alu_y_i;
             mem_en_o <= mem_en_i;
@@ -110,7 +108,6 @@ module EXE (
             end else begin
                 mem_dat_o_o <= rf_rdata_b_i;
             end
-            pc_now_o <= pc_now_i;
         end
     end
 
