@@ -27,6 +27,9 @@ module MEM #(
     input wire bubble_i
 );
 
+    reg [31:0] lb_data;
+    assign lb_data = wb_dat_i >> ((alu_result_i << 3) & 32'h1f);
+
     always_ff @(posedge clk) begin
         if (rst) begin
             wb_stb_o <= 1'b0;
@@ -48,7 +51,11 @@ module MEM #(
                 if (mem_en_i) begin
                     wb_stb_o <= 1'b0;
                     if (mem_we_i == 0) begin
-                        rf_wdata_o <= {{24{wb_dat_i[7]}}, wb_dat_i[7:0]};
+                        if (wb_sel_o == 4'b1111) begin
+                            rf_wdata_o <= wb_dat_i;
+                        end else begin
+                            rf_wdata_o <= {{24{lb_data[7]}}, lb_data[7:0]};
+                        end
                         rf_wen_o <= rf_wen_i;
                         rf_waddr_o <= rf_waddr_i;
                     end
@@ -64,8 +71,8 @@ module MEM #(
 
     assign wb_cyc_o = wb_stb_o;
     assign wb_adr_o = alu_result_i;
-    assign wb_dat_o = mem_dat_o_i;
-    assign wb_sel_o = mem_sel_i == 4'b1111 ? 4'b1111 : mem_sel_i;
+    assign wb_dat_o = mem_sel_i == 4'b1111 ? mem_dat_o_i : (mem_dat_o_i << ((alu_result_i << 3) & 32'h1f));
+    assign wb_sel_o = mem_sel_i == 4'b1111 ? 4'b1111 : (mem_sel_i << alu_result_i[1:0]);
     assign wb_we_o = mem_we_i;
 
 endmodule

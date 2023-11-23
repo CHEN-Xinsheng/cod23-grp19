@@ -97,17 +97,17 @@ module EXE (
             mem_sel_o <= 4'b0;
             mem_dat_o_o <= 32'b0;
         end else begin
-            alu_result_o <= alu_y_i;
+            if (branch_i) begin
+                alu_result_o <= pc_now_i+4;
+            end else begin
+                alu_result_o <= alu_y_i;
+            end
             mem_en_o <= mem_en_i;
             rf_wen_o <= rf_wen_i;
             rf_waddr_o <= rf_waddr_i;
             mem_we_o <= mem_we_i;
             mem_sel_o <= mem_sel_i;
-            if (branch_i) begin
-                mem_dat_o_o <= pc_now_i + 4;
-            end else begin
-                mem_dat_o_o <= rf_rdata_b_i;
-            end
+            mem_dat_o_o <= rf_rdata_b_i;
         end
     end
 
