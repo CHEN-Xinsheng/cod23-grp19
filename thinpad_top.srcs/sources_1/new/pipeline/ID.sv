@@ -221,11 +221,11 @@ module ID (
                     alu_op_o <= 4'd1; 
                 end
                 7'b1100111: begin    // JALR
-                    rf_raddr_a_o <= 5'b0;
-                    rf_raddr_b_o <= rs1;
+                    rf_raddr_a_o <= rs1;
+                    rf_raddr_b_o <= 5'b0;
                     imm_type_o <= `TYPE_I;
-                    use_rs2_o <= 1;
-                    use_pc_o <= 1;
+                    use_rs2_o <= 0;
+                    use_pc_o <= 0;
                     pc_now_o <= pc_now_i;
                     mem_en_o <= 0;
                     rf_wen_o <= 1;
