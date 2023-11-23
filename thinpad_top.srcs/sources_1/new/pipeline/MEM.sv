@@ -65,7 +65,7 @@ module MEM #(
     assign wb_cyc_o = wb_stb_o;
     assign wb_adr_o = alu_result_i;
     assign wb_dat_o = mem_dat_o_i;
-    assign wb_sel_o = mem_sel_i;
+    assign wb_sel_o = mem_sel_i == 4'b1111 ? 4'b1111 : mem_sel_i;
     assign wb_we_o = mem_we_i;
 
 endmodule

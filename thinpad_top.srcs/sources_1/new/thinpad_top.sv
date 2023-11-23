@@ -420,6 +420,9 @@ module thinpad_top (
     .mem_sel_o(id_exe_mem_sel),
     .pc_now_i(if_id_pc_now),
     .pc_now_o(id_exe_pc_now),
+    .use_pc_o(id_exe_use_pc),
+    .branch_o(id_exe_branch),
+    .comp_op_o(id_exe_comp_op),
     .stall_i(stall[2]),
     .bubble_i(bubble[2])
   );
@@ -454,6 +457,9 @@ module thinpad_top (
   logic id_exe_mem_we;
   logic [3:0] id_exe_mem_sel;
   logic [31:0] id_exe_pc_now;
+  logic id_exe_use_pc;
+  logic id_exe_comp_op;
+  logic id_exe_branch;
 
   EXE EXE (
     .clk(sys_clk),
@@ -478,6 +484,9 @@ module thinpad_top (
     .mem_sel_i(id_exe_mem_sel),
     .mem_sel_o(exe_mem_mem_sel),
     .mem_dat_o_o(exe_mem_mem_dat_o),
+    .use_pc_i(id_exe_use_pc),
+    .comp_op_i(id_exe_comp_op),
+    .branch_i(id_exe_branch),
     .pc_now_i(id_exe_pc_now),
     .pc_next_o(pc_next_comb),
     .branch_comb(branch_comb),
