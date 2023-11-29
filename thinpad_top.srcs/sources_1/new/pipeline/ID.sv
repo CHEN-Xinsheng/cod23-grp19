@@ -91,17 +91,17 @@ module ID (
                     if (funct3 == 3'b000) begin
                         alu_op_o <= `ALU_ADD;    
                     end else if (funct3 == 3'b111) begin
-                        if (funct7 == 7'd1001111) begin
-                            alu_op_o <= `ALU_AND;  
-                        end else if (funct7 == 7'd1110011) begin
+                        alu_op_o <= `ALU_AND;  
+                    end else if (funct3 == 3'b110) begin
+                        alu_op_o <= `ALU_OR;     
+                    end else if (funct3 == 3'b001) begin
+                        if (funct7 == 7'b0000000) begin
+                            alu_op_o <= `ALU_SLL;    
+                        end else if (funct7 == 7'b0110000) begin
                             alu_op_o <= `ALU_CTZ;
                         end else begin
                             alu_op_o <= `ALU_ADD;
                         end
-                    end else if (funct3 == 3'b110) begin
-                        alu_op_o <= `ALU_OR;     
-                    end else if (funct3 == 3'b001) begin
-                        alu_op_o <= `ALU_SLL;    
                     end else if (funct3 == 3'b101) begin
                         alu_op_o <= `ALU_SRL;  
                     end
