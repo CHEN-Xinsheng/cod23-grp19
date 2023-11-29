@@ -124,7 +124,6 @@ module ID (
                         end else begin
                             alu_op_o <= `ALU_ADD;
                         end
-                    end
                     end else if (funct3 == 3'b111) begin
                         alu_op_o <= `ALU_AND;  
                     end else if (funct3 == 3'b110) begin
