@@ -1,10 +1,4 @@
-`define TYPE_R 3'd1
-`define TYPE_I 3'd2
-`define TYPE_S 3'd3
-`define TYPE_B 3'd4
-`define TYPE_U 3'd5
-`define TYPE_J 3'd6
-
+`include "../header.sv"
 module ID (
     input wire clk,
     input wire rst,
@@ -84,7 +78,7 @@ module ID (
         end else begin
             inst_o <= inst_i;
             case(opcode)
-                7'b0010011: begin   // ADDI ANDI
+                7'b0010011: begin   // TYPE_I
                     rf_raddr_a_o <= rs1;
                     rf_raddr_b_o <= 5'b0;
                     imm_type_o <= `TYPE_I;
@@ -95,18 +89,24 @@ module ID (
                     rf_wen_o <= 1;
                     rf_waddr_o <= rd;
                     if (funct3 == 3'b000) begin
-                        alu_op_o <= 4'd1;      // ADD
+                        alu_op_o <= `ALU_ADD;    
                     end else if (funct3 == 3'b111) begin
-                        alu_op_o <= 4'd3;      // AND
+                        alu_op_o <= `ALU_AND;  
                     end else if (funct3 == 3'b110) begin
-                        alu_op_o <= 4'd4;      // OR
+                        alu_op_o <= `ALU_OR;     
                     end else if (funct3 == 3'b001) begin
-                        alu_op_o <= 4'd7;      // SLLI
+                        if (funct7 == 7'b0000000) begin
+                            alu_op_o <= `ALU_SLL;    
+                        end else if (funct7 == 7'b0110000) begin
+                            alu_op_o <= `ALU_CTZ;
+                        end else begin
+                            alu_op_o <= `ALU_ADD;
+                        end
                     end else if (funct3 == 3'b101) begin
-                        alu_op_o <= 4'd8;      // SRLI
+                        alu_op_o <= `ALU_SRL;  
                     end
                 end
-                7'b0110011: begin   // ADD AND OR XOR 
+                7'b0110011: begin   // TYPE_R
                     rf_raddr_a_o <= rs1;
                     rf_raddr_b_o <= rs2;
                     imm_type_o <= `TYPE_R;
@@ -117,16 +117,36 @@ module ID (
                     branch_o <= 1'b0;
                     rf_waddr_o <= rd;
                     if (funct3 == 3'b000) begin
-                        alu_op_o <= 4'd1;      // ADD
+                        if (funct7 == 7'b0000000) begin
+                            alu_op_o <= `ALU_ADD; 
+                        end else if (funct7 == 7'b0100000) begin
+                            alu_op_o <= `ALU_SUB; 
+                        end else begin
+                            alu_op_o <= `ALU_ADD;
+                        end
                     end else if (funct3 == 3'b111) begin
-                        alu_op_o <= 4'd3;      // AND
+                        alu_op_o <= `ALU_AND;  
                     end else if (funct3 == 3'b110) begin
-                        alu_op_o <= 4'd4;      // OR
+                        alu_op_o <= `ALU_OR; 
                     end else if (funct3 == 3'b100) begin
-                        alu_op_o <= 4'd5;      // XOR
+                        if (funct7 == 7'b0000000) begin
+                            alu_op_o <= `ALU_XOR; 
+                        end else if (funct7 == 7'b0000101) begin
+                            alu_op_o <= `ALU_MIN;
+                        end else begin
+                            alu_op_o <= `ALU_AND;
+                        end
+                    end else if (funct3 == 3'b001) begin
+                        if (funct7 == 7'b0000000) begin
+                            alu_op_o <= `ALU_SLL; 
+                        end else if (funct7 == 7'b0100100) begin
+                            alu_op_o <= `ALU_SBCLR; 
+                        end else begin
+                            alu_op_o <= `ALU_ADD;
+                        end
                     end
                 end
-                7'b0100011: begin   // SW SB
+                7'b0100011: begin   // Store
                     rf_raddr_a_o <= rs1;
                     rf_raddr_b_o <= rs2;
                     imm_type_o <= `TYPE_S;
@@ -135,7 +155,7 @@ module ID (
                     mem_en_o <= 1;
                     rf_wen_o <= 0;
                     rf_waddr_o <= 5'b0;
-                    alu_op_o <= 4'd1;
+                    alu_op_o <= `ALU_ADD;
                     mem_we_o <= 1;
                     branch_o <= 1'b0;
                     if (funct3 == 3'b010) begin     // SW
@@ -145,7 +165,7 @@ module ID (
                         mem_sel_o <= 4'b0001;
                     end
                 end
-                7'b0000011: begin       // LB LW
+                7'b0000011: begin       // Load
                     rf_raddr_a_o <= rs1;
                     rf_raddr_b_o <= 5'b0;
                     imm_type_o <= `TYPE_I;
@@ -154,7 +174,7 @@ module ID (
                     mem_en_o <= 1;
                     rf_wen_o <= 1;
                     rf_waddr_o <= rd;
-                    alu_op_o <= 4'd1;
+                    alu_op_o <= `ALU_ADD;
                     mem_we_o <= 0;
                     branch_o <= 1'b0;
                     if (funct3 == 3'b000) begin     // LB
@@ -173,7 +193,7 @@ module ID (
                     mem_en_o <= 0;
                     rf_wen_o <= 1;
                     rf_waddr_o <= rd;
-                    alu_op_o <= 4'd1; 
+                    alu_op_o <= `ALU_ADD; 
                     branch_o <= 1'b0;
                 end
                 7'b1100011: begin   // BEQ BNE
@@ -187,7 +207,7 @@ module ID (
                     rf_wen_o <= 0;
                     branch_o <= 1'b0;
                     rf_waddr_o <= 5'b0;
-                    alu_op_o <= 4'd1; 
+                    alu_op_o <= `ALU_ADD; 
                     if (funct3 == 3'b000) begin     // BEQ
                         comp_op_o <= 1;
                     end else if (funct3 == 3'b001) begin   // BNE
@@ -205,7 +225,7 @@ module ID (
                     branch_o <= 1'b0;
                     rf_wen_o <= 1;
                     rf_waddr_o <= rd;
-                    alu_op_o <= 4'd1; 
+                    alu_op_o <= `ALU_ADD; 
                 end
                 7'b1101111: begin    // JAL
                     rf_raddr_a_o <= 5'b0;
@@ -218,7 +238,7 @@ module ID (
                     mem_en_o <= 0;
                     rf_wen_o <= 1;
                     rf_waddr_o <= rd;
-                    alu_op_o <= 4'd1; 
+                    alu_op_o <= `ALU_ADD; 
                 end
                 7'b1100111: begin    // JALR
                     rf_raddr_a_o <= rs1;
@@ -231,7 +251,7 @@ module ID (
                     rf_wen_o <= 1;
                     branch_o <= 1'b1;
                     rf_waddr_o <= rd;
-                    alu_op_o <= 4'd1; 
+                    alu_op_o <= `ALU_ADD; 
                 end
                 default: begin
                     inst_o <= 32'h0;
