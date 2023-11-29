@@ -1,10 +1,4 @@
-`define TYPE_R 3'd1
-`define TYPE_I 3'd2
-`define TYPE_S 3'd3
-`define TYPE_B 3'd4
-`define TYPE_U 3'd5
-`define TYPE_J 3'd6
-
+`include "../header.sv"
 module ID (
     input wire clk,
     input wire rst,
