@@ -1,3 +1,7 @@
+`ifndef __PARAM_H_
+`define __PARAM_H_
+
+
 `define TYPE_R 3'd1
 `define TYPE_I 3'd2
 `define TYPE_S 3'd3
@@ -18,3 +22,9 @@
 `define ALU_MIN    4'd11
 `define ALU_SBCLR  4'd12
 `define ALU_CTZ    4'd13
+
+localparam DATA_WIDTH = 32;
+localparam ADDR_WIDTH = 32;
+
+
+`endif

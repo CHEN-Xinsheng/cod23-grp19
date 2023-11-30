@@ -6,8 +6,8 @@ module ID (
     output reg [31:0] inst_o,
     output reg [4:0] rf_raddr_a_o,
     output reg [4:0] rf_raddr_b_o,
-    output wire [4:0] rf_raddr_a_comb,
-    output wire [4:0] rf_raddr_b_comb,
+    output wire [4:0] id_rf_raddr_a_comb,
+    output wire [4:0] id_rf_raddr_b_comb,
     output reg [2:0] imm_type_o,
     output reg [3:0] alu_op_o,
     output reg use_rs2_o,
@@ -43,8 +43,8 @@ module ID (
     assign funct3[2:0] = inst_i[14:12];
     assign funct7[6:0] = inst_i[31:25];
 
-    assign rf_raddr_a_comb = rs1;
-    assign rf_raddr_b_comb = rs2;
+    assign id_rf_raddr_a_comb = rs1;
+    assign id_rf_raddr_b_comb = rs2;
 
     always_ff @(posedge clk) begin
         if (rst) begin 
@@ -55,6 +55,7 @@ module ID (
             alu_op_o <= 4'd0;
             use_rs2_o <= 1'b0;
             mem_en_o <= 1'b0;
+            mem_we_o <= 1'b0;
             rf_wen_o <= 1'b0;
             rf_waddr_o <= 5'b0;
             mem_we_o <= 1'b0;
@@ -76,6 +77,7 @@ module ID (
             alu_op_o <= 4'd0;
             use_rs2_o <= 1'b0;
             mem_en_o <= 1'b0;
+            mem_we_o <= 1'b0;
             rf_wen_o <= 1'b0;
             rf_waddr_o <= 5'b0;
             mem_we_o <= 1'b0;
@@ -100,7 +102,8 @@ module ID (
                     use_rs2_o <= 0;
                     use_pc_o <= 0;
                     jump_o <= 1'b0;
-                    mem_en_o <= 0;
+                    mem_en_o <= 1'b0;
+                    mem_we_o <= 1'b0;
                     rf_wen_o <= 1;
                     rf_waddr_o <= rd;
                     csr_op_o <= 3'b0;
@@ -128,7 +131,8 @@ module ID (
                     imm_type_o <= `TYPE_R;
                     use_rs2_o <= 1;
                     use_pc_o <= 0;
-                    mem_en_o <= 0;
+                    mem_en_o <= 1'b0;
+                    mem_we_o <= 1'b0;
                     rf_wen_o <= 1;
                     jump_o <= 1'b0;
                     rf_waddr_o <= rd;
@@ -169,11 +173,11 @@ module ID (
                     imm_type_o <= `TYPE_S;
                     use_rs2_o <= 0;
                     use_pc_o <= 0;
-                    mem_en_o <= 1;
+                    mem_en_o <= 1'b1;
+                    mem_we_o <= 1'b1;
                     rf_wen_o <= 0;
                     rf_waddr_o <= 5'b0;
                     alu_op_o <= `ALU_ADD;
-                    mem_we_o <= 1;
                     jump_o <= 1'b0;
                     csr_op_o <= 3'b0;
                     if (funct3 == 3'b010) begin     // SW
@@ -189,7 +193,8 @@ module ID (
                     imm_type_o <= `TYPE_I;
                     use_rs2_o <= 0;
                     use_pc_o <= 0;
-                    mem_en_o <= 1;
+                    mem_en_o <= 1'b1;
+                    mem_we_o <= 1'b0;
                     rf_wen_o <= 1;
                     rf_waddr_o <= rd;
                     alu_op_o <= `ALU_ADD;
@@ -209,7 +214,8 @@ module ID (
                     imm_type_o <= `TYPE_U;
                     use_rs2_o <= 0;
                     use_pc_o <= 0;
-                    mem_en_o <= 0;
+                    mem_en_o <= 1'b0;
+                    mem_we_o <= 1'b0;
                     rf_wen_o <= 1;
                     rf_waddr_o <= rd;
                     alu_op_o <= `ALU_ADD; 
@@ -223,7 +229,8 @@ module ID (
                     pc_now_o <= pc_now_i;
                     use_rs2_o <= 0;
                     use_pc_o <= 1;
-                    mem_en_o <= 0;
+                    mem_en_o <= 1'b0;
+                    mem_we_o <= 1'b0;
                     rf_wen_o <= 0;
                     jump_o <= 1'b0;
                     rf_waddr_o <= 5'b0;
@@ -242,7 +249,8 @@ module ID (
                     use_rs2_o <= 0;
                     use_pc_o <= 1;
                     pc_now_o <= pc_now_i;
-                    mem_en_o <= 0;
+                    mem_en_o <= 1'b0;
+                    mem_we_o <= 1'b0;
                     jump_o <= 1'b0;
                     rf_wen_o <= 1;
                     rf_waddr_o <= rd;
@@ -257,7 +265,8 @@ module ID (
                     use_pc_o <= 1;
                     pc_now_o <= pc_now_i;
                     jump_o <= 1'b1;
-                    mem_en_o <= 0;
+                    mem_en_o <= 1'b0;
+                    mem_we_o <= 1'b0;
                     rf_wen_o <= 1;
                     rf_waddr_o <= rd;
                     alu_op_o <= `ALU_ADD; 
@@ -270,7 +279,8 @@ module ID (
                     use_rs2_o <= 0;
                     use_pc_o <= 0;
                     pc_now_o <= pc_now_i;
-                    mem_en_o <= 0;
+                    mem_en_o <= 1'b0;
+                    mem_we_o <= 1'b0;
                     rf_wen_o <= 1;
                     jump_o <= 1'b1;
                     rf_waddr_o <= rd;
@@ -287,10 +297,11 @@ module ID (
                             use_rs2_o <= 1;
                             use_pc_o <= 0;
                             jump_o <= 1'b0;
-                            mem_en_o <= 0;
+                            mem_en_o <= 1'b0;
+                            mem_we_o <= 1'b0;
                             rf_wen_o <= 1;
                             rf_waddr_o <= rd;
-                            alu_op_o <= 4'd1;
+                            alu_op_o <= `ALU_ADD;
                             csr_op_o <= 3'b011;
                         end
                         3'b010: begin   // CSRRS
@@ -300,10 +311,11 @@ module ID (
                             use_rs2_o <= 1;
                             use_pc_o <= 0;
                             jump_o <= 1'b0;
-                            mem_en_o <= 0;
+                            mem_en_o <= 1'b0;
+                            mem_we_o <= 1'b0;
                             rf_wen_o <= 1;
                             rf_waddr_o <= rd;
-                            alu_op_o <= 4'd1;
+                            alu_op_o <= `ALU_ADD;
                             csr_op_o <= 3'b010;
                         end
                         3'b001: begin   // CSRRW
@@ -313,10 +325,11 @@ module ID (
                             use_rs2_o <= 1;
                             use_pc_o <= 0;
                             jump_o <= 1'b0;
-                            mem_en_o <= 0;
+                            mem_en_o <= 1'b0;
+                            mem_we_o <= 1'b0;
                             rf_wen_o <= 1;
                             rf_waddr_o <= rd;
-                            alu_op_o <= 4'd1;
+                            alu_op_o <= `ALU_ADD;
                             csr_op_o <= 3'b001;
                         end
                         3'b000: begin
@@ -343,6 +356,7 @@ module ID (
                     use_pc_o <= 1'b0;
                     comp_op_o <= 1'b0;
                     mem_en_o <= 1'b0;
+                    mem_we_o <= 1'b0;
                     rf_wen_o <= 1'b0;
                     rf_waddr_o <= 5'b0;
                     mem_we_o <= 1'b0;
