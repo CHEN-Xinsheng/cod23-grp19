@@ -383,6 +383,8 @@ module thinpad_top (
       .uart_rxd_i(rxd)
   );
 
+  logic time_interrupt;
+
   mtime csr_mtime (
     .clk(sys_clk),
     .rst(sys_rst),
@@ -394,7 +396,8 @@ module thinpad_top (
     .wb_dat_i(wbs3_dat_o),
     .wb_dat_o(wbs3_dat_i),
     .wb_sel_i(wbs3_sel_o),
-    .wb_we_i (wbs3_we_o)
+    .wb_we_i (wbs3_we_o),
+    .time_interrupt_o(time_interrupt)
   );
 
   logic [3:0] stall;
@@ -606,7 +609,8 @@ module thinpad_top (
     .branch_o(csr_branch),
     .ecall_i(id_exe_ecall),
     .ebreak_i(id_exe_ebreak),
-    .mret_i(id_exe_mret)
+    .mret_i(id_exe_mret),
+    .time_interrupt_i(time_interrupt)
   );
 
   logic exe_mem_mem_en;

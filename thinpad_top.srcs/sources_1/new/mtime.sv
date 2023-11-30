@@ -11,11 +11,15 @@ module mtime (
     input wire [31:0] wb_dat_i,
     output reg [31:0] wb_dat_o,
     input wire [3:0] wb_sel_i,
-    input wire wb_we_i
+    input wire wb_we_i,
+
+    output reg time_interrupt_o
 );
 
     mtime_t mtime;
     mtimecmp_t mtimecmp;
+
+    assign time_interrupt_o = mtime >= mtimecmp;
 
     always_comb begin
         if (wb_cyc_i && wb_stb_i) begin
@@ -38,7 +42,7 @@ module mtime (
     always_ff @(posedge clk) begin
         if (rst) begin
             mtime <= 64'h0;
-            mtimecmp <= 64'h0;
+            mtimecmp <= 64'hffffffff;
         end else begin
             mtime <= mtime + 1;
             if (wb_cyc_i && wb_stb_i) begin

@@ -13,7 +13,8 @@ module csrfile (
     output reg branch_o,
     input wire ecall_i,
     input wire ebreak_i,
-    input wire mret_i
+    input wire mret_i,
+    input wire time_interrupt_i
 );
 
 mtvec_t mtvec;
@@ -52,7 +53,18 @@ always_ff @(posedge clk) begin
         branch_o <= 1'b0;
         mode <= 2'b0;
     end else begin
-        if (ecall_i) begin 
+        mip.mtip <= time_interrupt_i;
+        if ((mstatus.mie || mode != 2'b11) && mip.mtip && mie.mtie) begin
+            mode <= 2'b11;
+            mepc <= pc_now_i;
+            pc_next_o <=  {mtvec.base, 2'b0};
+            branch_o <= 1'b1;
+            mcause.interrupt <= 1'b1;
+            mcause.exception <= 31'd7;  //
+            mstatus.mpp <= mode;
+            mstatus.mpie <= mstatus.mie; 
+            mstatus.mie <= 0;
+        end else if (ecall_i) begin 
             mode <= 2'b11;
             mepc <= pc_now_i;
             pc_next_o <=  {mtvec.base, 2'b0};
