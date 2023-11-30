@@ -34,12 +34,40 @@ module EXE (
     output reg [31:0] pc_next_o,
     input wire use_pc_i,
     input wire comp_op_i,
-    input wire branch_i,
-
+    input wire [2:0] csr_op_i,
+    input wire jump_i,
     output reg branch_comb,
     input wire stall_i,
-    input wire bubble_i
+    input wire bubble_i,
+
+    output reg  [11:0] csr_raddr_o,
+    input wire [31:0] csr_rdata_i,
+    output reg  [11:0]  csr_waddr_o,
+    output reg  [31:0] csr_wdata_o,
+    output reg  csr_we_o
 );
+
+    always_comb begin
+        csr_raddr_o = inst_i[31:20];
+        csr_waddr_o = inst_i[31:20];
+        if (csr_op_i == 3'b001) begin
+            csr_wdata_o = rf_rdata_a_i;
+            if (alu_y_i != 0) begin
+                csr_we_o = 1'b1;
+            end else begin
+                csr_we_o = 1'b0;
+            end
+        end else if (csr_op_i == 3'b010) begin
+            csr_wdata_o = csr_rdata_i | rf_rdata_a_i;
+            csr_we_o = 1'b1;
+        end else if (csr_op_i == 3'b011) begin
+            csr_wdata_o = csr_rdata_i & ~rf_rdata_a_i;
+            csr_we_o = 1'b1;
+        end else begin
+            csr_wdata_o = csr_rdata_i;
+            csr_we_o = 1'b0;
+        end
+    end
 
     always_comb begin
         if (use_pc_i) begin
@@ -62,7 +90,7 @@ module EXE (
     end
 
     always_comb begin
-        if (branch_i) begin
+        if (jump_i) begin
             pc_next_o = alu_y_i;
             branch_comb = 1;
         end else if (imm_type_i == `TYPE_B) begin
@@ -97,8 +125,10 @@ module EXE (
             mem_sel_o <= 4'b0;
             mem_dat_o_o <= 32'b0;
         end else begin
-            if (branch_i) begin
+            if (jump_i) begin
                 alu_result_o <= pc_now_i+4;
+            end else if (csr_op_i != 0) begin
+                alu_result_o <= csr_rdata_i;
             end else begin
                 alu_result_o <= alu_y_i;
             end

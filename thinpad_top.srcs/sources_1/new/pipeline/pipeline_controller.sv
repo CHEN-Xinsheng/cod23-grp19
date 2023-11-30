@@ -8,6 +8,7 @@ module pipeline_controller (
     input wire [4:0] exe_mem_rf_waddr_i,
     input wire [4:0] rf_waddr_i,
     input wire branch_i,
+    input wire csr_branch_i,
     output reg [3:0] stall_o,
     output reg [3:0] bubble_o
 );
@@ -17,6 +18,9 @@ module pipeline_controller (
         if (mem_en_i == 1 && mem_ack_i == 0) begin
             stall_o = 4'b1110;
             bubble_o = 4'b0001;
+        end else if (csr_branch_i == 1) begin
+            stall_o = 4'b0000;
+            bubble_o = 4'b1110;
         // 分支跳转成功，清空 IF、ID
         end else if (branch_i == 1) begin
             stall_o = 4'b0000;

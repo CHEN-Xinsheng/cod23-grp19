@@ -213,7 +213,16 @@ module thinpad_top (
   logic [3:0] wbs2_sel_o;
   logic wbs2_we_o;
 
-  wb_mux_3 wb_mux (
+  logic wbs3_cyc_o;
+  logic wbs3_stb_o;
+  logic wbs3_ack_i;
+  logic [31:0] wbs3_adr_o;
+  logic [31:0] wbs3_dat_o;
+  logic [31:0] wbs3_dat_i;
+  logic [3:0] wbs3_sel_o;
+  logic wbs3_we_o;
+
+  wb_mux_4 wb_mux (
       .clk(sys_clk),
       .rst(sys_rst),
 
@@ -275,7 +284,23 @@ module thinpad_top (
       .wbs2_ack_i(wbs2_ack_i),
       .wbs2_err_i('0),
       .wbs2_rty_i('0),
-      .wbs2_cyc_o(wbs2_cyc_o)
+      .wbs2_cyc_o(wbs2_cyc_o),
+
+      // Slave interface 3 (to mtime)
+      // Address range: 0x0200_0000 ~ 0x0200_FFFF
+      .wbs3_addr    (32'h0200_0000),
+      .wbs3_addr_msk(32'hFFFF_0000),
+
+      .wbs3_adr_o(wbs3_adr_o),
+      .wbs3_dat_i(wbs3_dat_i),
+      .wbs3_dat_o(wbs3_dat_o),
+      .wbs3_we_o (wbs3_we_o),
+      .wbs3_sel_o(wbs3_sel_o),
+      .wbs3_stb_o(wbs3_stb_o),
+      .wbs3_ack_i(wbs3_ack_i),
+      .wbs3_err_i('0),
+      .wbs3_rty_i('0),
+      .wbs3_cyc_o(wbs3_cyc_o)
   );
 
   /* =========== Lab5 MUX end =========== */
@@ -356,6 +381,20 @@ module thinpad_top (
       .uart_rxd_i(rxd)
   );
 
+  mtime csr_mtime (
+    .clk(sys_clk),
+    .rst(sys_rst),
+
+    .wb_cyc_i(wbs3_cyc_o),
+    .wb_stb_i(wbs3_stb_o),
+    .wb_ack_o(wbs3_ack_i),
+    .wb_adr_i(wbs3_adr_o),
+    .wb_dat_i(wbs3_dat_o),
+    .wb_dat_o(wbs3_dat_i),
+    .wb_sel_i(wbs3_sel_o),
+    .wb_we_i (wbs3_we_o)
+  );
+
   logic [3:0] stall;
   logic [3:0] bubble;
 
@@ -374,10 +413,21 @@ module thinpad_top (
     .id_exe_rf_waddr_i(id_exe_rf_waddr),
     .exe_mem_rf_waddr_i(exe_mem_rf_waddr),
     .rf_waddr_i(rf_waddr),
-    .branch_i(branch_comb)
+    .branch_i(branch_comb),
+    .csr_branch_i(csr_branch)
   ); 
 
-  wire [31:0] pc_next_comb;
+  reg [31:0] if_pc_next;
+  reg if_branch;
+
+  pc_mux pc_mux (
+    .branch_a_i(csr_branch),
+    .branch_b_i(branch_comb),
+    .pc_next_a_i(csr_pc_next),
+    .pc_next_b_i(pc_next_comb),
+    .branch_o(if_branch),
+    .pc_next_o(if_pc_next)
+  );
 
   IF IF (
     .clk(sys_clk),
@@ -392,8 +442,8 @@ module thinpad_top (
     .wb_we_o(wbm1_we_o),
     .inst_o(if_id_inst),
     .pc_now_o(if_id_pc_now),
-    .branch_i(branch_comb),
-    .pc_next_i(pc_next_comb),
+    .branch_i(if_branch),
+    .pc_next_i(if_pc_next),
     .stall_i(stall[3]),
     .bubble_i(bubble[3])
   );
@@ -421,8 +471,12 @@ module thinpad_top (
     .pc_now_i(if_id_pc_now),
     .pc_now_o(id_exe_pc_now),
     .use_pc_o(id_exe_use_pc),
-    .branch_o(id_exe_branch),
+    .jump_o(id_exe_jump),
     .comp_op_o(id_exe_comp_op),
+    .csr_op_o(id_exe_csr_op),
+    .ecall_o(id_exe_ecall),
+    .ebreak_o(id_exe_ebreak),
+    .mret_o(id_exe_mret),
     .stall_i(stall[2]),
     .bubble_i(bubble[2])
   );
@@ -459,7 +513,13 @@ module thinpad_top (
   logic [31:0] id_exe_pc_now;
   logic id_exe_use_pc;
   logic id_exe_comp_op;
-  logic id_exe_branch;
+  logic id_exe_jump;
+  logic [2:0] id_exe_csr_op;
+  logic id_exe_ecall;
+  logic id_exe_ebreak;
+  logic id_exe_mret;
+
+  wire [31:0] pc_next_comb;
 
   EXE EXE (
     .clk(sys_clk),
@@ -486,10 +546,16 @@ module thinpad_top (
     .mem_dat_o_o(exe_mem_mem_dat_o),
     .use_pc_i(id_exe_use_pc),
     .comp_op_i(id_exe_comp_op),
-    .branch_i(id_exe_branch),
+    .jump_i(id_exe_jump),
     .pc_now_i(id_exe_pc_now),
     .pc_next_o(pc_next_comb),
     .branch_comb(branch_comb),
+    .csr_op_i(id_exe_csr_op),
+    .csr_raddr_o(csr_raddr),
+    .csr_rdata_i(csr_rdata),
+    .csr_waddr_o(csr_waddr),
+    .csr_wdata_o(csr_wdata),
+    .csr_we_o(csr_we),
     .stall_i(stall[1]),
     .bubble_i(bubble[1])
   );
@@ -503,6 +569,31 @@ module thinpad_top (
     .b(alu_b),
     .op(id_exe_alu_op),
     .y(alu_y)
+  );
+
+  logic [11:0] csr_raddr;
+  logic [31:0] csr_rdata;
+  logic [11:0] csr_waddr;
+  logic [31:0] csr_wdata;
+  logic csr_we;
+
+  logic [31:0] csr_pc_next;
+  logic csr_branch;
+
+  csrfile csrfile (
+    .clk(sys_clk),
+    .rst(sys_rst),
+    .raddr_i(csr_raddr),
+    .rdata_o(csr_rdata),
+    .waddr_i(csr_waddr),
+    .wdata_i(csr_wdata),
+    .we_i(csr_we),
+    .pc_now_i(id_exe_pc_now),
+    .pc_next_o(csr_pc_next),
+    .branch_o(csr_branch),
+    .ecall_i(id_exe_ecall),
+    .ebreak_i(id_exe_ebreak),
+    .mret_i(id_exe_mret)
   );
 
   logic exe_mem_mem_en;
