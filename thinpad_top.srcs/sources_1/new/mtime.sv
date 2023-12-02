@@ -1,4 +1,4 @@
-`include "csr.svh"
+`include "header.sv"
 
 module mtime (
     input wire clk,
@@ -25,10 +25,10 @@ module mtime (
         if (wb_cyc_i && wb_stb_i) begin
             if (~wb_we_i) begin
                 case (wb_adr_i)
-                    32'h0200bff8: wb_dat_o = mtime[31:0];
-                    32'h0200bffc: wb_dat_o = mtime[63:32];
-                    32'h02004000: wb_dat_o = mtimecmp[31:0];
-                    32'h02004004: wb_dat_o = mtimecmp[63:32];
+                    `MTIME_ADDR:      wb_dat_o = mtime[31:0];
+                    `MTIME_ADDR+4:    wb_dat_o = mtime[63:32];
+                    `MTIMECMP_ADDR:   wb_dat_o = mtimecmp[31:0];
+                    `MTIMECMP_ADDR+4: wb_dat_o = mtimecmp[63:32];
                     default: wb_dat_o = 32'h0;
                 endcase
             end else begin
@@ -48,10 +48,10 @@ module mtime (
             if (wb_cyc_i && wb_stb_i) begin
                 if (wb_we_i) begin
                     case(wb_adr_i)
-                        32'h0200bff8: mtime[31:0] <= wb_dat_i;
-                        32'h0200bffc: mtime[63:32] <= wb_dat_i;
-                        32'h02004000: mtimecmp[31:0] <= wb_dat_i;
-                        32'h02004004: mtimecmp[63:32] <= wb_dat_i;
+                        `MTIME_ADDR:      mtime[31:0] <= wb_dat_i;
+                        `MTIME_ADDR+4:    mtime[63:32] <= wb_dat_i;
+                        `MTIMECMP_ADDR:   mtimecmp[31:0] <= wb_dat_i;
+                        `MTIMECMP_ADDR+4: mtimecmp[63:32] <= wb_dat_i;
                         default: ;
                     endcase
                 end

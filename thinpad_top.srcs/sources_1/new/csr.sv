@@ -1,4 +1,4 @@
-`include "csr.svh"
+`include "header.sv"
 
 module csrfile (
     input wire clk,
@@ -24,8 +24,9 @@ mcause_t mcause;
 mstatus_t mstatus;
 mie_t mie;
 mip_t mip;
+satp_t satp;   // for MMU
 
-reg [1:0] mode;
+logic [1:0] mode;
 
 always_comb begin
     case(raddr_i)
@@ -51,11 +52,11 @@ always_ff @(posedge clk) begin
         mip <= 32'h0;
         pc_next_o <= 32'h0;
         branch_o <= 1'b0;
-        mode <= 2'b0;
+        mode <= `MODE_U;
     end else begin
         mip.mtip <= time_interrupt_i;
         if ((mstatus.mie || mode != 2'b11) && mip.mtip && mie.mtie) begin
-            mode <= 2'b11;
+            mode <= `MODE_M;
             mepc <= pc_now_i;
             pc_next_o <=  {mtvec.base, 2'b0};
             branch_o <= 1'b1;
@@ -65,7 +66,7 @@ always_ff @(posedge clk) begin
             mstatus.mpie <= mstatus.mie; 
             mstatus.mie <= 0;
         end else if (ecall_i) begin 
-            mode <= 2'b11;
+            mode <= `MODE_M;
             mepc <= pc_now_i;
             pc_next_o <=  {mtvec.base, 2'b0};
             branch_o <= 1'b1;
@@ -78,7 +79,7 @@ always_ff @(posedge clk) begin
             mstatus.mpie <= mstatus.mie; 
             mstatus.mie <= 0;
         end else if (ebreak_i) begin
-            mode <= 2'b11;
+            mode <= `MODE_M;
             mepc <= pc_now_i;
             pc_next_o <=  {mtvec.base, 2'b0};
             branch_o <= 1'b1;
