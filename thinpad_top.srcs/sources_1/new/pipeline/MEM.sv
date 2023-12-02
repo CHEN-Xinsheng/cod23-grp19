@@ -1,7 +1,5 @@
-module MEM #(
-    parameter ADDR_WIDTH = 32,
-    parameter DATA_WIDTH = 32
-) (
+`include "../header.sv"
+module MEM (
     input wire clk,
     input wire rst,
     input wire mem_en_i,

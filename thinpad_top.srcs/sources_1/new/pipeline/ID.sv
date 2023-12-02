@@ -25,6 +25,7 @@ module ID (
     output reg ecall_o,
     output reg ebreak_o,
     output reg mret_o,
+    output reg fencei_o,
     input wire stall_i,
     input wire bubble_i
 );
@@ -94,6 +95,7 @@ module ID (
             ecall_o <= 1'b0;
             ebreak_o <= 1'b0;
             mret_o <= 1'b0;
+            fencei_o <= 1'b0;
             case(opcode)
                 7'b0010011: begin   // TYPE_I
                     rf_raddr_a_o <= rs1;
@@ -287,6 +289,13 @@ module ID (
                     alu_op_o <= `ALU_ADD; 
                     csr_op_o <= 3'b0;
                 end
+                7'b0001111: begin
+                    if (funct3 == 3'b001) begin
+                        fencei_o <= 1'b1;
+                    end else begin
+                        fencei_o <= 1'b0;
+                    end
+                end
                 7'b1110011: begin
                     pc_now_o <= pc_now_i;
                     case(funct3)
@@ -362,6 +371,7 @@ module ID (
                     mem_we_o <= 1'b0;
                     pc_now_o <= 32'h0;
                     csr_op_o <= 3'b0;
+                    fencei_o <= 1'b0;
                 end
             endcase
         end

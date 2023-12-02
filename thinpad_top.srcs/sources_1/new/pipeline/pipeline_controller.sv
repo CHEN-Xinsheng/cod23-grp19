@@ -1,5 +1,5 @@
 module pipeline_controller (
-    input wire if_ack_i,
+    // input wire if_ack_i,
     input wire mem_ack_i,
     input wire exe_mem_mem_en_i,
     
@@ -36,9 +36,9 @@ module pipeline_controller (
             stall_o = 4'b1000;
             bubble_o = 4'b0100;
         // IF 正在请求总线
-        end else if (if_ack_i == 0) begin
-            stall_o = 4'b0000;
-            bubble_o = 4'b1000;
+        // end else if (if_ack_i == 0) begin
+        //     stall_o = 4'b0000;
+        //     bubble_o = 4'b1000;
         end else begin
             stall_o = 4'b0000;
             bubble_o = 4'b0000;

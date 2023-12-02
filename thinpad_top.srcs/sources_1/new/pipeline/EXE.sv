@@ -1,8 +1,9 @@
 `include "../header.sv"
-
 module EXE (
     input wire clk,
     input wire rst,
+    input wire [31:0] rf_raddr_a_i,
+    input wire [31:0] rf_raddr_b_i,
     input wire [31:0] rf_rdata_a_i,
     input wire [31:0] rf_rdata_b_i,
     input wire [31:0] inst_i,
@@ -72,12 +73,12 @@ module EXE (
         if (use_pc_i) begin
             alu_a_o = pc_now_i;
         end else begin
-            alu_a_o = (exe_mem_rf_waddr_i != 0 && (exe_mem_rf_waddr_i == rf_rdata_a_i)) 
+            alu_a_o = (exe_mem_rf_waddr_i != 0 && (exe_mem_rf_waddr_i == rf_raddr_a_i)) 
                         ? exe_mem_alu_result_i  // 这种情况下 MEM-EXE 的指令不是 load-use 关系，这一点由 pipeline_controller 保证
                         : rf_rdata_a_i;         // 对于 WB 正在写寄存器的情况，已经在 regfile 中实现了相应的旁路
         end
         if (use_rs2_i) begin
-            alu_b_o = (exe_mem_rf_waddr_i != 0 && (exe_mem_rf_waddr_i == rf_rdata_b_i)) 
+            alu_b_o = (exe_mem_rf_waddr_i != 0 && (exe_mem_rf_waddr_i == rf_raddr_b_i)) 
                         ? exe_mem_alu_result_i  // 这种情况下 MEM-EXE 的指令不是 load-use 关系，这一点由 pipeline_controller 保证
                         : rf_rdata_b_i;         // 对于 WB 正在写寄存器的情况，已经在 regfile 中实现了相应的旁路
         end else begin
@@ -92,6 +93,18 @@ module EXE (
         end
     end
 
+    logic [31:0] comp_a;
+    logic [31:0] comp_b;
+
+    always_comb begin
+        comp_a = (exe_mem_rf_waddr_i != 0 && (exe_mem_rf_waddr_i == rf_raddr_a_i)) 
+                    ? exe_mem_alu_result_i  // 这种情况下 MEM-EXE 的指令不是 load-use 关系，这一点由 pipeline_controller 保证
+                    : rf_rdata_a_i;         // 对于 WB 正在写寄存器的情况，已经在 regfile 中实现了相应的旁路
+        comp_b = (exe_mem_rf_waddr_i != 0 && (exe_mem_rf_waddr_i == rf_raddr_b_i)) 
+                    ? exe_mem_alu_result_i  // 这种情况下 MEM-EXE 的指令不是 load-use 关系，这一点由 pipeline_controller 保证
+                    : rf_rdata_b_i;         // 对于 WB 正在写寄存器的情况，已经在 regfile 中实现了相应的旁路
+    end
+
     always_comb begin
         if (jump_i) begin
             pc_next_o = alu_y_i;
@@ -99,9 +112,9 @@ module EXE (
         end else if (imm_type_i == `TYPE_B) begin
             pc_next_o = alu_y_i;
             if (comp_op_i) begin
-                branch_comb_o = (rf_rdata_a_i == rf_rdata_b_i);
+                branch_comb_o = (comp_a == comp_b);
             end else begin
-                branch_comb_o = (rf_rdata_a_i != rf_rdata_b_i);
+                branch_comb_o = (comp_a != comp_b);
             end
         end else begin
             branch_comb_o = 0;
