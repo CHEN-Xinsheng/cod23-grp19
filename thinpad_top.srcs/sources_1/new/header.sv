@@ -127,18 +127,44 @@ typedef struct packed {
   logic        r;
   logic        v;    //  The V bit indicates whether the PTE is valid; if it is 0, all other bits in the PTE are don’t-cares and may be used freely by software.
   // 对于非叶 PTE，D，A，U 位被保留，并被清零。
-} pte_t;  // PTE (Page Table Entry), 32 bits
+} pte_t;
+/* PTE (Page Table Entry), 32 bits
+  |31    20|19    10|9   8|7                             0|
+  | PPN[1] | PPN[0] | RSW | D | A | G | U | X | W | R | V |
+  |   12   |   10   |  2  | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 |
+ */
 
 typedef struct packed {
   logic [9:0]  vpn1;
   logic [9:0]  vpn0;
   logic [11:0] offset;
-} vaddr_t;  // Figure 4.13: Sv32 virtual address
+} vaddr_t;  // Figure 4.13: Sv32 virtual address, 32 bits
 
 typedef struct packed {
   logic [11:0] ppn1;
   logic [9:0]  ppn0;
   logic [11:0] offset;
-} paddr_t;  // Figure 4.14: Sv32 physical address
+} paddr_t; 
+/* Figure 4.14: Sv32 physical address, 34 bits
+  |33        22|21      12|11         0|
+  |   PPN[1]   |  PPN[0]  |   offset   |
+  |     12     |    10    |     12     |
+ */
+
+localparam N_TLB_ENTRY = 32;
+localparam TLB_INDEX_WIDTH = 5;
+localparam TLB_TAG_WIDTH   = 32-12-TLB_INDEX_WIDTH;
+/* virtual address:
+  |    VPN (virtual page number)    | offset |
+  |        TLB tag      | TLB index |        |
+  |31                 17|16       12|11     0|
+  |         15          |     5     |   12   |
+*/
+typedef struct packed {
+  logic [TLB_TAG_WIDTH-1:0] tag;
+  logic              [21:0] ppn;
+  logic              [ 8:0] asid;
+  logic                     valid;
+} tlb_entry_t;  // 37 bits (TLB_TAG_WIDTH + 22 + 9 + 1)
 
 `endif
