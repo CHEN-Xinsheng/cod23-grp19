@@ -141,6 +141,24 @@ module thinpad_top (
   logic [ 3:0] wbm1_sel_o;
   logic        wbm1_we_o;
 
+  logic        wbm2_cyc_o;
+  logic        wbm2_stb_o;
+  logic        wbm2_ack_i;
+  logic [31:0] wbm2_adr_o;
+  logic [31:0] wbm2_dat_o;
+  logic [31:0] wbm2_dat_i;
+  logic [ 3:0] wbm2_sel_o;
+  logic        wbm2_we_o;
+
+  logic        wbm3_cyc_o;
+  logic        wbm3_stb_o;
+  logic        wbm3_ack_i;
+  logic [31:0] wbm3_adr_o;
+  logic [31:0] wbm3_dat_o;
+  logic [31:0] wbm3_dat_i;
+  logic [ 3:0] wbm3_sel_o;
+  logic        wbm3_we_o;
+
   logic        wbs_cyc_o;
   logic        wbs_stb_o;
   logic        wbs_ack_i;
@@ -150,7 +168,7 @@ module thinpad_top (
   logic [ 3:0] wbs_sel_o;
   logic        wbs_we_o;
 
-  wb_arbiter_2 wb_arbiter (
+  wb_arbiter_4 wb_arbiter (
     .clk(sys_clk),
     .rst(sys_rst),
 
@@ -175,6 +193,28 @@ module thinpad_top (
     .wbm1_err_o(),    
     .wbm1_rty_o(),    
     .wbm1_cyc_i(wbm1_cyc_o),   
+
+    .wbm2_adr_i(wbm2_adr_o),    
+    .wbm2_dat_i(wbm2_dat_o),    
+    .wbm2_dat_o(wbm2_dat_i),    
+    .wbm2_we_i (wbm2_we_o ),    
+    .wbm2_sel_i(wbm2_sel_o),    
+    .wbm2_stb_i(wbm2_stb_o),    
+    .wbm2_ack_o(wbm2_ack_i),    
+    .wbm2_err_o(),    
+    .wbm2_rty_o(),    
+    .wbm2_cyc_i(wbm2_cyc_o),   
+
+    .wbm3_adr_i(wbm3_adr_o),    
+    .wbm3_dat_i(wbm3_dat_o),    
+    .wbm3_dat_o(wbm3_dat_i),    
+    .wbm3_we_i (wbm3_we_o ),    
+    .wbm3_sel_i(wbm3_sel_o),    
+    .wbm3_stb_i(wbm3_stb_o),    
+    .wbm3_ack_o(wbm3_ack_i),    
+    .wbm3_err_o(),    
+    .wbm3_rty_o(),    
+    .wbm3_cyc_i(wbm3_cyc_o),   
 
     .wbs_adr_o(wbs_adr_o),
     .wbs_dat_i(wbs_dat_i),
@@ -435,8 +475,10 @@ module thinpad_top (
   );
 
   logic fencei;
-  logic [31:0] icache_pc;
+  logic [31:0] icache_pc_vaddr;
+  logic [31:0] icache_pc_paddr;
   // logic [31:0] icache_pc_cached;
+  logic [31:0] if_mmu_ack;
   logic icache_ack;
   logic [31:0] icache_inst;
 
@@ -479,15 +521,43 @@ module thinpad_top (
     .pc_pred_i(pred_pc),
     .icache_ack_i(icache_ack),
     .inst_i(icache_inst),
-    .pc_o(icache_pc),
+    .pc_o(icache_pc_vaddr),
     .stall_i(stall[3]),
     .bubble_i(bubble[3])
   );
 
+  logic page_fault;
+  logic access_fault;
+
+  mmu if_mmu (
+    .clk(sys_clk),
+    .rst(sys_rst),
+    .mode_i(csr_mode),
+    .satp_i(csr_satp),
+    .vaddr_i(icache_pc_vaddr),
+    .paddr_o(icache_pc_paddr),
+    .ack_o(if_mmu_ack),
+
+    .read_en_i(1'b0), 
+    .write_en_i(1'b0),
+    .exe_en_i(1'b1),
+    .page_fault_o(page_fault),
+    .access_fault_o(access_fault),
+
+    .wb_cyc_o(wbm2_cyc_o),
+    .wb_stb_o(wbm2_stb_o),
+    .wb_ack_i(wbm2_ack_i),
+    .wb_adr_o(wbm2_adr_o),
+    .wb_dat_o(wbm2_dat_o),
+    .wb_dat_i(wbm2_dat_i),
+    .wb_sel_o(wbm2_sel_o),
+    .wb_we_o(wbm2_we_o)
+  )
+
   btb btb (
     .clk(sys_clk),
     .rst(sys_rst),
-    .pc_i(icache_pc),
+    .pc_i(icache_pc_vaddr),
     .pred_pc_o(pred_pc),
     .branch_from_pc_i(id_exe_pc_now),
     .branch_to_pc_i(pc_next_comb),
@@ -499,7 +569,7 @@ module thinpad_top (
     .clk(sys_clk),
     .rst(sys_rst),
     .fence_i(fencei),
-    .pc_i(icache_pc),
+    .pc_i(icache_pc_paddr),
     .enable_i(1'b1),
     .wb_cyc_o(wbm1_cyc_o),
     .wb_stb_o(wbm1_stb_o),
@@ -682,6 +752,9 @@ module thinpad_top (
   logic [31:0] csr_pc_next;
   logic csr_branch;
 
+  logic [1:0] csr_mode;
+  satp_t csr_satp;
+
   csrfile csrfile (
     .clk(sys_clk),
     .rst(sys_rst),
@@ -696,7 +769,11 @@ module thinpad_top (
     .ecall_i(id_exe_ecall),
     .ebreak_i(id_exe_ebreak),
     .mret_i(id_exe_mret),
-    .time_interrupt_i(time_interrupt)
+    .time_interrupt_i(time_interrupt),
+    .page_fault_i(page_fault),
+    .access_fault_i(access_fault),
+    .satp_o(csr_satp)
+    .mode_o(csr_mode),
   );
 
   logic [31:0] exe_mem_pc_now;  // only for debug

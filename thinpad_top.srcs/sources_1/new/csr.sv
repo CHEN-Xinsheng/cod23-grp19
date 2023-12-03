@@ -14,7 +14,11 @@ module csrfile (
     input wire ecall_i,
     input wire ebreak_i,
     input wire mret_i,
-    input wire time_interrupt_i
+    input wire time_interrupt_i,
+    input wire page_fault_i,
+    input wire access_fault_i,
+    output satp_t satp_o,
+    output reg [1:0] mode_o
 );
 
 mtvec_t mtvec;
@@ -25,8 +29,10 @@ mstatus_t mstatus;
 mie_t mie;
 mip_t mip;
 satp_t satp;   // for MMU
-
 logic [1:0] mode;
+
+assign satp_o = satp;
+assign mode_o = mode;
 
 always_comb begin
     case(raddr_i)
