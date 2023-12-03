@@ -32,10 +32,6 @@ module mmu (
 wire direct_trans;
 assign direct_trans = (mode_i == `MODE_M || satp_i.mode == 1'b0);
 
-// paddr(output)
-paddr_t paddr;
-assign paddr_o = paddr[ADDR_WIDTH-1:0];  // “拼出来的 34 位物理地址可以直接去掉最高的两位当作 32 位地址进行使用。”
-
 // wishbone interface
 assign wb_stb_o = wb_cyc_o;
 assign wb_adr_o = pte_addr[ADDR_WIDTH-1:0];  // “拼出来的 34 位物理地址可以直接去掉最高的两位当作 32 位地址进行使用。”
@@ -57,11 +53,24 @@ enum logic [2:0] {
     FETCH_PTE_LV0
 } state;
 
+// TLB
+tlb_entry_t  tlb[0: N_TLB_ENTRY-1];
+
+wire [TLB_INDEX_WIDTH-1:0]  tlb_index;
+tlb_entry_t                 tlb_entry;
+wire                        tlb_hit;
+assign tlb_index = vaddr_i[12+TLB_INDEX_WIDTH-1: 12];
+assign tlb_entry = tlb[tlb_index];
+assign tlb_hit = tlb_entry.valid 
+                && tlb_entry.asid == satp_i.asid
+                && tlb_entry.tag == vaddr_i[31:31-TLB_TAG_WIDTH+1];
+
+
 always_ff @(posedge clk) begin
     if (rst) begin
         // CPU interface
         ack_o <= 1'b0;
-        paddr <= 'b0;
+        paddr_o <= 'b0;
         page_fault_o <= 1'b0;
         access_fault_o <= 1'b0;
         // wishbone interface
@@ -70,18 +79,22 @@ always_ff @(posedge clk) begin
         state <= FETCH_PTE;
         cur_level <= 1'b1;
         lv1_pte <= 'b0;
+        // TLB
+        reset_tlb();
     end else begin
         casez (state) 
             IDLE: begin
                 if (direct_trans) begin
-                    if (!paddr_valid({2'b0, vaddr_i})) begin
+                    if (!paddr_valid(vaddr_i)) begin
                         raise_access_fault();
                     end else begin
-                        ack_paddr({2'b0, vaddr_i});
+                        ack_paddr(vaddr_i);
                     end
                 end else begin
-                    if (!paddr_valid(pte_addr)) begin
+                    if (!paddr_valid(pte_addr[ADDR_WIDTH-1:0])) begin
                         raise_access_fault();
+                    end else if (tlb_hit) begin
+                        ack_paddr_in_tlb();
                     end else begin
                         // CPU interface
                         ack_o <= 1'b0;
@@ -115,14 +128,19 @@ always_ff @(posedge clk) begin
                             ) begin
                             raise_page_fault();
                         end else if (cur_level == 1 && read_pte.ppn0 != 0) begin
-                            /* 6. If i > 0 and pte.ppn[i − 1 : 0] ̸= 0, this is a misaligned superpage; 
+                            /* 6. If i > 0 and pte.ppn[i − 1 : 0] != 0, this is a misaligned superpage; 
                                 stop and raise a page-fault exception corresponding to the original access type */
                             raise_page_fault();
-                        end else if (!paddr_valid(pte_addr)) begin
+                        end else if (!paddr_valid(pte_addr[ADDR_WIDTH-1:0])) begin
                             raise_access_fault();
                         end else begin
-                            // TODO update TLB
-                            ack_paddr({2'b0, wb_dat_i});
+                            // update TLB
+                            tlb[tlb_index].tag   <= vaddr_i[31:31-TLB_TAG_WIDTH+1];
+                            tlb[tlb_index].ppn   <= wb_dat_i[31:10];
+                            tlb[tlb_index].asid  <= satp_i.asid;
+                            tlb[tlb_index].valid <= 1'b1;
+                            // ack physical address
+                            ack_paddr({wb_dat_i[29:10], vaddr_i[11:0]});
                         end
                     // If it is non-leaf PTE
                     end else begin
@@ -131,7 +149,7 @@ always_ff @(posedge clk) begin
                             Otherwise, let a = pte.ppn × PAGESIZE and go to step 2. */
                         if (cur_level == 0) begin
                             raise_page_fault();
-                        end else if (!paddr_valid(pte_addr)) begin
+                        end else if (!paddr_valid(pte_addr[ADDR_WIDTH-1:0])) begin
                             raise_access_fault();
                         end else begin
                             wb_cyc_o <= 1'b0;   // close wishbone for a cycle
@@ -152,8 +170,9 @@ end
 
 
 /* ================= utils ================= */
-function automatic logic paddr_valid(logic [34-1:0] paddr_i);
-    logic [31:0] paddr = paddr_i[31:0];
+function automatic logic paddr_valid(
+    logic [ADDR_WIDTH-1:0] paddr
+);
     return ( ~|((paddr ^ 32'h1000_0000) & 32'hFFFF_0000) )            // UART [equivalent to (32'h1000_0000 <= paddr && paddr <= 32'h1000_FFFF) ]   
         || (paddr == `MTIMECMP_ADDR) || (paddr == `MTIMECMP_ADDR+4)   // CSR - mtimecmp
         || (paddr == `MTIME_ADDR)    || (paddr == `MTIME_ADDR+4)      // CSR - mtime
@@ -172,12 +191,12 @@ endfunction
 task raise_page_fault();
     // CPU interface
     ack_o <= 1'b1;
-    paddr <= 'b0;
+    paddr_o <= {ADDR_WIDTH{1'b0}};
     page_fault_o <= 1'b1;
     access_fault_o <= 1'b0;
     // wishbone interface
     wb_cyc_o <= 1'b0;
-    wb_adr_o <= 'b0;
+    wb_adr_o <= {ADDR_WIDTH{1'b0}};
     // inner data
     state <= IDLE;    // TODO: to 'DONE'?
     cur_level <= 1'b1;
@@ -186,26 +205,42 @@ endtask
 task raise_access_fault();
     // CPU interface
     ack_o <= 1'b1;
-    paddr <= 'b0;
+    paddr_o <= {ADDR_WIDTH{1'b0}};
     page_fault_o <= 1'b0;
     access_fault_o <= 1'b1;
     // wishbone interface
     wb_cyc_o <= 1'b0;
-    wb_adr_o <= 'b0;
+    wb_adr_o <= {ADDR_WIDTH{1'b0}};
     // inner data
     state <= IDLE;    // TODO: to 'DONE'?
     cur_level <= 1'b1;
 endtask
 
-task automatic ack_paddr(logic [33:0] paddr_to_ret);
+task automatic ack_paddr(
+    logic [ADDR_WIDTH-1:0] paddr_to_ret
+);
     // CPU interface
     ack_o <= 1'b1;
-    paddr <= paddr_to_ret;
+    paddr_o <= paddr_to_ret;
     page_fault_o <= 1'b0;
     access_fault_o <= 1'b0;
     // wishbone interface
     wb_cyc_o <= 1'b0;
-    wb_adr_o <= 'b0;
+    wb_adr_o <= {ADDR_WIDTH{1'b0}};
+    // inner data
+    state <= IDLE;
+    cur_level <= 1'b1;
+endtask
+
+task ack_paddr_in_tlb();
+    // CPU interface
+    ack_o <= 1'b1;
+    paddr_o <= {tlb_entry.ppn[19:0], vaddr_i[11:0]};
+    page_fault_o <= 1'b0;
+    access_fault_o <= 1'b0;
+    // wishbone interface
+    wb_cyc_o <= 1'b0;
+    wb_adr_o <= {ADDR_WIDTH{1'b0}};
     // inner data
     state <= IDLE;
     cur_level <= 1'b1;
@@ -216,5 +251,11 @@ endtask
 //                 ? (satp_i.ppn << 12)                     + (vaddr_i.vpn1 << 2)
 //                 : ({prev_pte.ppn1, prev_pte.ppn0} << 12) + (vaddr_i.vpn0 << 2);
 // endfunction
+
+task reset_tlb();
+    for (int i = 0; i < N_TLB_ENTRY; ++i) begin
+        tlb[i] <= 'b0;
+    end
+endtask
 
 endmodule
