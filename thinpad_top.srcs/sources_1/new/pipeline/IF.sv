@@ -1,4 +1,6 @@
 `include "../header.sv"
+
+
 module IF (
     input wire clk,
     input wire rst,
@@ -20,6 +22,9 @@ module IF (
     input wire icache_ack_i,
     input wire [31:0] inst_i,
     output reg [31:0] pc_o,
+    input wire branch_taken_i,
+    input wire [31:0] pc_pred_i,
+    input wire [31:0] pc_true_i,
     // output reg [31:0] pc_cached_o,
     input wire stall_i,
     input wire bubble_i
@@ -34,7 +39,7 @@ module IF (
     // logic icache_ack;
     // logic [31:0] inst;
 
-    always_ff @(posedge clk) begin
+     always_ff @(posedge clk) begin
         if (rst) begin
             inst_o <= 32'h0;
             pc_now_o <= 32'h0;
@@ -63,25 +68,23 @@ module IF (
             pc <= 32'h80000000;
             pc_cached <= 32'h0;
         end else begin
-            // if (branch_i) begin
-            //     if (icache_ack_i) begin 
-            //         pc <= pc_next_i;
-            //     end else begin 
-            //         pc_cached <= pc_next_i;
-            //     end
-            // end else begin
-                if (stall_i) begin
-                end else if (icache_ack_i) begin
+            if (stall_i) begin
+            end else if (~branch_taken_i) begin
+                if (icache_ack_i) begin 
+                    pc <= pc_true_i;
+                end else begin 
+                    pc_cached <= pc_true_i;
+                end
+            end else begin
+                if (icache_ack_i) begin 
                     if (pc_cached != 0) begin
                         pc <= pc_cached;
                         pc_cached <= 32'h0;
                     end else begin
-                        pc <= pc_next_i;
+                        pc <= pc_pred_i;
                     end
-                end else if (branch_i) begin
-                    pc_cached <= pc_next_i;
                 end
-            // end
+            end
         end
     end
 

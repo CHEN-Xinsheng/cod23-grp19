@@ -15,6 +15,7 @@ module btb # (
     input wire [ADDR_WIDTH-1:0] branch_from_pc_i,
     input wire [ADDR_WIDTH-1:0] branch_to_pc_i,
     input wire branch_taken_i,
+    input wire is_branch_i
 );
 
     // BHT (2) + TAG + TARGET_ADDR
@@ -31,7 +32,6 @@ module btb # (
     logic [TAG_WIDTH + ADDR_WIDTH + 1:0] branch_from_hit_line;
     logic [1:0] branch_from_hit_bht;
     logic [TAG_WIDTH - 1:0] branch_from_hit_tag;
-    logic [ADDR_WIDTH - 1:0] branch_from_hit_data;
     logic branch_from_hit;
     logic [TAG_WIDTH - 1:0] branch_from_tag;
     logic [INDEX_WIDTH - 1:0] branch_from_index;
@@ -63,22 +63,24 @@ module btb # (
     always_ff @ (posedge clk) begin
         if (rst) begin
             for (integer i = 0; i < BTB_SIZE; i = i + 1) begin
-                btb_table[i][TAG_WIDTH + DATA_WIDTH + 1:TAG_WIDTH + DATA_WIDTH] <= 2'b00;
+                btb_table[i] <= {{TAG_WIDTH + DATA_WIDTH + 1}{1'b0}};
             end
         end else begin
-            if (branch_from_hit) begin
-                if (branch_taken_i) begin
-                    if (branch_from_hit_bht != 2'b11) begin
-                        btb_table[branch_from_index][TAG_WIDTH + DATA_WIDTH + 1:TAG_WIDTH + DATA_WIDTH] <= branch_from_hit_bht + 1;
+            if (is_branch_i) begin
+                if (branch_from_hit) begin
+                    if (branch_taken_i) begin
+                        if (branch_from_hit_bht != 2'b11) begin
+                            btb_table[branch_from_index][TAG_WIDTH + DATA_WIDTH + 1:TAG_WIDTH + DATA_WIDTH] <= branch_from_hit_bht + 1;
+                        end
+                        btb_table[branch_from_index][DATA_WIDTH - 1:0] <= branch_to_pc_i;
+                    end else begin
+                        if (branch_from_hit_bht != 2'b00) begin
+                            btb_table[branch_from_index][TAG_WIDTH + DATA_WIDTH + 1:TAG_WIDTH + DATA_WIDTH] <= branch_from_hit_bht - 1;
+                        end
                     end
-                    btb_table[branch_from_index][DATA_WIDTH - 1:0] <= branch_to_pc_i;
                 end else begin
-                    if (branch_from_hit_bht != 2'b00) begin
-                        btb_table[branch_from_index][TAG_WIDTH + DATA_WIDTH + 1:TAG_WIDTH + DATA_WIDTH] <= branch_from_hit_bht - 1;
-                    end
+                    btb_table[branch_from_index] <= {1'b1, branch_taken_i, branch_from_tag, branch_to_pc_i};
                 end
-            end else begin
-                btb_table[branch_from_index] <= {1'b1, branch_taken_i, branch_from_tag, branch_to_pc_i};
             end
         end
     end

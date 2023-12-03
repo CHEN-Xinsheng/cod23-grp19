@@ -407,6 +407,10 @@ module thinpad_top (
   logic [4:0] id_rf_raddr_b_comb;
   logic exe_branch_comb;
 
+  logic branch_taken;
+  logic [31:0] pc_true;
+
+
   pipeline_controller pipeline_controller (
     // .if_ack_i(wbm1_ack_i),
     .mem_ack_i(wbm0_ack_i),
@@ -415,19 +419,20 @@ module thinpad_top (
     .id_rf_raddr_a_comb_i(id_rf_raddr_a_comb),
     .id_rf_raddr_b_comb_i(id_rf_raddr_b_comb),
     .id_exe_mem_en_i(id_exe_mem_en),
+    .id_exe_mem_we_i(id_exe_mem_we),
     .id_exe_rf_wen_i(id_exe_rf_wen),
     .id_exe_rf_waddr_i(id_exe_rf_waddr),
+    .branch_taken_i(branch_taken),
 
+    .exe_mem_rf_waddr_i(exe_mem_rf_waddr),
     .rf_waddr_i(rf_waddr),
+
     .exe_branch_comb_i(exe_branch_comb),
     .csr_branch_i(csr_branch),
 
     .stall_o(stall),
     .bubble_o(bubble)
-  ); 
-
-  reg [31:0] if_pc_next;
-  reg if_branch;
+  );
 
   logic fencei;
   logic [31:0] icache_pc;
@@ -435,20 +440,30 @@ module thinpad_top (
   logic icache_ack;
   logic [31:0] icache_inst;
 
+  logic [31:0] pred_pc;
+
   pc_mux pc_mux (
-    .branch_a_i(csr_branch),
-    .branch_b_i(exe_branch_comb),
-    .pc_next_a_i(csr_pc_next),
-    .pc_next_b_i(pc_next_comb),
-    .pc_now_i(icache_pc),
-    .branch_o(if_branch),
-    .pc_next_o(if_pc_next)
+    // .branch_a_i(csr_branch),
+    // .branch_b_i(exe_branch_comb),
+    // .pc_next_a_i(csr_pc_next),
+    // .pc_next_b_i(pc_next_comb),
+    // .pc_now_i(icache_pc),
+    // .branch_o(if_branch),
+    // .pc_next_o(if_pc_next)
+    .csr_branch_i(csr_branch),
+    .exe_branch_comb_i(exe_branch_comb),
+    .csr_pc_next_i(csr_pc_next),
+    .id_exe_pc_now(id_exe_pc_now),
+    .if_id_pc_now(if_id_pc_now),
+    .pc_next_comb(pc_next_comb),
+    .icache_pc(icache_pc),
+    .branch_taken(branch_taken),
+    .pc_true(pc_true)
   );
-    
+
   IF IF (
     .clk(sys_clk),
     .rst(sys_rst),
-    // .fence_i(fencei),
     // .wb_cyc_o(wbm1_cyc_o),
     // .wb_stb_o(wbm1_stb_o),
     // .wb_ack_i(wbm1_ack_i),
@@ -459,33 +474,44 @@ module thinpad_top (
     // .wb_we_o(wbm1_we_o),
     .inst_o(if_id_inst),
     .pc_now_o(if_id_pc_now),
-    .branch_i(if_branch),
-    .pc_next_i(if_pc_next),
+    .branch_taken_i(branch_taken),
+    .pc_true_i(pc_true),
+    .pc_pred_i(pred_pc),
     .icache_ack_i(icache_ack),
     .inst_i(icache_inst),
     .pc_o(icache_pc),
-    // .pc_cached_o(icache_pc_cached),
     .stall_i(stall[3]),
     .bubble_i(bubble[3])
   );
 
+  btb btb (
+    .clk(sys_clk),
+    .rst(sys_rst),
+    .pc_i(icache_pc),
+    .pred_pc_o(pred_pc),
+    .branch_from_pc_i(id_exe_pc_now),
+    .branch_to_pc_i(pc_next_comb),
+    .branch_taken_i(branch_taken),
+    .is_branch_i(id_exe_jump || id_exe_imm_type == `TYPE_B)
+  );
+
   icache icache (
-        .clk(sys_clk),
-        .rst(sys_rst),
-        .fence_i(fencei),
-        .pc_i(icache_pc),
-        .enable_i(1'b1),
-        .wb_cyc_o(wbm1_cyc_o),
-        .wb_stb_o(wbm1_stb_o),
-        .wb_ack_i(wbm1_ack_i),
-        .wb_adr_o(wbm1_adr_o),
-        .wb_dat_o(wbm1_dat_o),
-        .wb_dat_i(wbm1_dat_i),
-        .wb_sel_o(wbm1_sel_o),
-        .wb_we_o(wbm1_we_o),
-        .inst_o(icache_inst),
-        .icache_ack_o(icache_ack)
-    );
+    .clk(sys_clk),
+    .rst(sys_rst),
+    .fence_i(fencei),
+    .pc_i(icache_pc),
+    .enable_i(1'b1),
+    .wb_cyc_o(wbm1_cyc_o),
+    .wb_stb_o(wbm1_stb_o),
+    .wb_ack_i(wbm1_ack_i),
+    .wb_adr_o(wbm1_adr_o),
+    .wb_dat_o(wbm1_dat_o),
+    .wb_dat_i(wbm1_dat_i),
+    .wb_sel_o(wbm1_sel_o),
+    .wb_we_o(wbm1_we_o),
+    .inst_o(icache_inst),
+    .icache_ack_o(icache_ack)
+  );
 
     //   always_ff @(posedge sys_clk) begin
     //     if (sys_rst) begin
@@ -571,9 +597,9 @@ module thinpad_top (
   logic [3:0] id_exe_alu_op;
   logic id_exe_use_rs2;
   logic id_exe_mem_en;
+  logic id_exe_mem_we;
   logic id_exe_rf_wen;
   logic [4:0] id_exe_rf_waddr;
-  logic id_exe_mem_we;
   logic [3:0] id_exe_mem_sel;
   logic [31:0] id_exe_pc_now;
   logic id_exe_use_pc;
@@ -630,7 +656,10 @@ module thinpad_top (
 
     // stall & bubble
     .stall_i(stall[1]),
-    .bubble_i(bubble[1])
+    .bubble_i(bubble[1]),
+
+    // debug
+    .pc_now_o(exe_mem_pc_now)
   );
 
   logic [DATA_WIDTH-1:0] alu_a;
@@ -670,6 +699,7 @@ module thinpad_top (
     .time_interrupt_i(time_interrupt)
   );
 
+  logic [31:0] exe_mem_pc_now;  // only for debug
   logic exe_mem_mem_en;
   logic exe_mem_rf_wen;
   logic [4:0] exe_mem_rf_waddr;
@@ -703,9 +733,14 @@ module thinpad_top (
     .wb_dat_o(wbm0_dat_o),
     .wb_dat_i(wbm0_dat_i),
     .wb_sel_o(wbm0_sel_o),
-    .wb_we_o(wbm0_we_o)
+    .wb_we_o(wbm0_we_o),
+
+    // debug
+    .pc_now_i(exe_mem_pc_now),
+    .pc_now_o(mem_wb_pc_now)
   );
 
+  logic [31:0] mem_wb_pc_now;  // only for debug
 
 
   // // 不使用内存、串口时，禁用其使能信号

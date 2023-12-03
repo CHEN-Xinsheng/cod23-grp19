@@ -1,4 +1,6 @@
 `include "../header.sv"
+
+
 module MEM (
     input wire clk,
     input wire rst,
@@ -22,7 +24,11 @@ module MEM (
     output reg [DATA_WIDTH/8-1:0] wb_sel_o,
     output reg wb_we_o,
     input wire stall_i,
-    input wire bubble_i
+    input wire bubble_i,
+
+    // debug
+    input wire [ADDR_WIDTH-1: 0] pc_now_i,
+    output reg [ADDR_WIDTH-1: 0] pc_now_o
 );
 
     reg [31:0] lb_data;
@@ -34,6 +40,7 @@ module MEM (
             rf_wdata_o <= 32'b0;
             rf_wen_o <= 1'b0;
             rf_waddr_o <= 5'b0;
+            pc_now_o <= {ADDR_WIDTH{1'b0}};
         end else begin
             if (stall_i) begin
             end else if (bubble_i) begin
@@ -45,6 +52,7 @@ module MEM (
                 end else begin
                     wb_stb_o <= 1'b0;
                 end
+                pc_now_o <= {ADDR_WIDTH{1'b0}};
             end else begin
                 if (mem_en_i) begin
                     wb_stb_o <= 1'b0;
@@ -63,6 +71,7 @@ module MEM (
                     rf_wen_o <= rf_wen_i;
                     rf_waddr_o <= rf_waddr_i;
                 end
+                pc_now_o <= pc_now_i;
             end
         end
     end

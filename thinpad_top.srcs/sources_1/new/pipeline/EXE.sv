@@ -1,9 +1,11 @@
 `include "../header.sv"
+
+
 module EXE (
     input wire clk,
     input wire rst,
-    input wire [31:0] rf_raddr_a_i,
-    input wire [31:0] rf_raddr_b_i,
+    input wire [4:0] rf_raddr_a_i,
+    input wire [4:0] rf_raddr_b_i,
     input wire [31:0] rf_rdata_a_i,
     input wire [31:0] rf_rdata_b_i,
     input wire [31:0] inst_i,
@@ -44,7 +46,10 @@ module EXE (
 
     // data forwarding
     input wire [4:0] exe_mem_rf_waddr_i,
-    input wire [31:0] exe_mem_alu_result_i
+    input wire [31:0] exe_mem_alu_result_i,
+
+    // debug
+    output reg [31:0] pc_now_o
 );
 
     always_comb begin
@@ -69,18 +74,24 @@ module EXE (
         end
     end
 
+    wire [DATA_WIDTH-1:0] rf_rdata_a_forwarded;
+    wire [DATA_WIDTH-1:0] rf_rdata_b_forwarded;
+    assign rf_rdata_a_forwarded = (exe_mem_rf_waddr_i != 0 && (exe_mem_rf_waddr_i == rf_raddr_a_i)) 
+                                    ? exe_mem_alu_result_i  // 这种情况下 MEM-EXE 的指令不是 load-use 关系，这一点由 pipeline_controller 保证
+                                    : rf_rdata_a_i;         // 对于 WB 正在写寄存器的情况，已经在 regfile 中实现了相应的旁路
+    assign rf_rdata_b_forwarded = (exe_mem_rf_waddr_i != 0 && (exe_mem_rf_waddr_i == rf_raddr_b_i)) 
+                                    ? exe_mem_alu_result_i  // 这种情况下 MEM-EXE 的指令不是 load-use 关系，这一点由 pipeline_controller 保证
+                                    : rf_rdata_b_i;         // 对于 WB 正在写寄存器的情况，已经在 regfile 中实现了相应的旁路
+
+
     always_comb begin
         if (use_pc_i) begin
             alu_a_o = pc_now_i;
         end else begin
-            alu_a_o = (exe_mem_rf_waddr_i != 0 && (exe_mem_rf_waddr_i == rf_raddr_a_i)) 
-                        ? exe_mem_alu_result_i  // 这种情况下 MEM-EXE 的指令不是 load-use 关系，这一点由 pipeline_controller 保证
-                        : rf_rdata_a_i;         // 对于 WB 正在写寄存器的情况，已经在 regfile 中实现了相应的旁路
+            alu_a_o = rf_rdata_a_forwarded;
         end
         if (use_rs2_i) begin
-            alu_b_o = (exe_mem_rf_waddr_i != 0 && (exe_mem_rf_waddr_i == rf_raddr_b_i)) 
-                        ? exe_mem_alu_result_i  // 这种情况下 MEM-EXE 的指令不是 load-use 关系，这一点由 pipeline_controller 保证
-                        : rf_rdata_b_i;         // 对于 WB 正在写寄存器的情况，已经在 regfile 中实现了相应的旁路
+            alu_b_o = rf_rdata_b_forwarded;
         end else begin
             case (imm_type_i) 
                 `TYPE_I: alu_b_o = {{20{inst_i[31]}}, inst_i[31:20]};
@@ -93,28 +104,20 @@ module EXE (
         end
     end
 
-    logic [31:0] comp_a;
-    logic [31:0] comp_b;
-
-    always_comb begin
-        comp_a = (exe_mem_rf_waddr_i != 0 && (exe_mem_rf_waddr_i == rf_raddr_a_i)) 
-                    ? exe_mem_alu_result_i  // 这种情况下 MEM-EXE 的指令不是 load-use 关系，这一点由 pipeline_controller 保证
-                    : rf_rdata_a_i;         // 对于 WB 正在写寄存器的情况，已经在 regfile 中实现了相应的旁路
-        comp_b = (exe_mem_rf_waddr_i != 0 && (exe_mem_rf_waddr_i == rf_raddr_b_i)) 
-                    ? exe_mem_alu_result_i  // 这种情况下 MEM-EXE 的指令不是 load-use 关系，这一点由 pipeline_controller 保证
-                    : rf_rdata_b_i;         // 对于 WB 正在写寄存器的情况，已经在 regfile 中实现了相应的旁路
-    end
-
     always_comb begin
         if (jump_i) begin
             pc_next_o = alu_y_i;
             branch_comb_o = 1;
         end else if (imm_type_i == `TYPE_B) begin
-            pc_next_o = alu_y_i;
             if (comp_op_i) begin
-                branch_comb_o = (comp_a == comp_b);
+                branch_comb_o = (rf_rdata_a_forwarded == rf_rdata_b_forwarded);
             end else begin
-                branch_comb_o = (comp_a != comp_b);
+                branch_comb_o = (rf_rdata_a_forwarded != rf_rdata_b_forwarded);
+            end
+            if (branch_comb_o) begin
+                pc_next_o = alu_y_i;
+            end else begin
+                pc_next_o = pc_now_i + 4;
             end
         end else begin
             branch_comb_o = 0;
@@ -131,6 +134,7 @@ module EXE (
             mem_we_o <= 0;
             mem_sel_o <= 4'b0;
             mem_dat_o_o <= 32'b0;
+            pc_now_o <= pc_now_i;
         end else if (stall_i) begin
         end else if (bubble_i) begin
             alu_result_o <= 32'b0;
@@ -140,6 +144,7 @@ module EXE (
             mem_we_o <= 0;
             mem_sel_o <= 4'b0;
             mem_dat_o_o <= 32'b0;
+            pc_now_o <= 32'b0;
         end else begin
             if (jump_i) begin
                 alu_result_o <= pc_now_i+4;
@@ -153,7 +158,8 @@ module EXE (
             rf_waddr_o <= rf_waddr_i;
             mem_we_o <= mem_we_i;
             mem_sel_o <= mem_sel_i;
-            mem_dat_o_o <= rf_rdata_b_i;
+            mem_dat_o_o <= rf_rdata_b_forwarded;
+            pc_now_o <= pc_now_i;
         end
     end
 

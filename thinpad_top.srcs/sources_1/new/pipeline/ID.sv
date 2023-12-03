@@ -1,5 +1,6 @@
 `include "../header.sv"
 
+
 module ID (
     input wire clk,
     input wire rst,
@@ -97,6 +98,8 @@ module ID (
             ebreak_o <= 1'b0;
             mret_o <= 1'b0;
             fencei_o <= 1'b0;
+            comp_op_o <= 1'b0;
+            pc_now_o <= pc_now_i;
             case(opcode)
                 7'b0010011: begin   // TYPE_I
                     rf_raddr_a_o <= rs1;
@@ -229,7 +232,7 @@ module ID (
                     rf_raddr_a_o <= rs1;
                     rf_raddr_b_o <= rs2;
                     imm_type_o <= `TYPE_B;
-                    pc_now_o <= pc_now_i;
+                    // pc_now_o <= pc_now_i;
                     use_rs2_o <= 0;
                     use_pc_o <= 1;
                     mem_en_o <= 1'b0;
@@ -251,7 +254,7 @@ module ID (
                     imm_type_o <= `TYPE_U;
                     use_rs2_o <= 0;
                     use_pc_o <= 1;
-                    pc_now_o <= pc_now_i;
+                    // pc_now_o <= pc_now_i;
                     mem_en_o <= 1'b0;
                     mem_we_o <= 1'b0;
                     jump_o <= 1'b0;
@@ -266,7 +269,7 @@ module ID (
                     imm_type_o <= `TYPE_J;
                     use_rs2_o <= 0;
                     use_pc_o <= 1;
-                    pc_now_o <= pc_now_i;
+                    // pc_now_o <= pc_now_i;
                     jump_o <= 1'b1;
                     mem_en_o <= 1'b0;
                     mem_we_o <= 1'b0;
@@ -281,7 +284,7 @@ module ID (
                     imm_type_o <= `TYPE_I;
                     use_rs2_o <= 0;
                     use_pc_o <= 0;
-                    pc_now_o <= pc_now_i;
+                    // pc_now_o <= pc_now_i;
                     mem_en_o <= 1'b0;
                     mem_we_o <= 1'b0;
                     rf_wen_o <= 1;
@@ -298,7 +301,7 @@ module ID (
                     end
                 end
                 7'b1110011: begin
-                    pc_now_o <= pc_now_i;
+                    // pc_now_o <= pc_now_i;
                     case(funct3)
                         3'b011: begin   // CSRRC
                             rf_raddr_a_o <= rs1;
@@ -370,7 +373,7 @@ module ID (
                     rf_wen_o <= 1'b0;
                     rf_waddr_o <= 5'b0;
                     mem_we_o <= 1'b0;
-                    pc_now_o <= 32'h0;
+                    // pc_now_o <= 32'h0;
                     csr_op_o <= 3'b0;
                     fencei_o <= 1'b0;
                 end
