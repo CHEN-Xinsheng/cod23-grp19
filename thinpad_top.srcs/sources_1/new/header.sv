@@ -43,14 +43,15 @@ typedef logic [31:0] mscratch_t;
 
 typedef logic [31:0] mepc_t;
 
-
 typedef struct packed {
   logic        interrupt;
   logic [30:0] exception;
 } mcause_t;
 
 typedef struct packed {
-  logic [18:0] wpri_1;
+  logic [12:0] wpri_0;
+  logic       sum;
+  logic [4:0] wpri_1;
   logic [1:0] mpp;
   logic [1:0] wpri_2;
   logic       spp;
@@ -96,8 +97,68 @@ typedef struct packed {
   logic        usie;
 } mie_t;
 
+typedef logic [31:0] mhartid_t;
+
+typedef logic [31:0] mideleg_t;
+
+typedef logic [31:0] medeleg_t;
+
+typedef logic [31:0] mtval_t;
+
 typedef logic [63:0] mtime_t;
 typedef logic [63:0] mtimecmp_t;
+
+typedef struct packed {
+  logic [12:0] wpri_1;
+  logic       sum;
+  logic [8:0] wpri_2;
+  logic       spp;
+  logic [1:0] wpri_3;
+  logic       spie;
+  logic [2:0] wpri_4;
+  logic       sie;
+  logic       wpri_5;
+} sstatus_t;
+
+typedef logic [31:0] sepc_t;
+
+typedef struct packed {
+  logic        interrupt;
+  logic [30:0] exception;
+} scause_t;
+
+typedef logic [31:0] stval_t;
+
+typedef struct packed {
+  logic [29:0] base;
+  logic [1:0] mode; 
+} stvec_t;
+
+typedef logic [31:0] sscratch_t;
+
+typedef struct packed {
+  logic [21:0] wpri_1;
+  logic        seip;
+  logic        ueip;
+  logic [ 1:0] wpri_2;
+  logic        stip;
+  logic        utip;
+  logic [ 1:0] wpri_3;
+  logic        ssip;
+  logic        usip;
+} sip_t;
+
+typedef struct packed {
+  logic [21:0] wpri_1;
+  logic        seie;
+  logic        ueie;
+  logic [ 1:0] wpri_2;
+  logic        stie;
+  logic        utie;
+  logic [ 1:0] wpri_3;
+  logic        ssie;
+  logic        usie;
+} sie_t;
 
 // Ref: RISC-V Privileged Architectures V20211203, 4.1.12, 4.3
 typedef struct packed {
