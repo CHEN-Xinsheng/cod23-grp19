@@ -539,8 +539,11 @@ module thinpad_top (
   mmu if_mmu (
     .clk(sys_clk),
     .rst(sys_rst),
+
     .mode_i(csr_mode),
     .satp_i(csr_satp),
+    .mstatus_sum_i(),  // TODO
+    .mstatus_mxr_i(),  // TODO
     .vaddr_i(pc_vaddr),
     .paddr_o(if1_if2_pc_paddr),
     .ack_o(if_mmu_ack),
@@ -767,6 +770,8 @@ module thinpad_top (
 
     .mode_i(csr_mode),
     .satp_i(csr_satp),
+    .mstatus_sum_i(),  // TODO
+    .mstatus_mxr_i(),  // TODO
     .vaddr_i(exe_mem1_alu_result),
     .paddr_o(mem1_mem2_paddr),
     .ack_o(mem_mmu_ack),
