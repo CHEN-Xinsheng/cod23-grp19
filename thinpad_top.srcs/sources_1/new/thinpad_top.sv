@@ -533,6 +533,8 @@ module thinpad_top (
   );
 
   logic [31:0] if_mmu_ack;
+  logic        if1_exe_page_fault;
+  logic        if1_exe_access_fault;
 
   mmu if_mmu (
     .clk(sys_clk),
@@ -547,8 +549,12 @@ module thinpad_top (
     .write_en_i(1'b0),
     .exe_en_i(1'b1),
 //    .if1_if2_pc_now_o(if1_if2_pc_now),
-    .page_fault_o(if1_if2_page_fault),
-    .access_fault_o(if1_if2_access_fault),
+    .load_page_fault_o    (),
+    .store_page_fault_o   (),
+    .exe_page_fault_o     (if1_exe_page_fault),
+    .load_access_fault_o  (),
+    .store_access_fault_o (),
+    .exe_access_fault_o   (if1_exe_access_fault),
 
     .wb_cyc_o(wbm3_cyc_o),
     .wb_stb_o(wbm3_stb_o),
@@ -785,8 +791,10 @@ module thinpad_top (
 
   /* ====================== MEM1 ====================== */
   logic                       mem_mmu_ack;
-  logic                       mem1_page_fault;
-  logic                       mem1_access_fault;
+  logic                       mem1_load_page_fault;
+  logic                       mem1_store_page_fault;
+  logic                       mem1_load_access_fault;
+  logic                       mem1_store_access_fault;
 
   mmu mem_mmu (
     .clk(sys_clk),
@@ -801,8 +809,12 @@ module thinpad_top (
     .read_en_i(1'b0), 
     .write_en_i(1'b0),
     .exe_en_i(1'b1),
-    .page_fault_o(mem1_page_fault),
-    .access_fault_o(mem1_access_fault),
+    .load_page_fault_o    (mem1_load_page_fault),
+    .store_page_fault_o   (mem1_store_page_fault),
+    .exe_page_fault_o     (),
+    .load_access_fault_o  (mem1_load_access_fault),
+    .store_access_fault_o (mem1_store_access_fault),
+    .exe_access_fault_o   (),
 
     .wb_cyc_o(wbm1_cyc_o),
     .wb_stb_o(wbm1_stb_o),

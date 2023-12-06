@@ -1,54 +1,67 @@
 `include "header.sv"
 
 module mmu (
-    input wire                      clk,
-    input wire                      rst,
+    input wire                          clk,
+    input wire                          rst,
 
     // CPU interface
-    input wire [`MODE_WIDTH-1:0]    mode_i,
-    input wire satp_t               satp_i,
-    input wire vaddr_t              vaddr_i,  // virtual address
-    output reg [ADDR_WIDTH-1:0]     paddr_o,  // physical address
-    output reg                      ack_o,    // 仅当 ack_o == 1 时，CPU interface 的输出有效
-    
-    input wire                      read_en_i,  // for MEM stage, load instruction
-    input wire                      write_en_i, // for MEM stage, store instruction
-    input wire                      exe_en_i,   // for IF stage
-    output reg                      page_fault_o,
-    output reg                      access_fault_o,
+    input wire [`MODE_WIDTH-1:0]        mode_i,
+    input wire satp_t                   satp_i,
+    input wire vaddr_t                  vaddr_i,  // virtual address
+    output reg [ADDR_WIDTH-1:0]         paddr_o,  // physical address
+    output reg                          ack_o,    // 仅当 ack_o == 1 时，CPU interface 的输出有效
+
+    input wire                          read_en_i,  // for MEM stage, load instruction
+    input wire                          write_en_i, // for MEM stage, store instruction
+    input wire                          exe_en_i,   // for IF stage
+    output reg                          load_page_fault_o,
+    output reg                          store_page_fault_o,
+    output reg                          instr_page_fault_o,
+    output reg                          load_access_fault_o,
+    output reg                          store_access_fault_o,
+    output reg                          instr_access_fault_o,
 
     // wishbone interface
-    output reg                      wb_cyc_o,
-    output reg                      wb_stb_o,
-    input wire                      wb_ack_i,
-    output reg [ADDR_WIDTH-1:0]     wb_adr_o,
-    output reg [DATA_WIDTH-1:0]     wb_dat_o,
-    input wire [DATA_WIDTH-1:0]     wb_dat_i,
-    output reg [DATA_WIDTH/8-1:0]   wb_sel_o,
-    output reg                      wb_we_o,
+    output reg                          wb_cyc_o,
+    output reg                          wb_stb_o,
+    input wire                          wb_ack_i,
+    output reg [ADDR_WIDTH-1:0]         wb_adr_o,
+    output reg [DATA_WIDTH-1:0]         wb_dat_o,
+    input wire [DATA_WIDTH-1:0]         wb_dat_i,
+    output reg [DATA_WIDTH/8-1:0]       wb_sel_o,
+    output reg                          wb_we_o,
 
     // data direct padd (for IF1/IF2)
-    output reg                      if1_if2_pc_now,
+    output reg                          if1_if2_pc_now,
 
     // data direct pass (for MEM1/MEM2)
-    output reg  [ADDR_WIDTH-1:0]      exe_mem1_pc_now,
-    output reg                        exe_mem1_mem_en,
-    output reg                        exe_mem1_rf_wen,
-    output reg  [REG_ADDR_WIDTH-1:0]  exe_mem1_rf_waddr,
-    output reg  [DATA_WIDTH-1:0]      exe_mem1_alu_result,
-    output reg                        exe_mem1_mem_we,
-    output reg  [DATA_WIDTH/8-1:0]    exe_mem1_mem_sel,
-    output reg  [DATA_WIDTH-1:0]      exe_mem1_mem_wdata,
+    output reg  [ADDR_WIDTH-1:0]        exe_mem1_pc_now,
+    output reg                          exe_mem1_mem_en,
+    output reg                          exe_mem1_rf_wen,
+    output reg  [REG_ADDR_WIDTH-1:0]    exe_mem1_rf_waddr,
+    output reg  [DATA_WIDTH-1:0]        exe_mem1_alu_result,
+    output reg                          exe_mem1_mem_we,
+    output reg  [DATA_WIDTH/8-1:0]      exe_mem1_mem_sel,
+    output reg  [DATA_WIDTH-1:0]        exe_mem1_mem_wdata,
 
-    output reg  [ADDR_WIDTH-1:0]      mem1_mem2_pc_now,      // only for debug
-    output reg                        mem1_mem2_mem_en,
-    output reg                        mem1_mem2_rf_wen,
-    output reg  [REG_ADDR_WIDTH-1:0]  mem1_mem2_rf_waddr,
-    output reg  [DATA_WIDTH-1:0]      mem1_mem2_alu_result,  // only for debug
-    output reg                        mem1_mem2_mem_we,
-    output reg  [DATA_WIDTH/8-1:0]    mem1_mem2_mem_sel,
-    output reg  [DATA_WIDTH-1:0]      mem1_mem2_mem_wdata
+    output reg  [ADDR_WIDTH-1:0]        mem1_mem2_pc_now,      // only for debug
+    output reg                          mem1_mem2_mem_en,
+    output reg                          mem1_mem2_rf_wen,
+    output reg  [REG_ADDR_WIDTH-1:0]    mem1_mem2_rf_waddr,
+    output reg  [DATA_WIDTH-1:0]        mem1_mem2_alu_result,  // only for debug
+    output reg                          mem1_mem2_mem_we,
+    output reg  [DATA_WIDTH/8-1:0]      mem1_mem2_mem_sel,
+    output reg  [DATA_WIDTH-1:0]        mem1_mem2_mem_wdata
 );
+
+reg page_fault;
+reg access_fault;
+assign load_page_fault_o    = page_fault   & read_en_i;
+assign store_page_fault_o   = page_fault   & write_en_i;
+assign instr_page_fault_o   = page_fault   & exe_en_i;
+assign load_access_fault_o  = access_fault & read_en_i;
+assign store_access_fault_o = access_fault & write_en_i;
+assign instr_access_fault_o = access_fault & exe_en_i;
 
 
 wire direct_trans;
@@ -95,8 +108,8 @@ always_ff @(posedge clk) begin
         // CPU interface
         ack_o <= 1'b0;
         paddr_o <= 'b0;
-        page_fault_o <= 1'b0;
-        access_fault_o <= 1'b0;
+        page_fault <= 1'b0;
+        access_fault <= 1'b0;
         // wishbone interface
         wb_cyc_o <= 1'b0;
         // inner data
@@ -216,8 +229,8 @@ task raise_page_fault();
     // CPU interface
     ack_o <= 1'b1;
     paddr_o <= {ADDR_WIDTH{1'b0}};
-    page_fault_o <= 1'b1;
-    access_fault_o <= 1'b0;
+    page_fault <= 1'b1;
+    access_fault <= 1'b0;
     // wishbone interface
     wb_cyc_o <= 1'b0;
     // inner data
@@ -230,8 +243,8 @@ task raise_access_fault();
     // CPU interface
     ack_o <= 1'b1;
     paddr_o <= {ADDR_WIDTH{1'b0}};
-    page_fault_o <= 1'b0;
-    access_fault_o <= 1'b1;
+    page_fault <= 1'b0;
+    access_fault <= 1'b1;
     // wishbone interface
     wb_cyc_o <= 1'b0;
     // inner data
@@ -246,8 +259,8 @@ task automatic ack_paddr(
     // CPU interface
     ack_o <= 1'b1;
     paddr_o <= paddr_to_ret;
-    page_fault_o <= 1'b0;
-    access_fault_o <= 1'b0;
+    page_fault <= 1'b0;
+    access_fault <= 1'b0;
     // wishbone interface
     wb_cyc_o <= 1'b0;
     // inner data
@@ -260,8 +273,8 @@ task ack_paddr_in_tlb();
     // CPU interface
     ack_o <= 1'b1;
     paddr_o <= {tlb_entry.ppn[19:0], vaddr_i[11:0]};
-    page_fault_o <= 1'b0;
-    access_fault_o <= 1'b0;
+    page_fault <= 1'b0;
+    access_fault <= 1'b0;
     // wishbone interface
     wb_cyc_o <= 1'b0;
     // inner data
