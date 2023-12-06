@@ -16,6 +16,7 @@ module MEM (
     input wire [ADDR_WIDTH-1:0]         mem_addr_i,
     input wire [DATA_WIDTH/8-1:0]       mem_sel_i,
     input wire [ADDR_WIDTH-1:0]         mem_wdata_i,
+    input wire [DATA_WIDTH-1:0]         inst_i,
 
     output reg                          wb_cyc_o,
     output reg                          wb_stb_o,
@@ -28,6 +29,8 @@ module MEM (
     input wire                          stall_i,
     input wire                          bubble_i,
 
+    input wire  [2:0]                   csr_op_i,
+    input wire  [DATA_WIDTH-1:0]        csr_data_i,
     output reg  [CSR_ADDR_WIDTH-1:0]    csr_raddr_o,
     input wire  [DATA_WIDTH-1:0]        csr_rdata_i,
     output reg  [CSR_ADDR_WIDTH-1:0]    csr_waddr_o,
@@ -43,17 +46,17 @@ module MEM (
         csr_raddr_o = inst_i[31:20];
         csr_waddr_o = inst_i[31:20];
         if (csr_op_i == 3'b001) begin   // CSRRW
-            csr_wdata_o = rf_rdata_a_i;
-            if (alu_y_i != 0) begin
-                csr_we_o = 1'b1;
-            end else begin
-                csr_we_o = 1'b0;
-            end
+            csr_wdata_o = csr_data_i;
+        //    if (alu_y_i != 0) begin
+            csr_we_o = 1'b1;
+        //    end else begin
+        //        csr_we_o = 1'b0;
+        //    end
         end else if (csr_op_i == 3'b010) begin   // CSRRS
-            csr_wdata_o = csr_rdata_i | rf_rdata_a_i;
+            csr_wdata_o = csr_rdata_i | csr_data_i;
             csr_we_o = 1'b1;
         end else if (csr_op_i == 3'b011) begin   // CSRRC
-            csr_wdata_o = csr_rdata_i & ~rf_rdata_a_i;
+            csr_wdata_o = csr_rdata_i & ~csr_data_i;
             csr_we_o = 1'b1;
         end else begin
             csr_wdata_o = csr_rdata_i;
