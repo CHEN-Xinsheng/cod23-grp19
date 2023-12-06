@@ -7,6 +7,8 @@ module mmu (
     // CPU interface
     input wire [`MODE_WIDTH-1:0]        mode_i,
     input wire satp_t                   satp_i,
+    input wire                          mstatus_sum_i,
+    input wire                          mstatus_mxr_i,
     input wire vaddr_t                  vaddr_i,  // virtual address
     output reg [ADDR_WIDTH-1:0]         paddr_o,  // physical address
     output reg                          ack_o,    // 仅当 ack_o == 1 时，CPU interface 的输出有效
@@ -157,11 +159,16 @@ always_ff @(posedge clk) begin
                         /* 5. Determine if the requested memory access is allowed by the pte.r, pte.w, pte.x, and pte.u bits, 
                             given the current privilege mode and the value of the SUM and MXR fields of the mstatus register. 
                             If not, stop and raise a page-fault exception corresponding to the original access type.*/
-                        // TODO: "the value of the SUM and MXR fields of the mstatus register"?
-                        if (   (read_en_i         && !read_pte.r)
+                        // TODO (DONE?): "the value of the SUM and MXR fields of the mstatus register"?
+                        if (   (!mstatus_mxr_i && read_en_i && !read_pte.r)
+                            || (mstatus_mxr_i  && read_en_i && !(read_pte.r || read_pte.x))
+                            /* (Ref: page 23) When MXR=0, only loads from pages marked readable (R=1 in Figure 4.18) will succeed.
+                                When MXR=1, loads from pages marked either readable or executable (R=1 or X=1) will succeed. */
                             || (write_en_i        && !read_pte.w)
                             || (exe_en_i          && !read_pte.x)
                             || (mode_i == `MODE_U && !read_pte.u)
+                            || (mode_i == `MODE_S && read_pre.u && !mstatus_sum_i)
+                            /* (Ref: page 23) When SUM=0, S-mode memory accesses to pages that are accessible by U-mode (U=1 in Figure 4.18) will fault. */
                             ) begin
                             raise_page_fault();
                         end else if (cur_level == 1 && read_pte.ppn0 != 0) begin
