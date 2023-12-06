@@ -15,19 +15,20 @@ localparam CSR_ADDR_WIDTH = 12;
 `define TYPE_U            `INSTR_TYPE_WIDTH'd5
 `define TYPE_J            `INSTR_TYPE_WIDTH'd6
 
-`define ALU_ADD    4'd1
-`define ALU_SUB    4'd2
-`define ALU_AND    4'd3
-`define ALU_OR     4'd4
-`define ALU_XOR    4'd5
-`define ALU_NEG    4'd6
-`define ALU_SLL    4'd7
-`define ALU_SRL    4'd8
-`define ALU_SRA    4'd9
-`define ALU_ROL    4'd10
-`define ALU_MIN    4'd11
-`define ALU_SBCLR  4'd12
-`define ALU_CTZ    4'd13
+`define ALU_OP_WIDTH      4
+`define ALU_ADD           `ALU_OP_WIDTH'd1
+`define ALU_SUB           `ALU_OP_WIDTH'd2
+`define ALU_AND           `ALU_OP_WIDTH'd3
+`define ALU_OR            `ALU_OP_WIDTH'd4
+`define ALU_XOR           `ALU_OP_WIDTH'd5
+`define ALU_NEG           `ALU_OP_WIDTH'd6
+`define ALU_SLL           `ALU_OP_WIDTH'd7
+`define ALU_SRL           `ALU_OP_WIDTH'd8
+`define ALU_SRA           `ALU_OP_WIDTH'd9
+`define ALU_ROL           `ALU_OP_WIDTH'd10
+`define ALU_MIN           `ALU_OP_WIDTH'd11
+`define ALU_SBCLR         `ALU_OP_WIDTH'd12
+`define ALU_CTZ           `ALU_OP_WIDTH'd13
 
 `define MODE_WIDTH  2
 `define MODE_M      `MODE_WIDTH'b11

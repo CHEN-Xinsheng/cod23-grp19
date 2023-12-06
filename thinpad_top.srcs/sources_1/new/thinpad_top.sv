@@ -463,11 +463,12 @@ module thinpad_top (
   pipeline_controller pipeline_controller (
     // .if_ack_i(wbm1_ack_i),
     .mem_ack_i(wbm0_ack_i),
-    .exe_mem1_mem_en_i(exe_mem1_mem_en),
+    .exe_mem1_mem_re_i(exe_mem1_mem_re),
+    .exe_mem1_mem_we_i(exe_mem1_mem_we),
 
     .id_rf_raddr_a_comb_i(id_rf_raddr_a_comb),
     .id_rf_raddr_b_comb_i(id_rf_raddr_b_comb),
-    .id_exe_mem_en_i(id_exe_mem_en),
+    .id_exe_mem_re_i(id_exe_mem_re),
     .id_exe_mem_we_i(id_exe_mem_we),
     .id_exe_rf_wen_i(id_exe_rf_wen),
     .id_exe_rf_waddr_i(id_exe_rf_waddr),
@@ -540,23 +541,24 @@ module thinpad_top (
     .clk(sys_clk),
     .rst(sys_rst),
 
-    .mode_i(csr_mode),
-    .satp_i(csr_satp),
-    .mstatus_sum_i(),  // TODO
-    .mstatus_mxr_i(),  // TODO
-    .vaddr_i(pc_vaddr),
-    .paddr_o(if1_if2_pc_paddr),
-    .ack_o(if_mmu_ack),
+    .mode_i                 (csr_mode),
+    .satp_i                 (csr_satp),
+    .mstatus_sum_i          (),  // TODO
+    .mstatus_mxr_i          (),  // TODO
+    .vaddr_i                (pc_vaddr),
+    .paddr_o                (if1_if2_pc_paddr),
+    .ack_o                  (if_mmu_ack),
 
-    .read_en_i(1'b0), 
-    .write_en_i(1'b0),
-    .exe_en_i(1'b1),
-    .if1_if2_pc_now(if1_if2_pc_now),
-    .load_page_fault_o    (),
-    .store_page_fault_o   (),
+    .enable_i               (1'b1),
+    .read_en_i              (1'b0),
+    .write_en_i             (1'b0),
+    .exe_en_i               (1'b1),
+    .if1_if2_pc_now         (if1_if2_pc_now),
+    .load_page_fault_o      (),
+    .store_page_fault_o     (),
     .instr_page_fault_o     (if1_exe_page_fault),
-    .load_access_fault_o  (),
-    .store_access_fault_o (),
+    .load_access_fault_o    (),
+    .store_access_fault_o   (),
     .instr_access_fault_o   (if1_exe_access_fault),
 
     .wb_cyc_o(wbm3_cyc_o),
@@ -614,32 +616,34 @@ module thinpad_top (
   ID ID (
     .clk(sys_clk),
     .rst(sys_rst),
-    .inst_i(if2_id_inst),
-    .inst_o(id_exe_inst),
-    .rf_raddr_a_o(id_exe_rf_raddr_a),
-    .rf_raddr_b_o(id_exe_rf_raddr_b),
-    .id_rf_raddr_a_comb(id_rf_raddr_a_comb),
-    .id_rf_raddr_b_comb(id_rf_raddr_b_comb),
-    .imm_type_o(id_exe_imm_type),
-    .alu_op_o(id_exe_alu_op),
-    .use_rs2_o(id_exe_use_rs2),
-    .mem_en_o(id_exe_mem_en),
-    .rf_wen_o(id_exe_rf_wen),
-    .rf_waddr_o(id_exe_rf_waddr),
-    .mem_we_o(id_exe_mem_we),
-    .mem_sel_o(id_exe_mem_sel),
-    .pc_now_i(if2_id_pc_now),
-    .pc_now_o(id_exe_pc_now),
-    .use_pc_o(id_exe_use_pc),
-    .jump_o(id_exe_jump),
-    .comp_op_o(id_exe_comp_op),
-    .csr_op_o(id_exe_csr_op),
-    .ecall_o(id_exe_ecall),
-    .ebreak_o(id_exe_ebreak),
-    .mret_o(id_exe_mret),
-    .fencei_o(fencei),
-    .stall_i(id_stall),
-    .bubble_i(if_bubble)
+
+    .inst_i                 (if2_id_inst),
+    .inst_o                 (id_exe_inst),
+    .rf_raddr_a_o           (id_exe_rf_raddr_a),
+    .rf_raddr_b_o           (id_exe_rf_raddr_b),
+    .id_rf_raddr_a_comb     (id_rf_raddr_a_comb),
+    .id_rf_raddr_b_comb     (id_rf_raddr_b_comb),
+    .imm_type_o             (id_exe_imm_type),
+    .alu_op_o               (id_exe_alu_op),
+    .use_rs2_o              (id_exe_use_rs2),
+    .rf_wen_o               (id_exe_rf_wen),
+    .rf_waddr_o             (id_exe_rf_waddr),
+    .mem_re_o               (id_exe_mem_re),
+    .mem_we_o               (id_exe_mem_we),
+    .mem_sel_o              (id_exe_mem_sel),
+    .pc_now_i               (if2_id_pc_now),
+    .pc_now_o               (id_exe_pc_now),
+    .use_pc_o               (id_exe_use_pc),
+    .jump_o                 (id_exe_jump),
+    .comp_op_o              (id_exe_comp_op),
+    .csr_op_o               (id_exe_csr_op),
+    .ecall_o                (id_exe_ecall),
+    .ebreak_o               (id_exe_ebreak),
+    .mret_o                 (id_exe_mret),
+    .fencei_o               (fencei),
+
+    .stall_i                (id_stall),
+    .bubble_i               (if_bubble)
   );
 
   /* ====================== ID/EXE regs ====================== */
@@ -656,7 +660,7 @@ module thinpad_top (
   logic [2:0] id_exe_imm_type;
   logic [3:0] id_exe_alu_op;
   logic id_exe_use_rs2;
-  logic id_exe_mem_en;
+  logic id_exe_mem_re;
   logic id_exe_mem_we;
   logic id_exe_rf_wen;
   logic [4:0] id_exe_rf_waddr;
@@ -689,6 +693,7 @@ module thinpad_top (
   EXE EXE (
     .clk(sys_clk),
     .rst(sys_rst),
+
     .rf_raddr_a_i(id_exe_rf_raddr_a),
     .rf_raddr_b_i(id_exe_rf_raddr_b),
     .rf_rdata_a_i(rf_rdata_a),
@@ -701,12 +706,12 @@ module thinpad_top (
     .alu_b_o(alu_b),
     .alu_y_i(alu_y),
     .alu_result_o(exe_mem1_alu_result),
-    .mem_en_i(id_exe_mem_en),
-    .mem_en_o(exe_mem1_mem_en),
     .rf_wen_i(id_exe_rf_wen),
     .rf_wen_o(exe_mem1_rf_wen),
     .rf_waddr_i(id_exe_rf_waddr),
     .rf_waddr_o(exe_mem1_rf_waddr),
+    .mem_re_i(id_exe_mem_re),
+    .mem_re_o(exe_mem1_mem_re),
     .mem_we_i(id_exe_mem_we),
     .mem_we_o(exe_mem1_mem_we),
     .mem_sel_i(id_exe_mem_sel),
@@ -747,10 +752,10 @@ module thinpad_top (
   /* ====================== EXE/MEM1 regs ====================== */
 
   logic [ADDR_WIDTH-1:0]      exe_mem1_pc_now;  // only for debug
-  logic                       exe_mem1_mem_en;
   logic                       exe_mem1_rf_wen;
   logic [REG_ADDR_WIDTH-1:0]  exe_mem1_rf_waddr;
   logic [DATA_WIDTH-1:0]      exe_mem1_alu_result;
+  logic                       exe_mem1_mem_re;
   logic                       exe_mem1_mem_we;
   logic [DATA_WIDTH/8-1:0]    exe_mem1_mem_sel;
   logic [DATA_WIDTH-1:0]      exe_mem1_mem_wdata;
@@ -768,22 +773,23 @@ module thinpad_top (
     .clk(sys_clk),
     .rst(sys_rst),
 
-    .mode_i(csr_mode),
-    .satp_i(csr_satp),
-    .mstatus_sum_i(),  // TODO
-    .mstatus_mxr_i(),  // TODO
-    .vaddr_i(exe_mem1_alu_result),
-    .paddr_o(mem1_mem2_paddr),
-    .ack_o(mem_mmu_ack),
+    .mode_i                 (csr_mode),
+    .satp_i                 (csr_satp),
+    .mstatus_sum_i          (),  // TODO
+    .mstatus_mxr_i          (),  // TODO
+    .vaddr_i                (exe_mem1_alu_result),
+    .paddr_o                (mem1_mem2_paddr),
+    .ack_o                  (mem_mmu_ack),
 
-    .read_en_i(1'b0), 
-    .write_en_i(1'b0),
-    .exe_en_i(1'b1),
-    .load_page_fault_o    (mem1_load_page_fault),
-    .store_page_fault_o   (mem1_store_page_fault),
+    .enable_i               (exe_mem1_mem_re | exe_mem1_mem_re),  // TODO: add trap_disable?
+    .read_en_i              (exe_mem1_mem_re),
+    .write_en_i             (exe_mem1_mem_we),
+    .exe_en_i               (1'b0),
+    .load_page_fault_o      (mem1_load_page_fault),
+    .store_page_fault_o     (mem1_store_page_fault),
     .instr_page_fault_o     (),
-    .load_access_fault_o  (mem1_load_access_fault),
-    .store_access_fault_o (mem1_store_access_fault),
+    .load_access_fault_o    (mem1_load_access_fault),
+    .store_access_fault_o   (mem1_store_access_fault),
     .instr_access_fault_o   (),
 
     .wb_cyc_o(wbm1_cyc_o),
@@ -797,10 +803,10 @@ module thinpad_top (
 
     // data direct pass
     .exe_mem1_pc_now      (exe_mem1_pc_now),  // only for debug
-    .exe_mem1_mem_en      (exe_mem1_mem_en),
     .exe_mem1_rf_wen      (exe_mem1_rf_wen),
     .exe_mem1_rf_waddr    (exe_mem1_rf_waddr),
     .exe_mem1_alu_result  (exe_mem1_alu_result),
+    .exe_mem1_mem_re      (exe_mem1_mem_re),
     .exe_mem1_mem_we      (exe_mem1_mem_we),
     .exe_mem1_mem_sel     (exe_mem1_mem_sel),
     .exe_mem1_mem_wdata   (exe_mem1_mem_wdata),
@@ -808,10 +814,10 @@ module thinpad_top (
     .exe_mem1_csr_op      (exe_mem1_csr_op),
 
     .mem1_mem2_pc_now     (mem1_mem2_pc_now),  // only for debug
-    .mem1_mem2_mem_en     (mem1_mem2_mem_en),
     .mem1_mem2_rf_wen     (mem1_mem2_rf_wen),
     .mem1_mem2_rf_waddr   (mem1_mem2_rf_waddr),
     .mem1_mem2_rf_wdata   (mem1_mem2_rf_wdata),
+    .mem1_mem2_mem_re     (mem1_mem2_mem_re),
     .mem1_mem2_mem_we     (mem1_mem2_mem_we),
     .mem1_mem2_mem_sel    (mem1_mem2_mem_sel),
     .mem1_mem2_mem_wdata  (mem1_mem2_mem_wdata),
@@ -824,10 +830,10 @@ module thinpad_top (
   logic [ADDR_WIDTH-1:0]      mem1_mem2_paddr;
 
   logic [ADDR_WIDTH-1:0]      mem1_mem2_pc_now;      // only for debug
-  logic                       mem1_mem2_mem_en;
   logic                       mem1_mem2_rf_wen;
   logic [REG_ADDR_WIDTH-1:0]  mem1_mem2_rf_waddr;
   logic [DATA_WIDTH-1:0]      mem1_mem2_rf_wdata;
+  logic                       mem1_mem2_mem_re;
   logic                       mem1_mem2_mem_we;
   logic [DATA_WIDTH/8-1:0]    mem1_mem2_mem_sel;
   logic [DATA_WIDTH-1:0]      mem1_mem2_mem_wdata;
@@ -870,15 +876,15 @@ module thinpad_top (
     .clk(sys_clk),
     .rst(sys_rst),
 
-    .mem_en_i(mem1_mem2_mem_en),
-    .mem_addr_i(mem1_mem2_paddr),
     .rf_wdata_i(mem1_mem2_rf_wdata),
     .rf_wen_i(mem1_mem2_rf_wen),
     .rf_waddr_i(mem1_mem2_rf_waddr),
     .rf_wdata_o(rf_wdata),
     .rf_wen_o(rf_we),
     .rf_waddr_o(rf_waddr),
+    .mem_re_i(mem1_mem2_mem_re),
     .mem_we_i(mem1_mem2_mem_we),
+    .mem_addr_i(mem1_mem2_paddr),
     .mem_sel_i(mem1_mem2_mem_sel),
     .mem_wdata_i(mem1_mem2_mem_wdata),
     .inst_i(mem1_mem2_inst),

@@ -5,15 +5,15 @@ module MEM (
     input wire                          clk,
     input wire                          rst,
 
-    input wire                          mem_en_i,
-    input wire [ADDR_WIDTH-1:0]         mem_addr_i,
     input wire [DATA_WIDTH-1:0]         rf_wdata_i,
     input wire                          rf_wen_i,
     input wire [REG_ADDR_WIDTH-1:0]     rf_waddr_i,
     output reg [DATA_WIDTH-1:0]         rf_wdata_o,
     output reg                          rf_wen_o,
     output reg [REG_ADDR_WIDTH-1:0]     rf_waddr_o,
+    input wire                          mem_re_i,
     input wire                          mem_we_i,
+    input wire [ADDR_WIDTH-1:0]         mem_addr_i,
     input wire [DATA_WIDTH/8-1:0]       mem_sel_i,
     input wire [ADDR_WIDTH-1:0]         mem_wdata_i,
 
@@ -77,16 +77,16 @@ module MEM (
                 rf_wdata_o <= 32'b0;
                 rf_wen_o <= 0;
                 rf_waddr_o <= 5'b0;
-                if (mem_en_i) begin
+                if (mem_re_i || mem_we_i) begin
                     wb_stb_o <= 1'b1;
                 end else begin
                     wb_stb_o <= 1'b0;
                 end
                 pc_now_o <= {ADDR_WIDTH{1'b0}};
             end else begin
-                if (mem_en_i) begin
+                if (mem_re_i || mem_we_i) begin
                     wb_stb_o <= 1'b0;
-                    if (mem_we_i == 0) begin
+                    if (mem_re_i) begin
                         if (wb_sel_o == 4'b1111) begin
                             rf_wdata_o <= wb_dat_i;
                         end else begin

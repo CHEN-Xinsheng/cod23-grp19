@@ -12,11 +12,11 @@ module ID (
     output wire [REG_ADDR_WIDTH-1:0]    id_rf_raddr_a_comb,
     output wire [REG_ADDR_WIDTH-1:0]    id_rf_raddr_b_comb,
     output reg  [`INSTR_TYPE_WIDTH-1:0] imm_type_o,
-    output reg  [3:0]                   alu_op_o,
+    output reg  [`ALU_OP_WIDTH-1:0]     alu_op_o,
     output reg                          use_rs2_o,
-    output reg                          mem_en_o,
     output reg                          rf_wen_o,
     output reg [REG_ADDR_WIDTH-1:0]     rf_waddr_o,
+    output reg                          mem_re_o,
     output reg                          mem_we_o,
     output reg [DATA_WIDTH/8-1:0]       mem_sel_o,
     input wire [ADDR_WIDTH-1:0]         pc_now_i,
@@ -58,11 +58,10 @@ module ID (
             imm_type_o <= `INSTR_TYPE_WIDTH'd0;
             alu_op_o <= 4'd0;
             use_rs2_o <= 1'b0;
-            mem_en_o <= 1'b0;
+            mem_re_o <= 1'b0;
             mem_we_o <= 1'b0;
             rf_wen_o <= 1'b0;
             rf_waddr_o <= 5'b0;
-            mem_we_o <= 1'b0;
             pc_now_o <= 32'h0;
             mem_sel_o <= 4'b0;
             use_pc_o <= 1'b0;
@@ -80,11 +79,10 @@ module ID (
             imm_type_o <= `INSTR_TYPE_WIDTH'd0;
             alu_op_o <= 4'd0;
             use_rs2_o <= 1'b0;
-            mem_en_o <= 1'b0;
+            mem_re_o <= 1'b0;
             mem_we_o <= 1'b0;
             rf_wen_o <= 1'b0;
             rf_waddr_o <= 5'b0;
-            mem_we_o <= 1'b0;
             pc_now_o <= 32'h0;
             comp_op_o <= 1'b0;
             use_pc_o <= 1'b0;
@@ -109,7 +107,7 @@ module ID (
                     use_rs2_o <= 0;
                     use_pc_o <= 0;
                     jump_o <= 1'b0;
-                    mem_en_o <= 1'b0;
+                    mem_re_o <= 1'b0;
                     mem_we_o <= 1'b0;
                     rf_wen_o <= 1;
                     rf_waddr_o <= rd;
@@ -138,7 +136,7 @@ module ID (
                     imm_type_o <= `TYPE_R;
                     use_rs2_o <= 1;
                     use_pc_o <= 0;
-                    mem_en_o <= 1'b0;
+                    mem_re_o <= 1'b0;
                     mem_we_o <= 1'b0;
                     rf_wen_o <= 1;
                     jump_o <= 1'b0;
@@ -180,7 +178,7 @@ module ID (
                     imm_type_o <= `TYPE_S;
                     use_rs2_o <= 0;
                     use_pc_o <= 0;
-                    mem_en_o <= 1'b1;
+                    mem_re_o <= 1'b0;
                     mem_we_o <= 1'b1;
                     rf_wen_o <= 0;
                     rf_waddr_o <= 5'b0;
@@ -200,12 +198,11 @@ module ID (
                     imm_type_o <= `TYPE_I;
                     use_rs2_o <= 0;
                     use_pc_o <= 0;
-                    mem_en_o <= 1'b1;
+                    mem_re_o <= 1'b1;
                     mem_we_o <= 1'b0;
                     rf_wen_o <= 1;
                     rf_waddr_o <= rd;
                     alu_op_o <= `ALU_ADD;
-                    mem_we_o <= 0;
                     jump_o <= 1'b0;
                     csr_op_o <= 3'b0;
                     if (funct3 == 3'b000) begin     // LB
@@ -221,7 +218,7 @@ module ID (
                     imm_type_o <= `TYPE_U;
                     use_rs2_o <= 0;
                     use_pc_o <= 0;
-                    mem_en_o <= 1'b0;
+                    mem_re_o <= 1'b0;
                     mem_we_o <= 1'b0;
                     rf_wen_o <= 1;
                     rf_waddr_o <= rd;
@@ -236,7 +233,7 @@ module ID (
                     // pc_now_o <= pc_now_i;
                     use_rs2_o <= 0;
                     use_pc_o <= 1;
-                    mem_en_o <= 1'b0;
+                    mem_re_o <= 1'b0;
                     mem_we_o <= 1'b0;
                     rf_wen_o <= 0;
                     jump_o <= 1'b0;
@@ -256,7 +253,7 @@ module ID (
                     use_rs2_o <= 0;
                     use_pc_o <= 1;
                     // pc_now_o <= pc_now_i;
-                    mem_en_o <= 1'b0;
+                    mem_re_o <= 1'b0;
                     mem_we_o <= 1'b0;
                     jump_o <= 1'b0;
                     rf_wen_o <= 1;
@@ -272,7 +269,7 @@ module ID (
                     use_pc_o <= 1;
                     // pc_now_o <= pc_now_i;
                     jump_o <= 1'b1;
-                    mem_en_o <= 1'b0;
+                    mem_re_o <= 1'b0;
                     mem_we_o <= 1'b0;
                     rf_wen_o <= 1;
                     rf_waddr_o <= rd;
@@ -286,7 +283,7 @@ module ID (
                     use_rs2_o <= 0;
                     use_pc_o <= 0;
                     // pc_now_o <= pc_now_i;
-                    mem_en_o <= 1'b0;
+                    mem_re_o <= 1'b0;
                     mem_we_o <= 1'b0;
                     rf_wen_o <= 1;
                     jump_o <= 1'b1;
@@ -311,7 +308,7 @@ module ID (
                             use_rs2_o <= 1;
                             use_pc_o <= 0;
                             jump_o <= 1'b0;
-                            mem_en_o <= 1'b0;
+                            mem_re_o <= 1'b0;
                             mem_we_o <= 1'b0;
                             rf_wen_o <= 1;
                             rf_waddr_o <= rd;
@@ -325,7 +322,7 @@ module ID (
                             use_rs2_o <= 1;
                             use_pc_o <= 0;
                             jump_o <= 1'b0;
-                            mem_en_o <= 1'b0;
+                            mem_re_o <= 1'b0;
                             mem_we_o <= 1'b0;
                             rf_wen_o <= 1;
                             rf_waddr_o <= rd;
@@ -339,7 +336,7 @@ module ID (
                             use_rs2_o <= 1;
                             use_pc_o <= 0;
                             jump_o <= 1'b0;
-                            mem_en_o <= 1'b0;
+                            mem_re_o <= 1'b0;
                             mem_we_o <= 1'b0;
                             rf_wen_o <= 1;
                             rf_waddr_o <= rd;
@@ -369,11 +366,10 @@ module ID (
                     jump_o <= 1'b0;
                     use_pc_o <= 1'b0;
                     comp_op_o <= 1'b0;
-                    mem_en_o <= 1'b0;
+                    mem_re_o <= 1'b0;
                     mem_we_o <= 1'b0;
                     rf_wen_o <= 1'b0;
                     rf_waddr_o <= 5'b0;
-                    mem_we_o <= 1'b0;
                     // pc_now_o <= 32'h0;
                     csr_op_o <= 3'b0;
                     fencei_o <= 1'b0;

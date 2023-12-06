@@ -4,11 +4,12 @@
 module pipeline_controller (
     // input wire if_ack_i,
     input wire                      mem_ack_i,
-    input wire                      exe_mem1_mem_en_i,
+    input wire                      exe_mem1_mem_re_i,
+    input wire                      exe_mem1_mem_we_i,
     
     input wire [REG_ADDR_WIDTH-1:0] id_rf_raddr_a_comb_i,
     input wire [REG_ADDR_WIDTH-1:0] id_rf_raddr_b_comb_i,
-    input wire                      id_exe_mem_en_i,
+    input wire                      id_exe_mem_re_i,
     input wire                      id_exe_mem_we_i,
     input wire                      id_exe_rf_wen_i,
     input wire [REG_ADDR_WIDTH-1:0] id_exe_rf_waddr_i,
@@ -36,7 +37,7 @@ module pipeline_controller (
 
     always_comb begin
         // MEM 正在请求总线
-        if (exe_mem1_mem_en_i == 1 && mem_ack_i == 0) begin
+        if ((exe_mem1_mem_re_i || exe_mem1_mem_we_i) && mem_ack_i == 0) begin
             {if_stall_o, id_stall_o, exe_stall_o, mem_stall_o}     = 4'b1110;
             {if_bubble_o, id_bubble_o, exe_bubble_o, mem_bubble_o} = 4'b0001;
         end else if (csr_branch_i == 1) begin
@@ -58,7 +59,7 @@ module pipeline_controller (
         /* version 2: data-forwarding */
         // 无法用旁路解决的数据冲突：load-use ([ID]use, [EXE]load)，则插入一个气泡到 ID/EXE
         end else if (
-               id_exe_mem_en_i && !id_exe_mem_we_i && id_exe_rf_wen_i && id_exe_rf_waddr_i != 0 
+               id_exe_mem_re_i && id_exe_rf_wen_i && id_exe_rf_waddr_i != 0 
            && (id_exe_rf_waddr_i == id_rf_raddr_a_comb_i || id_exe_rf_waddr_i == id_rf_raddr_b_comb_i)
         ) begin
             {if_stall_o, id_stall_o, exe_stall_o, mem_stall_o}     = 4'b1000;

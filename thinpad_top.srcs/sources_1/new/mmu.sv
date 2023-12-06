@@ -11,8 +11,9 @@ module mmu (
     input wire                          mstatus_mxr_i,
     input wire vaddr_t                  vaddr_i,  // virtual address
     output reg [ADDR_WIDTH-1:0]         paddr_o,  // physical address
-    output reg                          ack_o,    // 仅当 ack_o == 1 时，CPU interface output is valid
+    output reg                          ack_o,    // Only when ack_o == 1, the data that output to CPU interface is valid
 
+    input wire                          enable_i,   // use MMU (some instructions does not need to read/write MEM, in such case, let enable_i = 0 in MEM stage)
     input wire                          read_en_i,  // for MEM stage, load instruction
     input wire                          write_en_i, // for MEM stage, store instruction
     input wire                          exe_en_i,   // for IF stage
@@ -38,10 +39,10 @@ module mmu (
 
     // data direct pass (for MEM1/MEM2)
     input wire  [ADDR_WIDTH-1:0]        exe_mem1_pc_now,
-    input wire                          exe_mem1_mem_en,
     input wire                          exe_mem1_rf_wen,
     input wire  [REG_ADDR_WIDTH-1:0]    exe_mem1_rf_waddr,
     input wire  [DATA_WIDTH-1:0]        exe_mem1_alu_result,
+    input wire                          exe_mem1_mem_re,
     input wire                          exe_mem1_mem_we,
     input wire  [DATA_WIDTH/8-1:0]      exe_mem1_mem_sel,
     input wire  [DATA_WIDTH-1:0]        exe_mem1_mem_wdata,
@@ -49,10 +50,10 @@ module mmu (
     input wire  [2:0]                   exe_mem1_csr_op,
 
     output reg  [ADDR_WIDTH-1:0]        mem1_mem2_pc_now,      // only for debug
-    output reg                          mem1_mem2_mem_en,
     output reg                          mem1_mem2_rf_wen,
     output reg  [REG_ADDR_WIDTH-1:0]    mem1_mem2_rf_waddr,
     output reg  [DATA_WIDTH-1:0]        mem1_mem2_rf_wdata,
+    output reg                          mem1_mem2_mem_re,
     output reg                          mem1_mem2_mem_we,
     output reg  [DATA_WIDTH/8-1:0]      mem1_mem2_mem_sel,
     output reg  [DATA_WIDTH-1:0]        mem1_mem2_mem_wdata,
@@ -85,7 +86,7 @@ assign pte_addr = (cur_level == 1'b1)
 
 // wishbone interface
 assign wb_stb_o = wb_cyc_o;
-assign wb_adr_o = pte_addr[ADDR_WIDTH-1:0];  // “拼出来�? 34 佝物睆地�?坯以直接去掉�?高的两佝当作 32 佝地�?进行使用。�??
+assign wb_adr_o = pte_addr[ADDR_WIDTH-1:0];  // "拼出来的 34 位物理地址可以直接去掉最高的两位当作 32 位地址进行使用。"
 assign wb_dat_o = {DATA_WIDTH{1'b0}};
 assign wb_sel_o = {{DATA_WIDTH/8}{1'b0}};
 assign wb_we_o  = 1'b0;
@@ -171,7 +172,7 @@ always_ff @(posedge clk) begin
                             || (write_en_i        && !read_pte.w)
                             || (exe_en_i          && !read_pte.x)
                             || (mode_i == `MODE_U && !read_pte.u)
-                            || (mode_i == `MODE_S && read_pre.u && !mstatus_sum_i)
+                            || (mode_i == `MODE_S && read_pte.u && !mstatus_sum_i)
                             /* (Ref: page 23) When SUM=0, S-mode memory accesses to pages that are accessible by U-mode (U=1 in Figure 4.18) will fault. */
                             ) begin
                             raise_page_fault();
@@ -299,7 +300,7 @@ task output_other_data();
     if1_if2_pc_now        <= vaddr_i;
     // MEM1/MEM2
     mem1_mem2_pc_now      <= exe_mem1_pc_now;      // only for debug
-    mem1_mem2_mem_en      <= exe_mem1_mem_en;
+    mem1_mem2_mem_re      <= exe_mem1_mem_re;
     mem1_mem2_rf_wen      <= exe_mem1_rf_wen;
     mem1_mem2_rf_waddr    <= exe_mem1_rf_waddr;
     mem1_mem2_rf_wdata    <= exe_mem1_alu_result;  // only for debug

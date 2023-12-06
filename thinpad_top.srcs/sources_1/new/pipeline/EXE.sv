@@ -19,12 +19,12 @@ module EXE (
     input wire [DATA_WIDTH-1:0]         alu_y_i,
     output reg [DATA_WIDTH-1:0]         alu_result_o,
 
-    input wire                          mem_en_i,
-    output reg                          mem_en_o,
     input wire                          rf_wen_i,
     output reg                          rf_wen_o,
     input wire [REG_ADDR_WIDTH-1:0]     rf_waddr_i,
     output reg [REG_ADDR_WIDTH-1:0]     rf_waddr_o,
+    input wire                          mem_re_i,
+    output reg                          mem_re_o,
     input wire                          mem_we_i,
     output reg                          mem_we_o,
     input wire [DATA_WIDTH/8-1:0]       mem_sel_i,
@@ -103,7 +103,7 @@ module EXE (
     always_ff @(posedge clk) begin
         if (rst) begin
             alu_result_o <= 32'b0;
-            mem_en_o <= 0;
+            mem_re_o <= 0;
             rf_wen_o <= 0;
             rf_waddr_o <= 5'b0;
             mem_we_o <= 0;
@@ -115,7 +115,7 @@ module EXE (
         end else if (stall_i) begin
         end else if (bubble_i) begin
             alu_result_o <= 32'b0;
-            mem_en_o <= 0;
+            mem_re_o <= 0;
             rf_wen_o <= 0;
             rf_waddr_o <= 5'b0;
             mem_we_o <= 0;
@@ -132,7 +132,7 @@ module EXE (
             end else begin
                 alu_result_o <= alu_y_i;
             end
-            mem_en_o <= mem_en_i;
+            mem_re_o <= mem_re_i;
             rf_wen_o <= rf_wen_i;
             rf_waddr_o <= rf_waddr_i;
             mem_we_o <= mem_we_i;
