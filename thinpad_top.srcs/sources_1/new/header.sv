@@ -37,6 +37,8 @@ localparam CSR_ADDR_WIDTH = 12;
 `define MTIME_ADDR    32'h200bff8
 `define MTIMECMP_ADDR 32'h2004000
 
+`define CSR_OP_WIDTH  3
+
 typedef struct packed {
   logic [29:0] base;
   logic [1:0] mode; 

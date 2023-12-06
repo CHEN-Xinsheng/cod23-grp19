@@ -548,14 +548,14 @@ module thinpad_top (
     .page_fault_o(if1_if2_page_fault),
     .access_fault_o(if1_if2_access_fault),
 
-    .wb_cyc_o(wbm2_cyc_o),
-    .wb_stb_o(wbm2_stb_o),
-    .wb_ack_i(wbm2_ack_i),
-    .wb_adr_o(wbm2_adr_o),
-    .wb_dat_o(wbm2_dat_o),
-    .wb_dat_i(wbm2_dat_i),
-    .wb_sel_o(wbm2_sel_o),
-    .wb_we_o(wbm2_we_o)
+    .wb_cyc_o(wbm3_cyc_o),
+    .wb_stb_o(wbm3_stb_o),
+    .wb_ack_i(wbm3_ack_i),
+    .wb_adr_o(wbm3_adr_o),
+    .wb_dat_o(wbm3_dat_o),
+    .wb_dat_i(wbm3_dat_i),
+    .wb_sel_o(wbm3_sel_o),
+    .wb_we_o(wbm3_we_o)
   );
 
   logic if1_if2_page_fault;
@@ -572,14 +572,6 @@ module thinpad_top (
     .fence_i(fencei),
     .pc_i(if1_if2_pc_paddr),
     .enable_i(1'b1),
-    .wb_cyc_o(wbm1_cyc_o),
-    .wb_stb_o(wbm1_stb_o),
-    .wb_ack_i(wbm1_ack_i),
-    .wb_adr_o(wbm1_adr_o),
-    .wb_dat_o(wbm1_dat_o),
-    .wb_dat_i(wbm1_dat_i),
-    .wb_sel_o(wbm1_sel_o),
-    .wb_we_o(wbm1_we_o),
     .icache_ack_o(icache_ack),
     .inst_o(if2_id_inst),
     .pc_now_i(if1_if2_pc_now),
@@ -589,7 +581,16 @@ module thinpad_top (
     .page_fault_o(if2_id_page_fault),
     .access_fault_o(if2_id_access_fault),
     .stall_i(),
-    .bubble_i()
+    .bubble_i(),
+
+    .wb_cyc_o(wbm2_cyc_o),
+    .wb_stb_o(wbm2_stb_o),
+    .wb_ack_i(wbm2_ack_i),
+    .wb_adr_o(wbm2_adr_o),
+    .wb_dat_o(wbm2_dat_o),
+    .wb_dat_i(wbm2_dat_i),
+    .wb_sel_o(wbm2_sel_o),
+    .wb_we_o(wbm2_we_o)
   );
 
   logic [31:0] if2_id_inst;
@@ -794,14 +795,14 @@ module thinpad_top (
     .page_fault_o(mem1_page_fault),
     .access_fault_o(mem1_access_fault),
 
-    .wb_cyc_o(wbm3_cyc_o),
-    .wb_stb_o(wbm3_stb_o),
-    .wb_ack_i(wbm3_ack_i),
-    .wb_adr_o(wbm3_adr_o),
-    .wb_dat_o(wbm3_dat_o),
-    .wb_dat_i(wbm3_dat_i),
-    .wb_sel_o(wbm3_sel_o),
-    .wb_we_o(wbm3_we_o),
+    .wb_cyc_o(wbm1_cyc_o),
+    .wb_stb_o(wbm1_stb_o),
+    .wb_ack_i(wbm1_ack_i),
+    .wb_adr_o(wbm1_adr_o),
+    .wb_dat_o(wbm1_dat_o),
+    .wb_dat_i(wbm1_dat_i),
+    .wb_sel_o(wbm1_sel_o),
+    .wb_we_o(wbm1_we_o),
 
     // data direct pass
     .exe_mem1_pc_now      (exe_mem1_pc_now),  // only for debug

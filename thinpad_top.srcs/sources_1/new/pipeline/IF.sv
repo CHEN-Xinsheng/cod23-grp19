@@ -1,14 +1,15 @@
 `include "../header.sv"
 
 module IF (
-    input wire clk,
-    input wire rst,
-    output reg [31:0] pc_o,
-    input wire branch_taken_i,
-    input wire [31:0] pc_pred_i,
-    input wire [31:0] pc_true_i,
-    input wire stall_i,
-    input wire bubble_i
+    input wire                  clk,
+    input wire                  rst,
+
+    output reg [DATA_WIDTH-1:0] pc_o,
+    input wire                  branch_taken_i,
+    input wire [DATA_WIDTH-1:0] pc_pred_i,
+    input wire [DATA_WIDTH-1:0] pc_true_i,
+    input wire                  stall_i,
+    input wire                  bubble_i
 );
     
     reg [ADDR_WIDTH-1:0] pc;

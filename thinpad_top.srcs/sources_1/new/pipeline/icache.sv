@@ -12,13 +12,6 @@ module icache # (
     input wire[31:0] pc_i,
     input wire enable_i,
 
-    output reg wb_cyc_o,
-    output reg wb_stb_o,
-    input wire wb_ack_i,
-    output reg [ADDR_WIDTH-1:0] wb_adr_o,
-    output reg [DATA_WIDTH-1:0] wb_dat_o,
-    input wire [DATA_WIDTH-1:0] wb_dat_i,
-    output reg [DATA_WIDTH/8-1:0] wb_sel_o,
     output reg wb_we_o,
     output reg [DATA_WIDTH-1:0] inst_o,
     output reg icache_ack_o,
@@ -29,7 +22,15 @@ module icache # (
     output reg page_fault_o,
     output reg access_fault_o,
     input wire stall_i,
-    input wire bubble_i
+    input wire bubble_i,
+
+    output reg wb_cyc_o,
+    output reg wb_stb_o,
+    input wire wb_ack_i,
+    output reg [ADDR_WIDTH-1:0] wb_adr_o,
+    output reg [DATA_WIDTH-1:0] wb_dat_o,
+    input wire [DATA_WIDTH-1:0] wb_dat_i,
+    output reg [DATA_WIDTH/8-1:0] wb_sel_o
 );
 
     typedef enum logic { 
