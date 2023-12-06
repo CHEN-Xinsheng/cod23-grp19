@@ -235,40 +235,73 @@ always_ff @(posedge clk) begin
             pc_next_o <= 32'h0;
             branch_o <= 1'b0;
             if (we_i) begin
-                case(waddr_i)
-                    12'h305: mtvec <= wdata_i;      //
-                    12'h340: mscratch <= wdata_i;
-                    12'h341: mepc <= {wdata_i[31:2], 2'b0};
-                    12'h342: mcause <= wdata_i;
-                    12'h300: begin
-                        mstatus <= wdata_i;
-                    end
-                    12'h304: begin
-                        mie <= wdata_i;
-                    end
-                    12'h344: begin
-                        mip <= wdata_i;
-                    end
-                    12'hf14: mhartid <= wdata_i;
-                    12'h303: mideleg <= wdata_i;
-                    12'h302: medeleg <= wdata_i;
-                    12'h343: mtval <= wdata_i;
-                    12'h100: begin
-                        mstatus <= wdata_i;
-                    end
-                    12'h141: sepc <= {wdata_i[31:2], 2'b0};
-                    12'h142: scause <= wdata_i;
-                    12'h143: stval <= wdata_i;
-                    12'h105: stvec <= wdata_i;      //
-                    12'h140: sscratch <= wdata_i;
-                    12'h144: begin
-                        mip <= wdata_i;        //
-                    end
-                    12'h104: begin
-                        mie <= wdata_i;        //
-                    end
-                    12'h180: satp <= wdata_i;
-                endcase
+                if (mode == `MODE_M) begin
+                    case(waddr_i)
+                        12'h305: mtvec <= wdata_i;      //
+                        12'h340: mscratch <= wdata_i;
+                        12'h341: mepc <= {wdata_i[31:2], 2'b0};
+                        12'h342: mcause <= wdata_i;
+                        12'h300: begin
+                            mstatus.mpp <= wdata_i[12:11];
+                            mstatus.mpie <= wdata_i[7];
+                            mstatus.mie <= wdata_i[3];
+                            mstatus.sum <= wdata_i[18];
+                            mstatus.spp <= wdata_i[8];
+                            mstatus.spie <= wdata_i[5];
+                            mstatus.sie <= wdata_i[1];
+                        end
+                        12'h304: begin
+                            mie.mtie <= wdata_i[7];
+                            mie.stie <= wdata_i[5];
+                        end
+                        12'h344: begin
+                            mip.stip <= wdata_i[5];
+                        end
+                        12'hf14: mhartid <= wdata_i;
+                        12'h303: mideleg <= wdata_i;
+                        12'h302: medeleg <= wdata_i;
+                        12'h343: mtval <= wdata_i;
+                        12'h100: begin
+                            mstatus.sum <= wdata_i[18];
+                            mstatus.spp <= wdata_i[8];
+                            mstatus.spie <= wdata_i[5];
+                            mstatus.sie <= wdata_i[1];
+                        end
+                        12'h141: sepc <= {wdata_i[31:2], 2'b0};
+                        12'h142: scause <= wdata_i;
+                        12'h143: stval <= wdata_i;
+                        12'h105: stvec <= wdata_i;      //
+                        12'h140: sscratch <= wdata_i;
+                        12'h144: begin
+                            mip.stip <= wdata_i[5];
+                        end
+                        12'h104: begin
+                            mie.stie <= wdata_i[5];
+                        end
+                        12'h180: satp <= wdata_i;
+                    endcase
+                end else if (mode == `MODE_S) begin
+                    case(waddr_i)
+                        12'h100: begin
+                            mstatus.sum <= wdata_i[18];
+                            mstatus.spp <= wdata_i[8];
+                            mstatus.spie <= wdata_i[5];
+                            mstatus.sie <= wdata_i[1];
+                        end
+                        12'h141: sepc <= {wdata_i[31:2], 2'b0};
+                        12'h142: scause <= wdata_i;
+                        12'h143: stval <= wdata_i;
+                        12'h105: stvec <= wdata_i;      //
+                        12'h140: sscratch <= wdata_i;
+                        12'h144: begin
+                            mip.stip <= wdata_i[5];
+                        end
+                        12'h104: begin
+                            mie.stie <= wdata_i[5];
+                        end
+                        12'h180: satp <= wdata_i;
+                    endcase
+                end
             end
         end
     end
