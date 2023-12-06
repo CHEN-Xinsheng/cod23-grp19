@@ -35,6 +35,8 @@ module pipeline_controller (
     output reg                      mem_bubble_o
 );
 
+    // TODO：pipeline_controller 需要保证 MEM1-EXE, MEM2-EXE 的指令都不是 load-use 关系
+
     always_comb begin
         // MEM 正在请求总线
         if ((exe_mem1_mem_re_i || exe_mem1_mem_we_i) && mem_ack_i == 0) begin

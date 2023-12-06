@@ -45,6 +45,8 @@ module EXE (
     // data forwarding
     input wire [REG_ADDR_WIDTH-1:0]     exe_mem1_rf_waddr_i,
     input wire [ADDR_WIDTH-1:0]         exe_mem1_alu_result_i,
+    input wire [REG_ADDR_WIDTH-1:0]     mem1_mem2_rf_waddr_i,
+    input wire [ADDR_WIDTH-1:0]         mem1_mem2_rf_wdata_i,
 
     // debug
     output reg [ADDR_WIDTH-1:0]         pc_now_o
@@ -52,13 +54,15 @@ module EXE (
 
     wire [DATA_WIDTH-1:0] rf_rdata_a_forwarded;
     wire [DATA_WIDTH-1:0] rf_rdata_b_forwarded;
-    assign rf_rdata_a_forwarded = (exe_mem1_rf_waddr_i != 0 && (exe_mem1_rf_waddr_i == rf_raddr_a_i)) 
-                                    ? exe_mem1_alu_result_i  // 这种情况下 MEM-EXE 的指令不是 load-use 关系，这一点由 pipeline_controller 保证
-                                    : rf_rdata_a_i;         // 对于 WB 正在写寄存器的情况，已经在 regfile 中实现了相应的旁路
-    assign rf_rdata_b_forwarded = (exe_mem1_rf_waddr_i != 0 && (exe_mem1_rf_waddr_i == rf_raddr_b_i)) 
-                                    ? exe_mem1_alu_result_i  // 这种情况下 MEM-EXE 的指令不是 load-use 关系，这一点由 pipeline_controller 保证
-                                    : rf_rdata_b_i;         // 对于 WB 正在写寄存器的情况，已经在 regfile 中实现了相应的旁路
-
+    assign rf_rdata_a_forwarded = (exe_mem1_rf_waddr_i != 0  && (exe_mem1_rf_waddr_i  == rf_raddr_a_i)) ? exe_mem1_alu_result_i :
+                                  (mem1_mem2_rf_waddr_i != 0 && (mem1_mem2_rf_waddr_i == rf_raddr_a_i)) ? mem1_mem2_rf_wdata_i :
+                                   rf_rdata_a_i
+    assign rf_rdata_a_forwarded = (exe_mem1_rf_waddr_i != 0  && (exe_mem1_rf_waddr_i  == rf_raddr_b_i)) ? exe_mem1_alu_result_i :
+                                  (mem1_mem2_rf_waddr_i != 0 && (mem1_mem2_rf_waddr_i == rf_raddr_b_i)) ? mem1_mem2_rf_wdata_i :
+                                   rf_rdata_b_i
+    /* MEM1-EXE, MEM2-EXE 的指令都不是 load-use 关系，这一点由 pipeline_controller 保证 */
+    /* 对于 WB 正在写寄存器的情况，已经在 regfile 中实现了相应的旁路 */
+    /* 目前的实现中，如果有 CSR 指令进入流水线，则暂停 IF，即 CSR 指令后不会再有其它任何指令，所以不需要考虑 CSR 读写指令修改了 rs1, rs2 的情况 */
 
     always_comb begin
         if (use_pc_i) begin
