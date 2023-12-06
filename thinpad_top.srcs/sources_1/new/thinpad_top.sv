@@ -440,8 +440,16 @@ module thinpad_top (
     .time_interrupt_o(time_interrupt)
   );
 
-  logic [3:0] stall;
-  logic [3:0] bubble;
+  // logic [3:0] stall;
+  // logic [3:0] bubble;
+  logic if_stall;
+  logic id_stall;
+  logic exe_stall;
+  logic mem_stall;
+  logic if_bubble;
+  logic id_bubble;
+  logic exe_bubble;
+  logic mem_bubble;
 
   logic [4:0] id_rf_raddr_a_comb;
   logic [4:0] id_rf_raddr_b_comb;
@@ -470,8 +478,16 @@ module thinpad_top (
     .exe_branch_comb_i(exe_branch_comb),
     .csr_branch_i(csr_branch),
 
-    .stall_o(stall),
-    .bubble_o(bubble)
+    // .stall_o(stall),
+    // .bubble_o(bubble)
+    .if_stall_o(if_stall),
+    .id_stall_o(id_stall),
+    .exe_stall_o(exe_stall),
+    .mem_stall_o(mem_stall),
+    .if_bubble_o(if_bubble),
+    .id_bubble_o(id_bubble),
+    .exe_bubble_o(exe_bubble),
+    .mem_bubble_o(mem_bubble)
   );
 
   logic fencei;
@@ -524,8 +540,8 @@ module thinpad_top (
     .icache_ack_i(icache_ack),
     .inst_i(icache_inst),
     .pc_o(icache_pc_vaddr),
-    .stall_i(stall[3]),
-    .bubble_i(bubble[3])
+    .stall_i(if_stall),
+    .bubble_i(if_bubble)
   );
 
   logic page_fault;
@@ -642,8 +658,8 @@ module thinpad_top (
     .ebreak_o(id_exe_ebreak),
     .mret_o(id_exe_mret),
     .fencei_o(fencei),
-    .stall_i(stall[2]),
-    .bubble_i(bubble[2])
+    .stall_i(id_stall),
+    .bubble_i(if_bubble)
   );
 
   logic [4:0]  rf_waddr;
@@ -730,8 +746,8 @@ module thinpad_top (
     .exe_mem1_alu_result_i(exe_mem1_alu_result),
 
     // stall & bubble
-    .stall_i(stall[1]),
-    .bubble_i(bubble[1]),
+    .stall_i(exe_stall),
+    .bubble_i(exe_bubble),
 
     // debug
     .pc_now_o(exe_mem1_pc_now)
@@ -864,8 +880,8 @@ module thinpad_top (
     .mem_sel_i(mem1_mem2_mem_sel),
     .mem_wdata_i(mem1_mem2_mem_wdata),
 
-    .stall_i(stall[0]),
-    .bubble_i(bubble[0]),
+    .stall_i(mem_stall),
+    .bubble_i(mem_bubble),
 
     .wb_cyc_o(wbm0_cyc_o),
     .wb_stb_o(wbm0_stb_o),
