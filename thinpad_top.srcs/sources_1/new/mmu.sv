@@ -130,25 +130,29 @@ always_ff @(posedge clk) begin
     end else begin
         casez (state) 
             IDLE: begin
-                if (direct_trans) begin
-                    if (!paddr_valid(vaddr_i)) begin
-                        raise_access_fault();
+                if (enable_i) begin
+                    // do not translate (i.e., direct translatation)
+                    if (direct_trans) begin
+                        if (!paddr_valid(vaddr_i)) begin
+                            raise_access_fault();
+                        end else begin
+                            ack_paddr(vaddr_i);
+                        end
+                    // need translation (vaddr -> paddr)
                     end else begin
-                        ack_paddr(vaddr_i);
-                    end
-                end else begin
-                    if (!paddr_valid(pte_addr[ADDR_WIDTH-1:0])) begin
-                        raise_access_fault();
-                    end else if (tlb_hit) begin
-                        ack_paddr_in_tlb();
-                    end else begin
-                        // CPU interface
-                        ack_o <= 1'b0;
-                        // wishbone interface
-                        wb_cyc_o <= 1'b1;
-                        // inner data
-                        state <= FETCH_PTE;
-                        cur_level <= 1'b1;
+                        if (!paddr_valid(pte_addr[ADDR_WIDTH-1:0])) begin
+                            raise_access_fault();
+                        end else if (tlb_hit) begin
+                            ack_paddr_in_tlb();
+                        end else begin
+                            // CPU interface
+                            ack_o <= 1'b0;
+                            // wishbone interface
+                            wb_cyc_o <= 1'b1;
+                            // inner data
+                            state <= FETCH_PTE;
+                            cur_level <= 1'b1;
+                        end
                     end
                 end
             end
