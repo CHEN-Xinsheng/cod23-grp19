@@ -775,6 +775,9 @@ module thinpad_top (
 
   /* ====================== MEM1 ====================== */
   logic                       mem_mmu_ack;
+  logic                       mem1_page_fault;
+  logic                       mem1_access_fault;
+
   mmu mem_mmu (
     .clk(sys_clk),
     .rst(sys_rst),

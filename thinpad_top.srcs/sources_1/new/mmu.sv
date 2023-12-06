@@ -54,13 +54,6 @@ module mmu (
 wire direct_trans;
 assign direct_trans = (mode_i == `MODE_M || satp_i.mode == 1'b0);
 
-// wishbone interface
-assign wb_stb_o = wb_cyc_o;
-assign wb_adr_o = pte_addr[ADDR_WIDTH-1:0];  // “拼出来的 34 位物理地址可以直接去掉最高的两位当作 32 位地址进行使用。”
-assign wb_dat_o = {DATA_WIDTH{1'b0}};
-assign wb_sel_o = {{DATA_WIDTH/8}{1'b0}};
-assign wb_we_o  = 1'b0;
-
 pte_t read_pte;
 assign read_pte = pte_t'(wb_dat_i);
 // Ref: 4.3.2 Virtual Address Translation Process
@@ -70,6 +63,13 @@ wire [33:0] pte_addr;
 assign pte_addr = (cur_level == 1'b1) 
                     ? (satp_i.ppn << 12)                   + (vaddr_i.vpn1 << 2)
                     : ({lv1_pte.ppn1, lv1_pte.ppn0} << 12) + (vaddr_i.vpn0 << 2);
+
+// wishbone interface
+assign wb_stb_o = wb_cyc_o;
+assign wb_adr_o = pte_addr[ADDR_WIDTH-1:0];  // “拼出来的 34 位物理地址可以直接去掉最高的两位当作 32 位地址进行使用。”
+assign wb_dat_o = {DATA_WIDTH{1'b0}};
+assign wb_sel_o = {{DATA_WIDTH/8}{1'b0}};
+assign wb_we_o  = 1'b0;
 
 enum logic [2:0] {
     IDLE,

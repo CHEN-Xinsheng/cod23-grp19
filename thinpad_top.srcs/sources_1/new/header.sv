@@ -5,13 +5,15 @@
 localparam DATA_WIDTH     = 32;
 localparam ADDR_WIDTH     = 32;
 localparam REG_ADDR_WIDTH = 5;
+localparam CSR_ADDR_WIDTH = 12;
 
-`define TYPE_R 3'd1
-`define TYPE_I 3'd2
-`define TYPE_S 3'd3
-`define TYPE_B 3'd4
-`define TYPE_U 3'd5
-`define TYPE_J 3'd6
+`define INSTR_TYPE_WIDTH  3
+`define TYPE_R            `INSTR_TYPE_WIDTH'd1
+`define TYPE_I            `INSTR_TYPE_WIDTH'd2
+`define TYPE_S            `INSTR_TYPE_WIDTH'd3
+`define TYPE_B            `INSTR_TYPE_WIDTH'd4
+`define TYPE_U            `INSTR_TYPE_WIDTH'd5
+`define TYPE_J            `INSTR_TYPE_WIDTH'd6
 
 `define ALU_ADD    4'd1
 `define ALU_SUB    4'd2
@@ -152,7 +154,7 @@ typedef struct packed {
   |     12     |    10    |     12     |
  */
 
-localparam N_TLB_ENTRY = 32;
+localparam N_TLB_ENTRY     = 32;
 localparam TLB_INDEX_WIDTH = 5;
 localparam TLB_TAG_WIDTH   = 32-12-TLB_INDEX_WIDTH;
 /* virtual address:

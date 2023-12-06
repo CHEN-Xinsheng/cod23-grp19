@@ -10,7 +10,7 @@ module ID (
     output reg [4:0] rf_raddr_b_o,
     output wire [4:0] id_rf_raddr_a_comb,
     output wire [4:0] id_rf_raddr_b_comb,
-    output reg [2:0] imm_type_o,
+    output reg [`INSTR_TYPE_WIDTH-1:0] imm_type_o,
     output reg [3:0] alu_op_o,
     output reg use_rs2_o,
     output reg mem_en_o,
@@ -54,7 +54,7 @@ module ID (
             inst_o <= 32'h0;
             rf_raddr_a_o <= 5'd0;
             rf_raddr_b_o <= 5'd0;
-            imm_type_o <= 3'd0;
+            imm_type_o <= `INSTR_TYPE_WIDTH'd0;
             alu_op_o <= 4'd0;
             use_rs2_o <= 1'b0;
             mem_en_o <= 1'b0;
@@ -76,7 +76,7 @@ module ID (
             inst_o <= 32'h0;
             rf_raddr_a_o <= 5'd0;
             rf_raddr_b_o <= 5'd0;
-            imm_type_o <= 3'd0;
+            imm_type_o <= `INSTR_TYPE_WIDTH'd0;
             alu_op_o <= 4'd0;
             use_rs2_o <= 1'b0;
             mem_en_o <= 1'b0;
@@ -306,7 +306,7 @@ module ID (
                         3'b011: begin   // CSRRC
                             rf_raddr_a_o <= rs1;
                             rf_raddr_b_o <= 5'b0;
-                            imm_type_o <= 3'd0;
+                            imm_type_o <= `INSTR_TYPE_WIDTH'd0;
                             use_rs2_o <= 1;
                             use_pc_o <= 0;
                             jump_o <= 1'b0;
@@ -320,7 +320,7 @@ module ID (
                         3'b010: begin   // CSRRS
                             rf_raddr_a_o <= rs1;
                             rf_raddr_b_o <= 5'b0;
-                            imm_type_o <= 3'd0;
+                            imm_type_o <= `INSTR_TYPE_WIDTH'd0;
                             use_rs2_o <= 1;
                             use_pc_o <= 0;
                             jump_o <= 1'b0;
@@ -334,7 +334,7 @@ module ID (
                         3'b001: begin   // CSRRW
                             rf_raddr_a_o <= rs1;
                             rf_raddr_b_o <= 5'b0;
-                            imm_type_o <= 3'd0;
+                            imm_type_o <= `INSTR_TYPE_WIDTH'd0;
                             use_rs2_o <= 1;
                             use_pc_o <= 0;
                             jump_o <= 1'b0;
@@ -362,7 +362,7 @@ module ID (
                     inst_o <= 32'h0;
                     rf_raddr_a_o <= 5'd0;
                     rf_raddr_b_o <= 5'd0;
-                    imm_type_o <= 3'd0;
+                    imm_type_o <= `INSTR_TYPE_WIDTH'd0;
                     alu_op_o <= 4'd0;
                     use_rs2_o <= 1'b0;
                     jump_o <= 1'b0;

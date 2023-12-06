@@ -2,54 +2,55 @@
 
 
 module EXE (
-    input wire clk,
-    input wire rst,
-    input wire [4:0] rf_raddr_a_i,
-    input wire [4:0] rf_raddr_b_i,
-    input wire [31:0] rf_rdata_a_i,
-    input wire [31:0] rf_rdata_b_i,
-    input wire [31:0] inst_i,
-    input wire [2:0] imm_type_i,
-    input wire use_rs2_i,
+    input wire                          clk,
+    input wire                          rst,
 
-    output reg [31:0] alu_a_o,
-    output reg [31:0] alu_b_o,
-    input wire [31:0] alu_y_i,
-    output reg [31:0] alu_result_o,
+    input wire [REG_ADDR_WIDTH-1:0]     rf_raddr_a_i,
+    input wire [REG_ADDR_WIDTH-1:0]     rf_raddr_b_i,
+    input wire [DATA_WIDTH-1:0]         rf_rdata_a_i,
+    input wire [DATA_WIDTH-1:0]         rf_rdata_b_i,
+    input wire [DATA_WIDTH-1:0]         inst_i,
+    input wire [`INSTR_TYPE_WIDTH-1:0]  imm_type_i,
+    input wire                          use_rs2_i,
 
-    input wire mem_en_i,
-    output reg mem_en_o,
-    input wire rf_wen_i,
-    output reg rf_wen_o,
-    input wire [4:0] rf_waddr_i,
-    output reg [4:0] rf_waddr_o,
-    input wire mem_we_i,
-    output reg mem_we_o,
-    input wire [3:0] mem_sel_i,
-    output reg [3:0] mem_sel_o,
-    output reg [31:0] mem_wdata_o,
-    input wire [31:0] pc_now_i,
-    output reg [31:0] pc_next_o,
-    input wire use_pc_i,
-    input wire comp_op_i,
-    input wire [2:0] csr_op_i,
-    input wire jump_i,
-    output reg branch_comb_o,
-    input wire stall_i,
-    input wire bubble_i,
+    output reg [DATA_WIDTH-1:0]         alu_a_o,
+    output reg [DATA_WIDTH-1:0]         alu_b_o,
+    input wire [DATA_WIDTH-1:0]         alu_y_i,
+    output reg [DATA_WIDTH-1:0]         alu_result_o,
 
-    output reg  [11:0] csr_raddr_o,
-    input wire  [31:0] csr_rdata_i,
-    output reg  [11:0] csr_waddr_o,
-    output reg  [31:0] csr_wdata_o,
-    output reg  csr_we_o,
+    input wire                          mem_en_i,
+    output reg                          mem_en_o,
+    input wire                          rf_wen_i,
+    output reg                          rf_wen_o,
+    input wire [REG_ADDR_WIDTH-1:0]     rf_waddr_i,
+    output reg [REG_ADDR_WIDTH-1:0]     rf_waddr_o,
+    input wire                          mem_we_i,
+    output reg                          mem_we_o,
+    input wire [DATA_WIDTH/8-1:0]       mem_sel_i,
+    output reg [DATA_WIDTH/8-1:0]       mem_sel_o,
+    output reg [DATA_WIDTH-1:0]         mem_wdata_o,
+    input wire [ADDR_WIDTH-1:0]         pc_now_i,
+    output reg [ADDR_WIDTH-1:0]         pc_next_o,
+    input wire                          use_pc_i,
+    input wire                          comp_op_i,
+    input wire [2:0]                    csr_op_i,
+    input wire                          jump_i,
+    output reg                          branch_comb_o,
+    input wire                          stall_i,
+    input wire                          bubble_i,
+
+    output reg  [CSR_ADDR_WIDTH-1:0]    csr_raddr_o,
+    input wire  [DATA_WIDTH-1:0]        csr_rdata_i,
+    output reg  [CSR_ADDR_WIDTH-1:0]    csr_waddr_o,
+    output reg  [DATA_WIDTH-1:0]        csr_wdata_o,
+    output reg                          csr_we_o,
 
     // data forwarding
-    input wire [4:0] exe_mem_rf_waddr_i,
-    input wire [31:0] exe_mem_alu_result_i,
+    input wire [REG_ADDR_WIDTH-1:0]     exe_mem1_rf_waddr_i,
+    input wire [ADDR_WIDTH-1:0]         exe_mem1_alu_result_i,
 
     // debug
-    output reg [31:0] pc_now_o
+    output reg [ADDR_WIDTH-1:0]         pc_now_o
 );
 
     always_comb begin
@@ -76,11 +77,11 @@ module EXE (
 
     wire [DATA_WIDTH-1:0] rf_rdata_a_forwarded;
     wire [DATA_WIDTH-1:0] rf_rdata_b_forwarded;
-    assign rf_rdata_a_forwarded = (exe_mem_rf_waddr_i != 0 && (exe_mem_rf_waddr_i == rf_raddr_a_i)) 
-                                    ? exe_mem_alu_result_i  // 这种情况下 MEM-EXE 的指令不是 load-use 关系，这一点由 pipeline_controller 保证
+    assign rf_rdata_a_forwarded = (exe_mem1_rf_waddr_i != 0 && (exe_mem1_rf_waddr_i == rf_raddr_a_i)) 
+                                    ? exe_mem1_alu_result_i  // 这种情况下 MEM-EXE 的指令不是 load-use 关系，这一点由 pipeline_controller 保证
                                     : rf_rdata_a_i;         // 对于 WB 正在写寄存器的情况，已经在 regfile 中实现了相应的旁路
-    assign rf_rdata_b_forwarded = (exe_mem_rf_waddr_i != 0 && (exe_mem_rf_waddr_i == rf_raddr_b_i)) 
-                                    ? exe_mem_alu_result_i  // 这种情况下 MEM-EXE 的指令不是 load-use 关系，这一点由 pipeline_controller 保证
+    assign rf_rdata_b_forwarded = (exe_mem1_rf_waddr_i != 0 && (exe_mem1_rf_waddr_i == rf_raddr_b_i)) 
+                                    ? exe_mem1_alu_result_i  // 这种情况下 MEM-EXE 的指令不是 load-use 关系，这一点由 pipeline_controller 保证
                                     : rf_rdata_b_i;         // 对于 WB 正在写寄存器的情况，已经在 regfile 中实现了相应的旁路
 
 
