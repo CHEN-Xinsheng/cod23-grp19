@@ -156,8 +156,8 @@ always_comb begin
         12'h144: rdata_o = mip;
         12'h104: rdata_o = mie;
         12'h180: rdata_o = satp;
-        12'hc01: rdata_comb = mtime[31:0];
-        12'hc81: rdata_comb = mtime[63:32];
+        12'hc01: rdata_o = mtime_i[31:0];
+        12'hc81: rdata_o = mtime_i[63:32];
         default: rdata_o = 32'h0;
     endcase
 end
