@@ -720,6 +720,7 @@ module thinpad_top (
     .branch_comb_o(exe_branch_comb),
     .csr_op_i(id_exe_csr_op),
     .csr_op_o(exe_mem1_csr_op),
+    .csr_data_o(exe_mem1_csr_data),
     
     // data forwarding
     .exe_mem1_rf_waddr_i(exe_mem1_rf_waddr),
@@ -756,6 +757,7 @@ module thinpad_top (
   logic [DATA_WIDTH-1:0]      exe_mem1_mem_wdata;
   logic [2:0]                 exe_mem1_csr_op;
   logic [DATA_WIDTH-1:0]      exe_mem1_inst;
+  logic [DATA_WIDTH-1:0]      exe_mem1_csr_data;
 
   /* ====================== MEM1 ====================== */
   logic                       mem_mmu_ack;
@@ -806,6 +808,7 @@ module thinpad_top (
     .exe_mem1_mem_wdata   (exe_mem1_mem_wdata),
     .exe_mem1_inst        (exe_mem1_inst),
     .exe_mem1_csr_op      (exe_mem1_csr_op),
+    .exe_mem1_csr_data    (exe_mem1_csr_data),
 
     .mem1_mem2_pc_now     (mem1_mem2_pc_now),  // only for debug
     .mem1_mem2_mem_en     (mem1_mem2_mem_en),
@@ -816,7 +819,8 @@ module thinpad_top (
     .mem1_mem2_mem_sel    (mem1_mem2_mem_sel),
     .mem1_mem2_mem_wdata  (mem1_mem2_mem_wdata),
     .mem1_mem2_inst       (mem1_mem2_inst),
-    .mem1_mem2_csr_op     (mem1_mem2_csr_op)
+    .mem1_mem2_csr_op     (mem1_mem2_csr_op),
+    .mem1_mem2_csr_data   (mem1_mem2_csr_data)
   );
 
   /* ====================== MEM1/MEM2 regs ====================== */
@@ -833,6 +837,7 @@ module thinpad_top (
   logic [DATA_WIDTH-1:0]      mem1_mem2_mem_wdata;
   logic [2:0]                 mem1_mem2_csr_op;
   logic [DATA_WIDTH-1:0]      mem1_mem2_inst;
+  logic [DATA_WIDTH-1:0]      mem1_mem2_csr_data;
   
   /* ====================== MEM2 ====================== */
   logic [11:0] csr_raddr;
@@ -896,6 +901,7 @@ module thinpad_top (
     .wb_we_o(wbm0_we_o),
 
     .csr_op_i(mem1_mem2_csr_op),
+    .csr_data_i(mem1_mem2_csr_data),
     .csr_raddr_o(csr_raddr),
     .csr_rdata_i(csr_rdata),
     .csr_waddr_o(csr_waddr),

@@ -36,6 +36,7 @@ module EXE (
     input wire                          comp_op_i,
     input wire [2:0]                    csr_op_i,
     output reg [2:0]                    csr_op_o,
+    output reg [DATA_WIDTH-1:0]         csr_data_o,
     input wire                          jump_i,
     output reg                          branch_comb_o,
     input wire                          stall_i,
@@ -112,6 +113,7 @@ module EXE (
             pc_now_o <= pc_now_i;
             inst_o <= 32'b0;
             csr_op_o <= 3'b0;
+            csr_data_o <= 32'b0;
         end else if (stall_i) begin
         end else if (bubble_i) begin
             alu_result_o <= 32'b0;
@@ -124,6 +126,7 @@ module EXE (
             pc_now_o <= 32'b0;
             inst_o <= 32'b0;
             csr_op_o <= 3'b0;
+            csr_data_o <= 32'b0;
         end else begin
             if (jump_i) begin
                 alu_result_o <= pc_now_i+4;
@@ -141,6 +144,11 @@ module EXE (
             pc_now_o <= pc_now_i;
             inst_o <= inst_i;
             csr_op_o <= csr_op_i;
+            if (csr_op_i) begin
+                csr_data_o <= rf_rdata_a_forwarded;
+            end else begin
+                csr_data_o <= 32'b0;
+            end
         end
     end
 
