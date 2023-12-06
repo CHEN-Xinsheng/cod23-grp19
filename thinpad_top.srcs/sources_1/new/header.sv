@@ -116,7 +116,7 @@ typedef struct packed {
 
 typedef struct packed {
   logic [11:0] ppn1;
-  logic [9:0]  ppn2;
+  logic [9:0]  ppn0;
   logic [1:0]  rsw;  // [not implemented] RSW 是保留的，用于操作系统软件。
   logic        d;    // [not implemented] Dirty 位指示了虚拟页最近是否被写过。
   logic        a;    // [not implemented] Access 位指示了该页最近是否被读、写、取

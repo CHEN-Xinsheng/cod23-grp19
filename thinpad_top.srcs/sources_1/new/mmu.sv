@@ -39,6 +39,8 @@ assign wb_dat_o = {DATA_WIDTH{1'b0}};
 assign wb_sel_o = {{DATA_WIDTH/8}{1'b0}};
 assign wb_we_o  = 1'b0;
 
+pte_t read_pte;
+assign read_pte = pte_t'(wb_dat_i);
 // Ref: 4.3.2 Virtual Address Translation Process
 reg         cur_level;
 pte_t       lv1_pte;
@@ -196,7 +198,6 @@ task raise_page_fault();
     access_fault_o <= 1'b0;
     // wishbone interface
     wb_cyc_o <= 1'b0;
-    wb_adr_o <= {ADDR_WIDTH{1'b0}};
     // inner data
     state <= IDLE;    // TODO: to 'DONE'?
     cur_level <= 1'b1;
@@ -210,7 +211,6 @@ task raise_access_fault();
     access_fault_o <= 1'b1;
     // wishbone interface
     wb_cyc_o <= 1'b0;
-    wb_adr_o <= {ADDR_WIDTH{1'b0}};
     // inner data
     state <= IDLE;    // TODO: to 'DONE'?
     cur_level <= 1'b1;
@@ -226,7 +226,6 @@ task automatic ack_paddr(
     access_fault_o <= 1'b0;
     // wishbone interface
     wb_cyc_o <= 1'b0;
-    wb_adr_o <= {ADDR_WIDTH{1'b0}};
     // inner data
     state <= IDLE;
     cur_level <= 1'b1;
@@ -240,7 +239,6 @@ task ack_paddr_in_tlb();
     access_fault_o <= 1'b0;
     // wishbone interface
     wb_cyc_o <= 1'b0;
-    wb_adr_o <= {ADDR_WIDTH{1'b0}};
     // inner data
     state <= IDLE;
     cur_level <= 1'b1;

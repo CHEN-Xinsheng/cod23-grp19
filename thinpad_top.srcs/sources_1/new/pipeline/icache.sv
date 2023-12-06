@@ -27,7 +27,9 @@ module icache # (
     input wire page_fault_i,
     input wire access_fault_i,
     output reg page_fault_o,
-    output reg access_fault_o
+    output reg access_fault_o,
+    input wire stall_i,
+    input wire bubble_i
 );
 
     typedef enum logic { 
@@ -35,6 +37,8 @@ module icache # (
         IF_MEM 
     } if_state_t;
     if_state_t if_state;
+
+    logic [DATA_WIDTH - 1:0] inst;
 
     logic [TAG_WIDTH + DATA_WIDTH:0] cache[ICACHE_SIZE];
     logic [TAG_WIDTH + DATA_WIDTH:0] cacheline_hit;
@@ -95,29 +99,29 @@ module icache # (
             IF_ICACHE: begin
                 if (enable_i) begin
                     if (cache_hit) begin
-                        inst_o = cacheline_hit_data;
+                        inst = cacheline_hit_data;
                         icache_ack_o = 1'b1;
                     end else begin
-                        inst_o = 32'h0;
+                        inst = 32'h0;
                         icache_ack_o = 1'b0;
                     end
                 end else begin
                     // wb_stb_o = 1'b0;
-                    inst_o = 32'h0;
+                    inst = 32'h0;
                     icache_ack_o = 1'b1;
                 end
             end
             IF_MEM: begin
                 if (wb_ack_i) begin
-                    inst_o = wb_dat_i;
+                    inst = wb_dat_i;
                     icache_ack_o = 1'b1;
                 end else begin
-                    inst_o = 32'h0;
+                    inst = 32'h0;
                     icache_ack_o = 1'b0;
                 end
             end
             default: begin
-                inst_o = 32'h0;
+                inst = 32'h0;
                 icache_ack_o = 1'b0;
             end
         endcase
@@ -135,7 +139,7 @@ module icache # (
                 page_fault_o <= 1'b0;
                 access_fault_o <= 1'b0;
             end else begin
-                inst_o <= inst_i;
+                inst_o <= inst;
                 pc_now_o <= pc_now_i;
                 page_fault_o <= page_fault_i;
                 access_fault_o <= access_fault_i;

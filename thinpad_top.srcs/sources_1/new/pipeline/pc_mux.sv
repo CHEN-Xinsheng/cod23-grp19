@@ -7,7 +7,6 @@ module pc_mux (
     input wire [31:0] if1_if2_pc_vaddr,
     input wire [31:0] pc_vaddr,
     input wire [31:0] pc_next_comb,
-    input wire [31:0] icache_pc,
     output reg branch_taken,
     output reg [31:0] pc_true
 );
