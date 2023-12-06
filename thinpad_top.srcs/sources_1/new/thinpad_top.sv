@@ -6,53 +6,53 @@ module thinpad_top (
     input wire clk_50M,     // 50MHz 时钟输入
     input wire clk_11M0592, // 11.0592MHz 时钟输入（备用，可不用）
 
-    input wire push_btn,  // BTN5 按钮开关，带消抖电路，按下时为 1
-    input wire reset_btn, // BTN6 复位按钮，带消抖电路，按下时为 1
+    input wire push_btn,  // BTN5 按钮�?关，带消抖电路，按下时为 1
+    input wire reset_btn, // BTN6 复位按钮，带消抖电路，按下时�? 1
 
     input  wire [ 3:0] touch_btn,  // BTN1~BTN4，按钮开关，按下时为 1
-    input  wire [31:0] dip_sw,     // 32 位拨码开关，拨到“ON”时为 1
-    output wire [15:0] leds,       // 16 位 LED，输出时 1 点亮
+    input  wire [31:0] dip_sw,     // 32 位拨码开关，拨到“ON”时�? 1
+    output wire [15:0] leds,       // 16 �? LED，输出时 1 点亮
     output wire [ 7:0] dpy0,       // 数码管低位信号，包括小数点，输出 1 点亮
     output wire [ 7:0] dpy1,       // 数码管高位信号，包括小数点，输出 1 点亮
 
-    // CPLD 串口控制器信号
-    output wire uart_rdn,        // 读串口信号，低有效
-    output wire uart_wrn,        // 写串口信号，低有效
-    input  wire uart_dataready,  // 串口数据准备好
-    input  wire uart_tbre,       // 发送数据标志
-    input  wire uart_tsre,       // 数据发送完毕标志
+    // CPLD 串口控制器信�?
+    output wire uart_rdn,        // 读串口信号，低有�?
+    output wire uart_wrn,        // 写串口信号，低有�?
+    input  wire uart_dataready,  // 串口数据准备�?
+    input  wire uart_tbre,       // 发�?�数据标�?
+    input  wire uart_tsre,       // 数据发�?�完毕标�?
 
     // BaseRAM 信号
-    inout wire [31:0] base_ram_data,  // BaseRAM 数据，低 8 位与 CPLD 串口控制器共享
+    inout wire [31:0] base_ram_data,  // BaseRAM 数据，低 8 位与 CPLD 串口控制器共�?
     output wire [19:0] base_ram_addr,  // BaseRAM 地址
-    output wire [3:0] base_ram_be_n,  // BaseRAM 字节使能，低有效。如果不使用字节使能，请保持为 0
-    output wire base_ram_ce_n,  // BaseRAM 片选，低有效
-    output wire base_ram_oe_n,  // BaseRAM 读使能，低有效
-    output wire base_ram_we_n,  // BaseRAM 写使能，低有效
+    output wire [3:0] base_ram_be_n,  // BaseRAM 字节使能，低有效。如果不使用字节使能，请保持�? 0
+    output wire base_ram_ce_n,  // BaseRAM 片�?�，低有�?
+    output wire base_ram_oe_n,  // BaseRAM 读使能，低有�?
+    output wire base_ram_we_n,  // BaseRAM 写使能，低有�?
 
     // ExtRAM 信号
     inout wire [31:0] ext_ram_data,  // ExtRAM 数据
     output wire [19:0] ext_ram_addr,  // ExtRAM 地址
-    output wire [3:0] ext_ram_be_n,  // ExtRAM 字节使能，低有效。如果不使用字节使能，请保持为 0
-    output wire ext_ram_ce_n,  // ExtRAM 片选，低有效
-    output wire ext_ram_oe_n,  // ExtRAM 读使能，低有效
-    output wire ext_ram_we_n,  // ExtRAM 写使能，低有效
+    output wire [3:0] ext_ram_be_n,  // ExtRAM 字节使能，低有效。如果不使用字节使能，请保持�? 0
+    output wire ext_ram_ce_n,  // ExtRAM 片�?�，低有�?
+    output wire ext_ram_oe_n,  // ExtRAM 读使能，低有�?
+    output wire ext_ram_we_n,  // ExtRAM 写使能，低有�?
 
     // 直连串口信号
-    output wire txd,  // 直连串口发送端
-    input  wire rxd,  // 直连串口接收端
+    output wire txd,  // 直连串口发�?�端
+    input  wire rxd,  // 直连串口接收�?
 
-    // Flash 存储器信号，参考 JS28F640 芯片手册
-    output wire [22:0] flash_a,  // Flash 地址，a0 仅在 8bit 模式有效，16bit 模式无意义
+    // Flash 存储器信号，参�?? JS28F640 芯片手册
+    output wire [22:0] flash_a,  // Flash 地址，a0 仅在 8bit 模式有效�?16bit 模式无意�?
     inout wire [15:0] flash_d,  // Flash 数据
     output wire flash_rp_n,  // Flash 复位信号，低有效
-    output wire flash_vpen,  // Flash 写保护信号，低电平时不能擦除、烧写
-    output wire flash_ce_n,  // Flash 片选信号，低有效
-    output wire flash_oe_n,  // Flash 读使能信号，低有效
-    output wire flash_we_n,  // Flash 写使能信号，低有效
-    output wire flash_byte_n, // Flash 8bit 模式选择，低有效。在使用 flash 的 16 位模式时请设为 1
+    output wire flash_vpen,  // Flash 写保护信号，低电平时不能擦除、烧�?
+    output wire flash_ce_n,  // Flash 片�?�信号，低有�?
+    output wire flash_oe_n,  // Flash 读使能信号，低有�?
+    output wire flash_we_n,  // Flash 写使能信号，低有�?
+    output wire flash_byte_n, // Flash 8bit 模式选择，低有效。在使用 flash �? 16 位模式时请设�? 1
 
-    // USB 控制器信号，参考 SL811 芯片手册
+    // USB 控制器信号，参�?? SL811 芯片手册
     output wire sl811_a0,
     // inout  wire [7:0] sl811_d,     // USB 数据线与网络控制器的 dm9k_sd[7:0] 共享
     output wire sl811_wr_n,
@@ -63,7 +63,7 @@ module thinpad_top (
     input  wire sl811_intrq,
     input  wire sl811_drq_n,
 
-    // 网络控制器信号，参考 DM9000A 芯片手册
+    // 网络控制器信号，参�?? DM9000A 芯片手册
     output wire dm9k_cmd,
     inout wire [15:0] dm9k_sd,
     output wire dm9k_iow_n,
@@ -73,13 +73,13 @@ module thinpad_top (
     input wire dm9k_int,
 
     // 图像输出信号
-    output wire [2:0] video_red,    // 红色像素，3 位
-    output wire [2:0] video_green,  // 绿色像素，3 位
-    output wire [1:0] video_blue,   // 蓝色像素，2 位
-    output wire       video_hsync,  // 行同步（水平同步）信号
-    output wire       video_vsync,  // 场同步（垂直同步）信号
+    output wire [2:0] video_red,    // 红色像素�?3 �?
+    output wire [2:0] video_green,  // 绿色像素�?3 �?
+    output wire [1:0] video_blue,   // 蓝色像素�?2 �?
+    output wire       video_hsync,  // 行同步（水平同步）信�?
+    output wire       video_vsync,  // 场同步（垂直同步）信�?
     output wire       video_clk,    // 像素时钟输出
-    output wire       video_de      // 行数据有效信号，用于区分消隐区
+    output wire       video_de      // 行数据有效信号，用于区分消隐�?
 );
 
   /* =========== Demo code begin =========== */
@@ -90,16 +90,16 @@ module thinpad_top (
       // Clock in ports
       .clk_in1(clk_50M),  // 外部时钟输入
       // Clock out ports
-      .clk_out1(clk_10M),  // 时钟输出 1，频率在 IP 配置界面中设置
-      .clk_out2(clk_20M),  // 时钟输出 2，频率在 IP 配置界面中设置
+      .clk_out1(clk_10M),  // 时钟输出 1，频率在 IP 配置界面中设�?
+      .clk_out2(clk_20M),  // 时钟输出 2，频率在 IP 配置界面中设�?
       // Status and control signals
       .reset(reset_btn),  // PLL 复位输入
-      .locked(locked)  // PLL 锁定指示输出，"1"表示时钟稳定，
+      .locked(locked)  // PLL 锁定指示输出�?"1"表示时钟稳定�?
                        // 后级电路复位信号应当由它生成（见下）
   );
 
   logic reset_of_clk10M;
-  // 异步复位，同步释放，将 locked 信号转为后级电路的复位 reset_of_clk10M
+  // 异步复位，同步释放，�? locked 信号转为后级电路的复�? reset_of_clk10M
   always_ff @(posedge clk_10M or negedge locked) begin
     if (~locked) reset_of_clk10M <= 1'b1;
     else reset_of_clk10M <= 1'b0;
@@ -119,7 +119,7 @@ module thinpad_top (
   assign sys_clk = clk_10M;
   assign sys_rst = reset_of_clk10M;
 
-  // 本实验不使用 CPLD 串口，禁用防止总线冲突
+  // 本实验不使用 CPLD 串口，禁用防止�?�线冲突
   assign uart_rdn = 1'b1;
   assign uart_wrn = 1'b1;
 
@@ -400,8 +400,8 @@ module thinpad_top (
       .sram_be_n(ext_ram_be_n)
   );
 
-  // 串口控制器模块
-  // NOTE: 如果修改系统时钟频率，也需要修改此处的时钟频率参数
+  // 串口控制器模�?
+  // NOTE: 如果修改系统时钟频率，也�?要修改此处的时钟频率参数
   uart_controller #(
       .CLK_FREQ(10_000_000),
       .BAUD    (115200)
@@ -474,75 +474,64 @@ module thinpad_top (
     .bubble_o(bubble)
   );
 
-  logic fencei;
-  logic [31:0] icache_pc_vaddr;
-  logic [31:0] icache_pc_paddr;
-  // logic [31:0] icache_pc_cached;
-  logic [31:0] if_mmu_ack;
-  logic icache_ack;
-  logic [31:0] icache_inst;
-
-  logic [31:0] pred_pc;
-
   pc_mux pc_mux (
-    // .branch_a_i(csr_branch),
-    // .branch_b_i(exe_branch_comb),
-    // .pc_next_a_i(csr_pc_next),
-    // .pc_next_b_i(pc_next_comb),
-    // .pc_now_i(icache_pc),
-    // .branch_o(if_branch),
-    // .pc_next_o(if_pc_next)
     .csr_branch_i(csr_branch),
     .exe_branch_comb_i(exe_branch_comb),
     .csr_pc_next_i(csr_pc_next),
     .id_exe_pc_now(id_exe_pc_now),
-    .if_id_pc_now(if_id_pc_now),
+    .if2_id_pc_now(if2_id_pc_now),
+    .if1_if2_pc_vaddr(if1_if2_pc_vaddr),
+    .pc_vaddr(pc_vaddr),
     .pc_next_comb(pc_next_comb),
     .icache_pc(icache_pc),
     .branch_taken(branch_taken),
     .pc_true(pc_true)
   );
 
+  logic [31:0] pred_pc;
+
+  btb btb (
+    .clk(sys_clk),
+    .rst(sys_rst),
+    .pc_i(pc_vaddr),
+    .pred_pc_o(pred_pc),
+    .branch_from_pc_i(id_exe_pc_now),
+    .branch_to_pc_i(pc_next_comb),
+    .branch_taken_i(branch_taken),
+    .is_branch_i(id_exe_jump || id_exe_imm_type == `TYPE_B)
+  );
+
+  logic fencei;
+  logic [31:0] pc_vaddr;
+
   IF IF (
     .clk(sys_clk),
     .rst(sys_rst),
-    // .wb_cyc_o(wbm1_cyc_o),
-    // .wb_stb_o(wbm1_stb_o),
-    // .wb_ack_i(wbm1_ack_i),
-    // .wb_adr_o(wbm1_adr_o),
-    // .wb_dat_o(wbm1_dat_o),
-    // .wb_dat_i(wbm1_dat_i),
-    // .wb_sel_o(wbm1_sel_o),
-    // .wb_we_o(wbm1_we_o),
-    .inst_o(if_id_inst),
-    .pc_now_o(if_id_pc_now),
+    .pc_o(pc_vaddr),
     .branch_taken_i(branch_taken),
     .pc_true_i(pc_true),
     .pc_pred_i(pred_pc),
-    .icache_ack_i(icache_ack),
-    .inst_i(icache_inst),
-    .pc_o(icache_pc_vaddr),
     .stall_i(stall[3]),
     .bubble_i(bubble[3])
   );
 
-  logic page_fault;
-  logic access_fault;
+  logic [31:0] if_mmu_ack;
 
   mmu if_mmu (
     .clk(sys_clk),
     .rst(sys_rst),
     .mode_i(csr_mode),
     .satp_i(csr_satp),
-    .vaddr_i(icache_pc_vaddr),
-    .paddr_o(icache_pc_paddr),
+    .vaddr_i(pc_vaddr),
+    .paddr_o(if1_if2_pc_paddr),
     .ack_o(if_mmu_ack),
 
     .read_en_i(1'b0), 
     .write_en_i(1'b0),
     .exe_en_i(1'b1),
-    .page_fault_o(page_fault),
-    .access_fault_o(access_fault),
+    .vaddr_o(if1_if2_pc_vaddr),
+    .page_fault_o(if1_if2_page_fault),
+    .access_fault_o(if1_if2_access_fault),
 
     .wb_cyc_o(wbm2_cyc_o),
     .wb_stb_o(wbm2_stb_o),
@@ -552,24 +541,20 @@ module thinpad_top (
     .wb_dat_i(wbm2_dat_i),
     .wb_sel_o(wbm2_sel_o),
     .wb_we_o(wbm2_we_o)
-  )
-
-  btb btb (
-    .clk(sys_clk),
-    .rst(sys_rst),
-    .pc_i(icache_pc_vaddr),
-    .pred_pc_o(pred_pc),
-    .branch_from_pc_i(id_exe_pc_now),
-    .branch_to_pc_i(pc_next_comb),
-    .branch_taken_i(branch_taken),
-    .is_branch_i(id_exe_jump || id_exe_imm_type == `TYPE_B)
   );
+
+  logic if1_if2_page_fault;
+  logic if1_if2_access_fault;
+  logic [31:0] if1_if2_pc_paddr;
+  logic [31:0] if1_if2_pc_vaddr;
+
+  logic icache_ack;
 
   icache icache (
     .clk(sys_clk),
     .rst(sys_rst),
     .fence_i(fencei),
-    .pc_i(icache_pc_paddr),
+    .pc_i(if1_if2_pc_paddr),
     .enable_i(1'b1),
     .wb_cyc_o(wbm1_cyc_o),
     .wb_stb_o(wbm1_stb_o),
@@ -579,41 +564,25 @@ module thinpad_top (
     .wb_dat_i(wbm1_dat_i),
     .wb_sel_o(wbm1_sel_o),
     .wb_we_o(wbm1_we_o),
-    .inst_o(icache_inst),
-    .icache_ack_o(icache_ack)
+    .icache_ack_o(icache_ack),
+    .inst_o(if2_id_inst),
+    .pc_now_i(if1_if2_pc_vaddr),
+    .pc_now_o(if2_id_pc_now),
+    .page_fault_i(if1_if2_page_fault),
+    .access_fault_i(if1_if2_access_fault),
+    .page_fault_o(if2_id_page_fault),
+    .access_fault_o(if2_id_access_fault)
   );
 
-    //   always_ff @(posedge sys_clk) begin
-    //     if (sys_rst) begin
-    //         id_exe_inst <= 32'h0;
-    //         if_id_pc_now <= 32'h0;
-    //     end else begin
-    //         if (stall[3]) begin
-    //         end else if (bubble[3]) begin
-    //             id_exe_inst <= 32'h0;
-    //             if_id_pc_now <= 32'h0;
-    //         end else if (icache_ack) begin
-    //             if (icache_pc_cached != 0) begin
-    //                 id_exe_inst <= 32'h0;
-    //                 if_id_pc_now <= 32'h0;
-    //             end else begin
-    //                 id_exe_inst <= icache_inst;
-    //                 if_id_pc_now <= icache_pc;
-    //             end
-    //         end else begin
-    //             id_exe_inst <= 32'h0;
-    //             if_id_pc_now <= 32'h0;
-    //         end
-    //     end
-    // end
-
-  logic [31:0] if_id_inst;
-  logic [31:0] if_id_pc_now;
+  logic [31:0] if2_id_inst;
+  logic [31:0] if2_id_pc_now;
+  logic if2_id_page_fault;
+  logic if2_id_access_fault;
 
   ID ID (
     .clk(sys_clk),
     .rst(sys_rst),
-    .inst_i(if_id_inst),
+    .inst_i(if2_id_inst),
     .inst_o(id_exe_inst),
     .rf_raddr_a_o(id_exe_rf_raddr_a),
     .rf_raddr_b_o(id_exe_rf_raddr_b),
@@ -627,7 +596,7 @@ module thinpad_top (
     .rf_waddr_o(id_exe_rf_waddr),
     .mem_we_o(id_exe_mem_we),
     .mem_sel_o(id_exe_mem_sel),
-    .pc_now_i(if_id_pc_now),
+    .pc_now_i(if2_id_pc_now),
     .pc_now_o(id_exe_pc_now),
     .use_pc_o(id_exe_use_pc),
     .jump_o(id_exe_jump),
@@ -770,10 +739,10 @@ module thinpad_top (
     .ebreak_i(id_exe_ebreak),
     .mret_i(id_exe_mret),
     .time_interrupt_i(time_interrupt),
-    .page_fault_i(page_fault),
-    .access_fault_i(access_fault),
-    .satp_o(csr_satp)
-    .mode_o(csr_mode),
+    .page_fault_i(),
+    .access_fault_i(),
+    .satp_o(csr_satp),
+    .mode_o(csr_mode)
   );
 
   logic [31:0] exe_mem_pc_now;  // only for debug
@@ -820,7 +789,7 @@ module thinpad_top (
   logic [31:0] mem_wb_pc_now;  // only for debug
 
 
-  // // 不使用内存、串口时，禁用其使能信号
+  // // 不使用内存�?�串口时，禁用其使能信号
   // assign base_ram_ce_n = 1'b1;
   // assign base_ram_oe_n = 1'b1;
   // assign base_ram_we_n = 1'b1;
@@ -843,7 +812,7 @@ module thinpad_top (
   // // g=dpy0[7] // |     |
   // //           // ---d---  p
 
-  // // 7 段数码管译码器演示，将 number 用 16 进制显示在数码管上面
+  // // 7 段数码管译码器演示，�? number �? 16 进制显示在数码管上面
   // logic [7:0] number;
   // SEG7_LUT segL (
   //     .oSEG1(dpy0),
@@ -858,14 +827,14 @@ module thinpad_top (
   // assign leds = led_bits;
 
   // always_ff @(posedge push_btn or posedge reset_btn) begin
-  //   if (reset_btn) begin  // 复位按下，设置 LED 为初始值
+  //   if (reset_btn) begin  // 复位按下，设�? LED 为初始�??
   //     led_bits <= 16'h1;
-  //   end else begin  // 每次按下按钮开关，LED 循环左移
+  //   end else begin  // 每次按下按钮�?关，LED 循环左移
   //     led_bits <= {led_bits[14:0], led_bits[15]};
   //   end
   // end
 
-  // // 直连串口接收发送演示，从直连串口收到的数据再发送出去
+  // // 直连串口接收发�?�演示，从直连串口收到的数据再发送出�?
   // logic [7:0] ext_uart_rx;
   // logic [7:0] ext_uart_buffer, ext_uart_tx;
   // logic ext_uart_ready, ext_uart_clear, ext_uart_busy;
@@ -873,19 +842,19 @@ module thinpad_top (
 
   // assign number = ext_uart_buffer;
 
-  // // 接收模块，9600 无检验位
+  // // 接收模块�?9600 无检验位
   // async_receiver #(
   //     .ClkFrequency(50000000),
   //     .Baud(9600)
   // ) ext_uart_r (
   //     .clk           (clk_50M),         // 外部时钟信号
   //     .RxD           (rxd),             // 外部串行信号输入
-  //     .RxD_data_ready(ext_uart_ready),  // 数据接收到标志
+  //     .RxD_data_ready(ext_uart_ready),  // 数据接收到标�?
   //     .RxD_clear     (ext_uart_clear),  // 清除接收标志
-  //     .RxD_data      (ext_uart_rx)      // 接收到的一字节数据
+  //     .RxD_data      (ext_uart_rx)      // 接收到的�?字节数据
   // );
 
-  // assign ext_uart_clear = ext_uart_ready; // 收到数据的同时，清除标志，因为数据已取到 ext_uart_buffer 中
+  // assign ext_uart_clear = ext_uart_ready; // 收到数据的同时，清除标志，因为数据已取到 ext_uart_buffer �?
   // always_ff @(posedge clk_50M) begin  // 接收到缓冲区 ext_uart_buffer
   //   if (ext_uart_ready) begin
   //     ext_uart_buffer <= ext_uart_rx;
@@ -894,7 +863,7 @@ module thinpad_top (
   //     ext_uart_avai <= 0;
   //   end
   // end
-  // always_ff @(posedge clk_50M) begin  // 将缓冲区 ext_uart_buffer 发送出去
+  // always_ff @(posedge clk_50M) begin  // 将缓冲区 ext_uart_buffer 发�?�出�?
   //   if (!ext_uart_busy && ext_uart_avai) begin
   //     ext_uart_tx <= ext_uart_buffer;
   //     ext_uart_start <= 1;
@@ -903,15 +872,15 @@ module thinpad_top (
   //   end
   // end
 
-  // // 发送模块，9600 无检验位
+  // // 发�?�模块，9600 无检验位
   // async_transmitter #(
   //     .ClkFrequency(50000000),
   //     .Baud(9600)
   // ) ext_uart_t (
   //     .clk      (clk_50M),         // 外部时钟信号
   //     .TxD      (txd),             // 串行信号输出
-  //     .TxD_busy (ext_uart_busy),   // 发送器忙状态指示
-  //     .TxD_start(ext_uart_start),  // 开始发送信号
+  //     .TxD_busy (ext_uart_busy),   // 发�?�器忙状态指�?
+  //     .TxD_start(ext_uart_start),  // �?始发送信�?
   //     .TxD_data (ext_uart_tx)      // 待发送的数据
   // );
 
@@ -923,8 +892,8 @@ module thinpad_top (
   // assign video_clk   = clk_50M;
   // vga #(12, 800, 856, 976, 1040, 600, 637, 643, 666, 1, 1) vga800x600at75 (
   //     .clk        (clk_50M),
-  //     .hdata      (hdata),        // 横坐标
-  //     .vdata      (),             // 纵坐标
+  //     .hdata      (hdata),        // 横坐�?
+  //     .vdata      (),             // 纵坐�?
   //     .hsync      (video_hsync),
   //     .vsync      (video_vsync),
   //     .data_enable(video_de)

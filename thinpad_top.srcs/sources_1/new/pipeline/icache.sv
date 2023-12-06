@@ -21,7 +21,13 @@ module icache # (
     output reg [DATA_WIDTH/8-1:0] wb_sel_o,
     output reg wb_we_o,
     output reg [DATA_WIDTH-1:0] inst_o,
-    output reg icache_ack_o
+    output reg icache_ack_o,
+    input wire [ADDR_WIDTH-1:0] pc_now_i,
+    output reg [ADDR_WIDTH-1:0] pc_now_o,
+    input wire page_fault_i,
+    input wire access_fault_i,
+    output reg page_fault_o,
+    output reg access_fault_o
 );
 
     typedef enum logic { 
@@ -115,6 +121,26 @@ module icache # (
                 icache_ack_o = 1'b0;
             end
         endcase
+    end
+
+    always_ff @(posedge clk) begin
+        if (rst) begin
+            inst_o <= 32'h0;
+            pc_now_o <= 32'h0;
+        end else begin
+            if (stall_i) begin
+            end else if (bubble_i) begin
+                inst_o <= 32'h0;
+                pc_now_o <= 32'h0;
+                page_fault_o <= 1'b0;
+                access_fault_o <= 1'b0;
+            end else begin
+                inst_o <= inst_i;
+                pc_now_o <= pc_now_i;
+                page_fault_o <= page_fault_i;
+                access_fault_o <= access_fault_i;
+            end
+        end
     end
 
     assign wb_cyc_o = wb_stb_o;
