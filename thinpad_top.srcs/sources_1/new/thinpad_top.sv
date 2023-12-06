@@ -3,8 +3,8 @@
 
 
 module thinpad_top (
-    input wire clk_50M,     // 50MHz 时钟输入
-    input wire clk_11M0592, // 11.0592MHz 时钟输入（备用，可不用）
+    input wire clk_50M,     // 50MHz ćśéčžĺĽ
+    input wire clk_11M0592, // 11.0592MHz ćśéčžĺĽďźĺ¤ç¨ďźĺŻä¸ç¨ďź
 
     input wire push_btn,  // BTN5 按钮�???关，带消抖电路，按下时为 1
     input wire reset_btn, // BTN6 复位按钮，带消抖电路，按下时�??? 1
@@ -54,7 +54,7 @@ module thinpad_top (
 
     // USB 控制器信号，参�?? SL811 芯片手册
     output wire sl811_a0,
-    // inout  wire [7:0] sl811_d,     // USB 数据线与网络控制器的 dm9k_sd[7:0] 共享
+    // inout  wire [7:0] sl811_d,     // USB ć°ćŽçşżä¸ç˝çťć§ĺśĺ¨ç dm9k_sd[7:0] ĺąäşŤ
     output wire sl811_wr_n,
     output wire sl811_rd_n,
     output wire sl811_cs_n,
@@ -84,11 +84,11 @@ module thinpad_top (
 
   /* =========== Demo code begin =========== */
 
-  // PLL 分频示例
+  // PLL ĺé˘ç¤şäž
   logic locked, clk_10M, clk_20M;
   pll_example clock_gen (
       // Clock in ports
-      .clk_in1(clk_50M),  // 外部时钟输入
+      .clk_in1(clk_50M),  // ĺ¤é¨ćśéčžĺĽ
       // Clock out ports
       .clk_out1(clk_10M),  // 时钟输出 1，频率在 IP 配置界面中设�???
       .clk_out2(clk_20M),  // 时钟输出 2，频率在 IP 配置界面中设�???
@@ -895,7 +895,7 @@ module thinpad_top (
   // assign uart_rdn = 1'b1;
   // assign uart_wrn = 1'b1;
 
-  // // 数码管连接关系示意图，dpy1 同理
+  // // ć°ç çŽĄčżćĽĺłçłťç¤şćĺžďźdpy1 ĺç
   // // p=dpy0[0] // ---a---
   // // c=dpy0[1] // |     |
   // // d=dpy0[2] // f     b
@@ -911,11 +911,11 @@ module thinpad_top (
   // SEG7_LUT segL (
   //     .oSEG1(dpy0),
   //     .iDIG (number[3:0])
-  // );  // dpy0 是低位数码管
+  // );  // dpy0 ćŻä˝ä˝ć°ç çŽĄ
   // SEG7_LUT segH (
   //     .oSEG1(dpy1),
   //     .iDIG (number[7:4])
-  // );  // dpy1 是高位数码管
+  // );  // dpy1 ćŻéŤä˝ć°ç çŽĄ
 
   // logic [15:0] led_bits;
   // assign leds = led_bits;
@@ -978,11 +978,11 @@ module thinpad_top (
   //     .TxD_data (ext_uart_tx)      // 待发送的数据
   // );
 
-  // // 图像输出演示，分辨率 800x600@75Hz，像素时钟为 50MHz
+  // // ĺžĺčžĺşćźç¤şďźĺčž¨ç 800x600@75Hzďźĺç´ ćśéä¸ş 50MHz
   // logic [11:0] hdata;
-  // assign video_red   = hdata < 266 ? 3'b111 : 0;  // 红色竖条
-  // assign video_green = hdata < 532 && hdata >= 266 ? 3'b111 : 0;  // 绿色竖条
-  // assign video_blue  = hdata >= 532 ? 2'b11 : 0;  // 蓝色竖条
+  // assign video_red   = hdata < 266 ? 3'b111 : 0;  // çş˘č˛çŤćĄ
+  // assign video_green = hdata < 532 && hdata >= 266 ? 3'b111 : 0;  // çťżč˛çŤćĄ
+  // assign video_blue  = hdata >= 532 ? 2'b11 : 0;  // čč˛çŤćĄ
   // assign video_clk   = clk_50M;
   // vga #(12, 800, 856, 976, 1040, 600, 637, 643, 666, 1, 1) vga800x600at75 (
   //     .clk        (clk_50M),
