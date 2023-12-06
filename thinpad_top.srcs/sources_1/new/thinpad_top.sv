@@ -459,6 +459,7 @@ module thinpad_top (
   logic [31:0] pc_true;
 
 
+  /* ====================== controller ====================== */
   pipeline_controller pipeline_controller (
     // .if_ack_i(wbm1_ack_i),
     .mem_ack_i(wbm0_ack_i),
@@ -490,6 +491,7 @@ module thinpad_top (
     .mem_bubble_o(mem_bubble)
   );
 
+  /* ====================== IF1 ====================== */
   pc_mux pc_mux (
     .csr_branch_i(csr_branch),
     .exe_branch_comb_i(exe_branch_comb),
@@ -558,14 +560,14 @@ module thinpad_top (
     .wb_we_o(wbm3_we_o)
   );
 
+  /* ====================== IF1/IF2 regs ====================== */
   logic if1_if2_page_fault;
   logic if1_if2_access_fault;
   logic [31:0] if1_if2_pc_paddr;
   logic [31:0] if1_if2_pc_now;
 
-  logic icache_ack;
-
   /* ====================== IF2 ====================== */
+  logic icache_ack;
   icache icache (
     .clk(sys_clk),
     .rst(sys_rst),
@@ -593,6 +595,7 @@ module thinpad_top (
     .wb_we_o(wbm2_we_o)
   );
 
+  /* ====================== IF2/ID regs ====================== */
   logic [31:0] if2_id_inst;
   logic [31:0] if2_id_pc_now;
   logic if2_id_page_fault;
@@ -630,21 +633,10 @@ module thinpad_top (
     .bubble_i(if_bubble)
   );
 
+  /* ====================== ID/EXE regs ====================== */
   logic [4:0]  rf_waddr;
   logic [31:0] rf_wdata;
   logic rf_we;
-
-  regfile regfile (
-    .clk(sys_clk),
-    .rst(sys_rst),
-    .rf_raddr_a(id_exe_rf_raddr_a),
-    .rf_rdata_a(rf_rdata_a),
-    .rf_raddr_b(id_exe_rf_raddr_b),
-    .rf_rdata_b(rf_rdata_b),
-    .rf_waddr(rf_waddr),
-    .rf_wdata(rf_wdata),
-    .rf_we(rf_we)
-  );
 
   logic [4:0]  id_exe_rf_raddr_a;
   logic [31:0] rf_rdata_a;
@@ -669,7 +661,22 @@ module thinpad_top (
   logic id_exe_ebreak;
   logic id_exe_mret;
 
+  /* ====================== EXE ====================== */
+
+  regfile regfile (
+    .clk(sys_clk),
+    .rst(sys_rst),
+    .rf_raddr_a(id_exe_rf_raddr_a),
+    .rf_rdata_a(rf_rdata_a),
+    .rf_raddr_b(id_exe_rf_raddr_b),
+    .rf_rdata_b(rf_rdata_b),
+    .rf_waddr(rf_waddr),
+    .rf_wdata(rf_wdata),
+    .rf_we(rf_we)
+  );
+
   wire [31:0] pc_next_comb;
+
 
   EXE EXE (
     .clk(sys_clk),
@@ -765,6 +772,8 @@ module thinpad_top (
     .mode_o(csr_mode)
   );
 
+  /* ====================== EXE/MEM1 regs ====================== */
+
   logic [ADDR_WIDTH-1:0]      exe_mem1_pc_now;  // only for debug
   logic                       exe_mem1_mem_en;
   logic                       exe_mem1_rf_wen;
@@ -824,6 +833,8 @@ module thinpad_top (
     .mem1_mem2_mem_wdata  (mem1_mem2_mem_wdata)
   );
 
+  /* ====================== MEM1/MEM2 regs ====================== */
+
   logic [ADDR_WIDTH-1:0]      mem1_mem2_paddr;
 
   logic [ADDR_WIDTH-1:0]      mem1_mem2_pc_now;      // only for debug
@@ -868,6 +879,7 @@ module thinpad_top (
     .pc_now_o(mem2_wb_pc_now)
   );
 
+  /* ====================== MEM2/WB regs ====================== */
   logic [31:0] mem2_wb_pc_now;  // only for debug
 
 
