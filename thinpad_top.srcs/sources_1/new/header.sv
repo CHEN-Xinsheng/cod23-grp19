@@ -2,8 +2,9 @@
 `define __PARAM_H_
 
 
-localparam DATA_WIDTH = 32;
-localparam ADDR_WIDTH = 32;
+localparam DATA_WIDTH     = 32;
+localparam ADDR_WIDTH     = 32;
+localparam REG_ADDR_WIDTH = 5;
 
 `define TYPE_R 3'd1
 `define TYPE_I 3'd2

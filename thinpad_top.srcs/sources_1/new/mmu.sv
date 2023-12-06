@@ -25,7 +25,29 @@ module mmu (
     output reg [DATA_WIDTH-1:0]     wb_dat_o,
     input wire [DATA_WIDTH-1:0]     wb_dat_i,
     output reg [DATA_WIDTH/8-1:0]   wb_sel_o,
-    output reg                      wb_we_o 
+    output reg                      wb_we_o,
+
+    // data direct padd (for IF1/IF2)
+    output reg                      if1_if2_pc_now,
+
+    // data direct pass (for MEM1/MEM2)
+    output reg  [ADDR_WIDTH-1:0]      exe_mem1_pc_now,
+    output reg                        exe_mem1_mem_en,
+    output reg                        exe_mem1_rf_wen,
+    output reg  [REG_ADDR_WIDTH-1:0]  exe_mem1_rf_waddr,
+    output reg  [DATA_WIDTH-1:0]      exe_mem1_alu_result,
+    output reg                        exe_mem1_mem_we,
+    output reg  [DATA_WIDTH/8-1:0]    exe_mem1_mem_sel,
+    output reg  [DATA_WIDTH-1:0]      exe_mem1_mem_wdata,
+
+    output reg  [ADDR_WIDTH-1:0]      mem1_mem2_pc_now,      // only for debug
+    output reg                        mem1_mem2_mem_en,
+    output reg                        mem1_mem2_rf_wen,
+    output reg  [REG_ADDR_WIDTH-1:0]  mem1_mem2_rf_waddr,
+    output reg  [DATA_WIDTH-1:0]      mem1_mem2_alu_result,  // only for debug
+    output reg                        mem1_mem2_mem_we,
+    output reg  [DATA_WIDTH/8-1:0]    mem1_mem2_mem_sel,
+    output reg  [DATA_WIDTH-1:0]      mem1_mem2_mem_wdata
 );
 
 
@@ -201,6 +223,7 @@ task raise_page_fault();
     // inner data
     state <= IDLE;    // TODO: to 'DONE'?
     cur_level <= 1'b1;
+    output_other_data();
 endtask
 
 task raise_access_fault();
@@ -214,6 +237,7 @@ task raise_access_fault();
     // inner data
     state <= IDLE;    // TODO: to 'DONE'?
     cur_level <= 1'b1;
+    output_other_data();
 endtask
 
 task automatic ack_paddr(
@@ -229,6 +253,7 @@ task automatic ack_paddr(
     // inner data
     state <= IDLE;
     cur_level <= 1'b1;
+    output_other_data();
 endtask
 
 task ack_paddr_in_tlb();
@@ -242,6 +267,21 @@ task ack_paddr_in_tlb();
     // inner data
     state <= IDLE;
     cur_level <= 1'b1;
+    output_other_data();
+endtask
+
+task output_other_data();
+    // IF1/IF2
+    if1_if2_pc_now        <= vaddr_i;
+    // MEM1/MEM2
+    mem1_mem2_pc_now      <= exe_mem1_pc_now;      // only for debug
+    mem1_mem2_mem_en      <= exe_mem1_mem_en;
+    mem1_mem2_rf_wen      <= exe_mem1_rf_wen;
+    mem1_mem2_rf_waddr    <= exe_mem1_rf_waddr;
+    mem1_mem2_alu_result  <= exe_mem1_alu_result;  // only for debug
+    mem1_mem2_mem_we      <= exe_mem1_mem_we;
+    mem1_mem2_mem_sel     <= exe_mem1_mem_sel;
+    mem1_mem2_mem_wdata   <= exe_mem1_mem_wdata;
 endtask
 
 // function automatic logic[33:0] calc_pte_addr(pte_t prev_pte = 'b0);

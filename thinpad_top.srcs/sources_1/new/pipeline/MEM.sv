@@ -5,7 +5,7 @@ module MEM (
     input wire clk,
     input wire rst,
     input wire mem_en_i,
-    input wire [31:0] alu_result_i,
+    input wire [31:0] mem_addr_i,
     input wire rf_wen_i,
     input wire [4:0] rf_waddr_i,
     output reg [31:0] rf_wdata_o,
@@ -13,7 +13,7 @@ module MEM (
     output reg [4:0] rf_waddr_o,
     input wire mem_we_i,
     input wire [3:0] mem_sel_i,
-    input wire [31:0] mem_dat_o_i,
+    input wire [31:0] mem_wdata_i,
 
     output reg wb_cyc_o,
     output reg wb_stb_o,
@@ -32,7 +32,7 @@ module MEM (
 );
 
     reg [31:0] lb_data;
-    assign lb_data = wb_dat_i >> ((alu_result_i << 3) & 32'h1f);
+    assign lb_data = wb_dat_i >> ((mem_addr_i << 3) & 32'h1f);
 
     always_ff @(posedge clk) begin
         if (rst) begin
@@ -67,7 +67,7 @@ module MEM (
                     end
                 end else begin
                     wb_stb_o <= 1'b0;
-                    rf_wdata_o <= alu_result_i;
+                    rf_wdata_o <= mem_addr_i;
                     rf_wen_o <= rf_wen_i;
                     rf_waddr_o <= rf_waddr_i;
                 end
@@ -77,9 +77,9 @@ module MEM (
     end
 
     assign wb_cyc_o = wb_stb_o;
-    assign wb_adr_o = alu_result_i;
-    assign wb_dat_o = mem_sel_i == 4'b1111 ? mem_dat_o_i : (mem_dat_o_i << ((alu_result_i << 3) & 32'h1f));
-    assign wb_sel_o = mem_sel_i == 4'b1111 ? 4'b1111 : (mem_sel_i << alu_result_i[1:0]);
+    assign wb_adr_o = mem_addr_i;
+    assign wb_dat_o = mem_sel_i == 4'b1111 ? mem_dat_o_i : (mem_dat_o_i << ((mem_addr_i << 3) & 32'h1f));
+    assign wb_sel_o = mem_sel_i == 4'b1111 ? 4'b1111 : (mem_sel_i << mem_addr_i[1:0]);
     assign wb_we_o = mem_we_i;
 
 endmodule
