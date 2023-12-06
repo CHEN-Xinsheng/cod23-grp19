@@ -27,7 +27,7 @@ module EXE (
     output reg mem_we_o,
     input wire [3:0] mem_sel_i,
     output reg [3:0] mem_sel_o,
-    output reg [31:0] mem_dat_o_o,
+    output reg [31:0] mem_wdata_o,
     input wire [31:0] pc_now_i,
     output reg [31:0] pc_next_o,
     input wire use_pc_i,
@@ -133,7 +133,7 @@ module EXE (
             rf_waddr_o <= 5'b0;
             mem_we_o <= 0;
             mem_sel_o <= 4'b0;
-            mem_dat_o_o <= 32'b0;
+            mem_wdata_o <= 32'b0;
             pc_now_o <= pc_now_i;
         end else if (stall_i) begin
         end else if (bubble_i) begin
@@ -143,7 +143,7 @@ module EXE (
             rf_waddr_o <= 5'b0;
             mem_we_o <= 0;
             mem_sel_o <= 4'b0;
-            mem_dat_o_o <= 32'b0;
+            mem_wdata_o <= 32'b0;
             pc_now_o <= 32'b0;
         end else begin
             if (jump_i) begin
@@ -158,7 +158,7 @@ module EXE (
             rf_waddr_o <= rf_waddr_i;
             mem_we_o <= mem_we_i;
             mem_sel_o <= mem_sel_i;
-            mem_dat_o_o <= rf_rdata_b_forwarded;
+            mem_wdata_o <= rf_rdata_b_forwarded;
             pc_now_o <= pc_now_i;
         end
     end

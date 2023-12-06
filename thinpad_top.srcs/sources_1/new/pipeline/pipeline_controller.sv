@@ -1,7 +1,7 @@
 module pipeline_controller (
     // input wire if_ack_i,
     input wire mem_ack_i,
-    input wire exe_mem_mem_en_i,
+    input wire exe_mem1_mem_en_i,
     
     input wire [4:0] id_rf_raddr_a_comb_i,
     input wire [4:0] id_rf_raddr_b_comb_i,
@@ -11,7 +11,7 @@ module pipeline_controller (
     input wire [4:0] id_exe_rf_waddr_i,
     input wire branch_taken_i,
 
-    input wire [4:0] exe_mem_rf_waddr_i,
+    input wire [4:0] exe_mem1_rf_waddr_i,
     input wire [4:0] rf_waddr_i,
 
 
@@ -23,7 +23,7 @@ module pipeline_controller (
 
     always_comb begin
         // MEM 正在请求总线
-        if (exe_mem_mem_en_i == 1 && mem_ack_i == 0) begin
+        if (exe_mem1_mem_en_i == 1 && mem_ack_i == 0) begin
             stall_o = 4'b1110;
             bubble_o = 4'b0001;
         end else if (csr_branch_i == 1) begin
@@ -36,7 +36,7 @@ module pipeline_controller (
         /* version 1: without data-forwarding */
         // end else if (
         //      (id_exe_rf_waddr_i != 0  && (id_rf_raddr_a_comb_i == id_exe_rf_waddr_i  || id_rf_raddr_b_comb_i == id_exe_rf_waddr_i))
-        //   || (exe_mem_rf_waddr_i != 0 && (id_rf_raddr_a_comb_i == exe_mem_rf_waddr_i || id_rf_raddr_b_comb_i == exe_mem_rf_waddr_i))
+        //   || (exe_mem1_rf_waddr_i != 0 && (id_rf_raddr_a_comb_i == exe_mem1_rf_waddr_i || id_rf_raddr_b_comb_i == exe_mem1_rf_waddr_i))
         // //   || (rf_waddr_i != 0         && (id_rf_raddr_a_comb_i == rf_waddr_i         || id_rf_raddr_b_comb_i == rf_waddr_i))
         // ) begin
         //     stall_o = 4'b1000;
