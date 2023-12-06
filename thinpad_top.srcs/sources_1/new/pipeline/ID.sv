@@ -29,6 +29,10 @@ module ID (
     output reg                          ebreak_o,
     output reg                          mret_o,
     output reg                          fencei_o,
+    input wire                          instr_page_fault_i,
+    input wire                          instr_access_fault_i,
+    output reg                          instr_page_fault_o,
+    output reg                          instr_access_fault_o,
     input wire                          stall_i,
     input wire                          bubble_i
 );
@@ -71,6 +75,8 @@ module ID (
             ecall_o <= 1'b0;
             ebreak_o <= 1'b0;
             mret_o <= 1'b0;
+            instr_access_fault_o <= 1'b0;
+            instr_page_fault_o <= 1'b0;
         end else if (stall_i) begin
         end else if (bubble_i) begin
             inst_o <= 32'h0;
@@ -91,6 +97,8 @@ module ID (
             ecall_o <= 1'b0;
             ebreak_o <= 1'b0;
             mret_o <= 1'b0;
+            instr_access_fault_o <= 1'b0;
+            instr_page_fault_o <= 1'b0;
         end else begin
             inst_o <= inst_i;
             ecall_o <= 1'b0;
@@ -99,6 +107,8 @@ module ID (
             fencei_o <= 1'b0;
             comp_op_o <= 1'b0;
             pc_now_o <= pc_now_i;
+            instr_access_fault_o <= instr_access_fault_i;
+            instr_page_fault_o <= instr_page_fault_i;
             case(opcode)
                 7'b0010011: begin   // TYPE_I
                     rf_raddr_a_o <= rs1;

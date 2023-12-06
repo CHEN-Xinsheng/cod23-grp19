@@ -39,6 +39,10 @@ module EXE (
     output reg [DATA_WIDTH-1:0]         csr_data_o,
     input wire                          jump_i,
     output reg                          branch_comb_o,
+    input wire                          instr_page_fault_i,
+    input wire                          instr_access_fault_i,
+    output reg                          instr_page_fault_o,
+    output reg                          instr_access_fault_o,
     input wire                          stall_i,
     input wire                          bubble_i,
 
@@ -56,13 +60,13 @@ module EXE (
     wire [DATA_WIDTH-1:0] rf_rdata_b_forwarded;
     assign rf_rdata_a_forwarded = (exe_mem1_rf_waddr_i != 0  && (exe_mem1_rf_waddr_i  == rf_raddr_a_i)) ? exe_mem1_alu_result_i :
                                   (mem1_mem2_rf_waddr_i != 0 && (mem1_mem2_rf_waddr_i == rf_raddr_a_i)) ? mem1_mem2_rf_wdata_i :
-                                   rf_rdata_a_i
+                                   rf_rdata_a_i;
     assign rf_rdata_a_forwarded = (exe_mem1_rf_waddr_i != 0  && (exe_mem1_rf_waddr_i  == rf_raddr_b_i)) ? exe_mem1_alu_result_i :
                                   (mem1_mem2_rf_waddr_i != 0 && (mem1_mem2_rf_waddr_i == rf_raddr_b_i)) ? mem1_mem2_rf_wdata_i :
-                                   rf_rdata_b_i
-    /* MEM1-EXE, MEM2-EXE 的指令都不是 load-use 关系，这一点由 pipeline_controller 保证 */
-    /* 对于 WB 正在写寄存器的情况，已经在 regfile 中实现了相应的旁路 */
-    /* 目前的实现中，如果有 CSR 指令进入流水线，则暂停 IF，即 CSR 指令后不会再有其它任何指令，所以不需要考虑 CSR 读写指令修改了 rs1, rs2 的情况 */
+                                   rf_rdata_b_i;
+    /* MEM1-EXE, MEM2-EXE 的指令都不是 load-use 关系，这�?点由 pipeline_controller 保证 */
+    /* 对于 WB 正在写寄存器的情况，已经�? regfile 中实现了相应的旁�? */
+    /* 目前的实现中，如果有 CSR 指令进入流水线，则暂�? IF，即 CSR 指令后不会再有其它任何指令，�?以不�?要�?�虑 CSR 读写指令修改�? rs1, rs2 的情�? */
 
     always_comb begin
         if (use_pc_i) begin
@@ -118,6 +122,8 @@ module EXE (
             inst_o <= 32'b0;
             csr_op_o <= 3'b0;
             csr_data_o <= 32'b0;
+            instr_access_fault_o <= 1'b0;
+            instr_page_fault_o <= 1'b0;
         end else if (stall_i) begin
         end else if (bubble_i) begin
             alu_result_o <= 32'b0;
@@ -131,6 +137,8 @@ module EXE (
             inst_o <= 32'b0;
             csr_op_o <= 3'b0;
             csr_data_o <= 32'b0;
+            instr_access_fault_o <= 1'b0;
+            instr_page_fault_o <= 1'b0;
         end else begin
             if (jump_i) begin
                 alu_result_o <= pc_now_i+4;
@@ -148,6 +156,8 @@ module EXE (
             pc_now_o <= pc_now_i;
             inst_o <= inst_i;
             csr_op_o <= csr_op_i;
+            instr_access_fault_o <= instr_access_fault_i;
+            instr_page_fault_o <= instr_page_fault_i;
             if (csr_op_i) begin
                 csr_data_o <= rf_rdata_a_forwarded;
             end else begin
