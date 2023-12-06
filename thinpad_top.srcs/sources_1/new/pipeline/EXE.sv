@@ -61,7 +61,7 @@ module EXE (
     assign rf_rdata_a_forwarded = (exe_mem1_rf_waddr_i != 0  && (exe_mem1_rf_waddr_i  == rf_raddr_a_i)) ? exe_mem1_alu_result_i :
                                   (mem1_mem2_rf_waddr_i != 0 && (mem1_mem2_rf_waddr_i == rf_raddr_a_i)) ? mem1_mem2_rf_wdata_i :
                                    rf_rdata_a_i;
-    assign rf_rdata_a_forwarded = (exe_mem1_rf_waddr_i != 0  && (exe_mem1_rf_waddr_i  == rf_raddr_b_i)) ? exe_mem1_alu_result_i :
+    assign rf_rdata_b_forwarded = (exe_mem1_rf_waddr_i != 0  && (exe_mem1_rf_waddr_i  == rf_raddr_b_i)) ? exe_mem1_alu_result_i :
                                   (mem1_mem2_rf_waddr_i != 0 && (mem1_mem2_rf_waddr_i == rf_raddr_b_i)) ? mem1_mem2_rf_wdata_i :
                                    rf_rdata_b_i;
     /* MEM1-EXE, MEM2-EXE 的指令都不是 load-use 关系，这�?点由 pipeline_controller 保证 */
@@ -142,8 +142,6 @@ module EXE (
         end else begin
             if (jump_i) begin
                 alu_result_o <= pc_now_i+4;
-            // end else if (csr_op_i != 0) begin
-            //     alu_result_o <= csr_rdata_i;
             end else begin
                 alu_result_o <= alu_y_i;
             end
@@ -159,7 +157,10 @@ module EXE (
             instr_access_fault_o <= instr_access_fault_i;
             instr_page_fault_o <= instr_page_fault_i;
             if (csr_op_i) begin
-                csr_data_o <= rf_rdata_a_forwarded;
+                if (csr_op_i[2] == 1'b0)
+                    csr_data_o <= rf_rdata_a_forwarded;
+                else
+                    csr_data_o <= {27'b0, inst_i[19:15]};
             end else begin
                 csr_data_o <= 32'b0;
             end

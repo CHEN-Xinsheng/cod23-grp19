@@ -309,62 +309,30 @@ module ID (
                     end
                 end
                 7'b1110011: begin
-                    // pc_now_o <= pc_now_i;
-                    case(funct3)
-                        3'b011: begin   // CSRRC
-                            rf_raddr_a_o <= rs1;
-                            rf_raddr_b_o <= 5'b0;
-                            imm_type_o <= `INSTR_TYPE_WIDTH'd0;
-                            use_rs2_o <= 1;
-                            use_pc_o <= 0;
-                            jump_o <= 1'b0;
-                            mem_re_o <= 1'b0;
-                            mem_we_o <= 1'b0;
-                            rf_wen_o <= 1;
-                            rf_waddr_o <= rd;
-                            alu_op_o <= `ALU_ADD;
-                            csr_op_o <= 3'b011;
+                    if (funct3[1:0] != 2'b0) begin
+                        rf_raddr_a_o <= rs1;
+                        rf_raddr_b_o <= 5'b0;
+                        imm_type_o <= `INSTR_TYPE_WIDTH'd0;
+                        use_rs2_o <= 1;
+                        use_pc_o <= 0;
+                        jump_o <= 1'b0;
+                        mem_re_o <= 1'b0;
+                        mem_we_o <= 1'b0;
+                        rf_wen_o <= 1;
+                        rf_waddr_o <= rd;
+                        alu_op_o <= `ALU_ADD;
+                        csr_op_o <= funct3;
+                    end else if (funct3 == 3'b0) begin
+                        if (inst_i[31:7] == 25'b0000000000000000000000000) begin     // ECALL
+                            ecall_o <= 1'b1;
+                        end else if (inst_i[31:7] == 25'b0000000000010000000000000) begin    // EBREAK
+                            ebreak_o <= 1'b1;
+                        end else if (inst_i[31:7] == 25'b0011000000100000000000000) begin    // MRET
+                            mret_o <= 1'b1;
+                        end else begin
+                            // Illegal instruction
                         end
-                        3'b010: begin   // CSRRS
-                            rf_raddr_a_o <= rs1;
-                            rf_raddr_b_o <= 5'b0;
-                            imm_type_o <= `INSTR_TYPE_WIDTH'd0;
-                            use_rs2_o <= 1;
-                            use_pc_o <= 0;
-                            jump_o <= 1'b0;
-                            mem_re_o <= 1'b0;
-                            mem_we_o <= 1'b0;
-                            rf_wen_o <= 1;
-                            rf_waddr_o <= rd;
-                            alu_op_o <= `ALU_ADD;
-                            csr_op_o <= 3'b010;
-                        end
-                        3'b001: begin   // CSRRW
-                            rf_raddr_a_o <= rs1;
-                            rf_raddr_b_o <= 5'b0;
-                            imm_type_o <= `INSTR_TYPE_WIDTH'd0;
-                            use_rs2_o <= 1;
-                            use_pc_o <= 0;
-                            jump_o <= 1'b0;
-                            mem_re_o <= 1'b0;
-                            mem_we_o <= 1'b0;
-                            rf_wen_o <= 1;
-                            rf_waddr_o <= rd;
-                            alu_op_o <= `ALU_ADD;
-                            csr_op_o <= 3'b001;
-                        end
-                        3'b000: begin
-                            if (inst_i[31:7] == 25'b0000000000000000000000000) begin     // ECALL
-                                ecall_o <= 1'b1;
-                            end else if (inst_i[31:7] == 25'b0000000000010000000000000) begin    // EBREAK
-                                ebreak_o <= 1'b1;
-                            end else if (inst_i[31:7] == 25'b0011000000100000000000000) begin    // MRET
-                                mret_o <= 1'b1;
-                            end else begin
-                                // Illegal instruction
-                            end
-                        end
-                    endcase
+                    end
                 end
                 default: begin
                     inst_o <= 32'h0;
