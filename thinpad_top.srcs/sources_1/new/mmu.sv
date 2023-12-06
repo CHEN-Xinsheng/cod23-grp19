@@ -9,7 +9,7 @@ module mmu (
     input wire satp_t                   satp_i,
     input wire vaddr_t                  vaddr_i,  // virtual address
     output reg [ADDR_WIDTH-1:0]         paddr_o,  // physical address
-    output reg                          ack_o,    // 仅当 ack_o == 1 时，CPU interface 的输出有效
+    output reg                          ack_o,    // 仅当 ack_o == 1 时，CPU interface output is valid
 
     input wire                          read_en_i,  // for MEM stage, load instruction
     input wire                          write_en_i, // for MEM stage, store instruction
@@ -31,27 +31,31 @@ module mmu (
     output reg [DATA_WIDTH/8-1:0]       wb_sel_o,
     output reg                          wb_we_o,
 
-    // data direct padd (for IF1/IF2)
+    // data direct pass (for IF1/IF2)
     output reg                          if1_if2_pc_now,
 
     // data direct pass (for MEM1/MEM2)
-    output reg  [ADDR_WIDTH-1:0]        exe_mem1_pc_now,
-    output reg                          exe_mem1_mem_en,
-    output reg                          exe_mem1_rf_wen,
-    output reg  [REG_ADDR_WIDTH-1:0]    exe_mem1_rf_waddr,
-    output reg  [DATA_WIDTH-1:0]        exe_mem1_alu_result,
-    output reg                          exe_mem1_mem_we,
-    output reg  [DATA_WIDTH/8-1:0]      exe_mem1_mem_sel,
-    output reg  [DATA_WIDTH-1:0]        exe_mem1_mem_wdata,
+    input wire  [ADDR_WIDTH-1:0]        exe_mem1_pc_now,
+    input wire                          exe_mem1_mem_en,
+    input wire                          exe_mem1_rf_wen,
+    input wire  [REG_ADDR_WIDTH-1:0]    exe_mem1_rf_waddr,
+    input wire  [DATA_WIDTH-1:0]        exe_mem1_alu_result,
+    input wire                          exe_mem1_mem_we,
+    input wire  [DATA_WIDTH/8-1:0]      exe_mem1_mem_sel,
+    input wire  [DATA_WIDTH-1:0]        exe_mem1_mem_wdata,
+    input wire  [DATA_WIDTH-1:0]        exe_mem1_inst,
+    input wire  [2:0]                   exe_mem1_csr_op,
 
     output reg  [ADDR_WIDTH-1:0]        mem1_mem2_pc_now,      // only for debug
     output reg                          mem1_mem2_mem_en,
     output reg                          mem1_mem2_rf_wen,
     output reg  [REG_ADDR_WIDTH-1:0]    mem1_mem2_rf_waddr,
-    output reg  [DATA_WIDTH-1:0]        mem1_mem2_alu_result,  // only for debug
+    output reg  [DATA_WIDTH-1:0]        mem1_mem2_rf_wdata,
     output reg                          mem1_mem2_mem_we,
     output reg  [DATA_WIDTH/8-1:0]      mem1_mem2_mem_sel,
-    output reg  [DATA_WIDTH-1:0]        mem1_mem2_mem_wdata
+    output reg  [DATA_WIDTH-1:0]        mem1_mem2_mem_wdata,
+    output reg  [DATA_WIDTH-1:0]        mem1_mem2_inst,
+    output reg  [2:0]                   mem1_mem2_csr_op
 );
 
 reg page_fault;
@@ -79,7 +83,7 @@ assign pte_addr = (cur_level == 1'b1)
 
 // wishbone interface
 assign wb_stb_o = wb_cyc_o;
-assign wb_adr_o = pte_addr[ADDR_WIDTH-1:0];  // “拼出来的 34 位物理地址可以直接去掉最高的两位当作 32 位地址进行使用。”
+assign wb_adr_o = pte_addr[ADDR_WIDTH-1:0];  // “拼出来�? 34 佝物睆地�?坯以直接去掉�?高的两佝当作 32 佝地�?进行使用。�??
 assign wb_dat_o = {DATA_WIDTH{1'b0}};
 assign wb_sel_o = {{DATA_WIDTH/8}{1'b0}};
 assign wb_we_o  = 1'b0;
@@ -165,7 +169,7 @@ always_ff @(posedge clk) begin
                             ) begin
                             raise_page_fault();
                         end else if (cur_level == 1 && read_pte.ppn0 != 0) begin
-                            /* 6. If i > 0 and pte.ppn[i − 1 : 0] != 0, this is a misaligned superpage; 
+                            /* 6. If i > 0 and pte.ppn[i �? 1 : 0] != 0, this is a misaligned superpage; 
                                 stop and raise a page-fault exception corresponding to the original access type */
                             raise_page_fault();
                         end else if (!paddr_valid(pte_addr[ADDR_WIDTH-1:0])) begin
@@ -182,7 +186,7 @@ always_ff @(posedge clk) begin
                     // If it is non-leaf PTE
                     end else begin
                         /* 4. ... Otherwise, this PTE is a pointer to the next level of the page table. 
-                            Let i = i − 1. If i < 0, stop and raise a page-fault exception corresponding to the original access type. 
+                            Let i = i �? 1. If i < 0, stop and raise a page-fault exception corresponding to the original access type. 
                             Otherwise, let a = pte.ppn × PAGESIZE and go to step 2. */
                         if (cur_level == 0) begin
                             raise_page_fault();
@@ -214,14 +218,14 @@ function automatic logic paddr_valid(
         || (paddr == `MTIMECMP_ADDR) || (paddr == `MTIMECMP_ADDR+4)   // CSR - mtimecmp
         || (paddr == `MTIME_ADDR)    || (paddr == `MTIME_ADDR+4)      // CSR - mtime
         || ( ~|((paddr ^ 32'h8000_0000) & 32'hFF80_0000) );           // codes and data [equivalent to (32'h8000_0000 <= paddr && paddr <= 32'h807F_FFFF)]
-    // TODO: 如果增加更多外设，需要在这里补上相应的物理地址区间
+    // TODO: 如果增加更多外设，需覝在这里补上相应的物睆地�?区间
     /* 
-        0x10000000-0x10000007	串口数据及状态
+        0x10000000-0x10000007	串坣数杮坊状�?
         0x80000000-0x807FFFFF:
-            0x80000000-0x800FFFFF	监控程序代码
-            0x80100000-0x803FFFFF	用户程序代码
-            0x80400000-0x807EFFFF	用户程序数据
-            0x807F0000-0x807FFFFF	监控程序数据
+            0x80000000-0x800FFFFF	监控程庝代砝
+            0x80100000-0x803FFFFF	用户程庝代砝
+            0x80400000-0x807EFFFF	用户程庝数杮
+            0x807F0000-0x807FFFFF	监控程庝数杮
      */
 endfunction
 
@@ -291,10 +295,13 @@ task output_other_data();
     mem1_mem2_mem_en      <= exe_mem1_mem_en;
     mem1_mem2_rf_wen      <= exe_mem1_rf_wen;
     mem1_mem2_rf_waddr    <= exe_mem1_rf_waddr;
-    mem1_mem2_alu_result  <= exe_mem1_alu_result;  // only for debug
+    mem1_mem2_rf_wdata    <= exe_mem1_alu_result;  // only for debug
     mem1_mem2_mem_we      <= exe_mem1_mem_we;
     mem1_mem2_mem_sel     <= exe_mem1_mem_sel;
     mem1_mem2_mem_wdata   <= exe_mem1_mem_wdata;
+    mem1_mem2_inst        <= exe_mem1_inst;
+    mem1_mem2_csr_op      <= exe_mem1_csr_op;
+
 endtask
 
 // function automatic logic[33:0] calc_pte_addr(pte_t prev_pte = 'b0);

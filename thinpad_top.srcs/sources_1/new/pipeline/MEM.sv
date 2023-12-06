@@ -7,6 +7,7 @@ module MEM (
 
     input wire                          mem_en_i,
     input wire [ADDR_WIDTH-1:0]         mem_addr_i,
+    input wire [DATA_WIDTH-1:0]         rf_wdata_i,
     input wire                          rf_wen_i,
     input wire [REG_ADDR_WIDTH-1:0]     rf_waddr_i,
     output reg [DATA_WIDTH-1:0]         rf_wdata_o,
@@ -27,10 +28,38 @@ module MEM (
     input wire                          stall_i,
     input wire                          bubble_i,
 
+    output reg  [CSR_ADDR_WIDTH-1:0]    csr_raddr_o,
+    input wire  [DATA_WIDTH-1:0]        csr_rdata_i,
+    output reg  [CSR_ADDR_WIDTH-1:0]    csr_waddr_o,
+    output reg  [DATA_WIDTH-1:0]        csr_wdata_o,
+    output reg                          csr_we_o,
+
     // debug
     input wire [ADDR_WIDTH-1: 0] pc_now_i,
     output reg [ADDR_WIDTH-1: 0] pc_now_o
 );
+
+    always_comb begin
+        csr_raddr_o = inst_i[31:20];
+        csr_waddr_o = inst_i[31:20];
+        if (csr_op_i == 3'b001) begin   // CSRRW
+            csr_wdata_o = rf_rdata_a_i;
+            if (alu_y_i != 0) begin
+                csr_we_o = 1'b1;
+            end else begin
+                csr_we_o = 1'b0;
+            end
+        end else if (csr_op_i == 3'b010) begin   // CSRRS
+            csr_wdata_o = csr_rdata_i | rf_rdata_a_i;
+            csr_we_o = 1'b1;
+        end else if (csr_op_i == 3'b011) begin   // CSRRC
+            csr_wdata_o = csr_rdata_i & ~rf_rdata_a_i;
+            csr_we_o = 1'b1;
+        end else begin
+            csr_wdata_o = csr_rdata_i;
+            csr_we_o = 1'b0;
+        end
+    end
 
     reg [31:0] lb_data;
     assign lb_data = wb_dat_i >> ((mem_addr_i << 3) & 32'h1f);
@@ -68,7 +97,11 @@ module MEM (
                     end
                 end else begin
                     wb_stb_o <= 1'b0;
-                    rf_wdata_o <= mem_addr_i;
+                    if (csr_op_i) begin
+                        rf_wdata_o <= csr_rdata_i;
+                    end else begin
+                        rf_wdata_o <= rf_wdata_i;
+                    end
                     rf_wen_o <= rf_wen_i;
                     rf_waddr_o <= rf_waddr_i;
                 end

@@ -10,6 +10,7 @@ module EXE (
     input wire [DATA_WIDTH-1:0]         rf_rdata_a_i,
     input wire [DATA_WIDTH-1:0]         rf_rdata_b_i,
     input wire [DATA_WIDTH-1:0]         inst_i,
+    output reg [DATA_WIDTH-1:0]         inst_o,
     input wire [`INSTR_TYPE_WIDTH-1:0]  imm_type_i,
     input wire                          use_rs2_i,
 
@@ -34,16 +35,11 @@ module EXE (
     input wire                          use_pc_i,
     input wire                          comp_op_i,
     input wire [2:0]                    csr_op_i,
+    output reg [2:0]                    csr_op_o,
     input wire                          jump_i,
     output reg                          branch_comb_o,
     input wire                          stall_i,
     input wire                          bubble_i,
-
-    output reg  [CSR_ADDR_WIDTH-1:0]    csr_raddr_o,
-    input wire  [DATA_WIDTH-1:0]        csr_rdata_i,
-    output reg  [CSR_ADDR_WIDTH-1:0]    csr_waddr_o,
-    output reg  [DATA_WIDTH-1:0]        csr_wdata_o,
-    output reg                          csr_we_o,
 
     // data forwarding
     input wire [REG_ADDR_WIDTH-1:0]     exe_mem1_rf_waddr_i,
@@ -52,28 +48,6 @@ module EXE (
     // debug
     output reg [ADDR_WIDTH-1:0]         pc_now_o
 );
-
-    always_comb begin
-        csr_raddr_o = inst_i[31:20];
-        csr_waddr_o = inst_i[31:20];
-        if (csr_op_i == 3'b001) begin   // CSRRW
-            csr_wdata_o = rf_rdata_a_i;
-            if (alu_y_i != 0) begin
-                csr_we_o = 1'b1;
-            end else begin
-                csr_we_o = 1'b0;
-            end
-        end else if (csr_op_i == 3'b010) begin   // CSRRS
-            csr_wdata_o = csr_rdata_i | rf_rdata_a_i;
-            csr_we_o = 1'b1;
-        end else if (csr_op_i == 3'b011) begin   // CSRRC
-            csr_wdata_o = csr_rdata_i & ~rf_rdata_a_i;
-            csr_we_o = 1'b1;
-        end else begin
-            csr_wdata_o = csr_rdata_i;
-            csr_we_o = 1'b0;
-        end
-    end
 
     wire [DATA_WIDTH-1:0] rf_rdata_a_forwarded;
     wire [DATA_WIDTH-1:0] rf_rdata_b_forwarded;
@@ -136,6 +110,8 @@ module EXE (
             mem_sel_o <= 4'b0;
             mem_wdata_o <= 32'b0;
             pc_now_o <= pc_now_i;
+            inst_o <= 32'b0;
+            csr_op_o <= 3'b0;
         end else if (stall_i) begin
         end else if (bubble_i) begin
             alu_result_o <= 32'b0;
@@ -146,11 +122,13 @@ module EXE (
             mem_sel_o <= 4'b0;
             mem_wdata_o <= 32'b0;
             pc_now_o <= 32'b0;
+            inst_o <= 32'b0;
+            csr_op_o <= 3'b0;
         end else begin
             if (jump_i) begin
                 alu_result_o <= pc_now_i+4;
-            end else if (csr_op_i != 0) begin
-                alu_result_o <= csr_rdata_i;
+            // end else if (csr_op_i != 0) begin
+            //     alu_result_o <= csr_rdata_i;
             end else begin
                 alu_result_o <= alu_y_i;
             end
@@ -161,6 +139,8 @@ module EXE (
             mem_sel_o <= mem_sel_i;
             mem_wdata_o <= rf_rdata_b_forwarded;
             pc_now_o <= pc_now_i;
+            inst_o <= inst_i;
+            csr_op_o <= csr_op_i;
         end
     end
 
