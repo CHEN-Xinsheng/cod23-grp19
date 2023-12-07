@@ -33,6 +33,7 @@ module ID (
     input wire                          instr_access_fault_i,
     output reg                          instr_page_fault_o,
     output reg                          instr_access_fault_o,
+    output reg                          csr_op_comb,
     input wire                          stall_i,
     input wire                          bubble_i
 );
@@ -356,5 +357,11 @@ module ID (
         end
     end
 
+    always_comb begin
+        if (funct7 == 7'b1110011)
+            csr_op_comb = funct3;
+        else
+            csr_op_comb = 3'b0;
+    end
 
 endmodule

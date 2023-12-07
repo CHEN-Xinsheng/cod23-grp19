@@ -20,9 +20,9 @@ module IF (
         if (rst) begin
             pc <= 32'h80000000;
         end else begin
-            if (stall_i) begin
-            end else if (~branch_taken_i) begin
+            if (~branch_taken_i) begin
                 pc <= pc_true_i;
+            end else if (stall_i || bubble_i) begin
             end else begin
                 pc <= pc_pred_i;
             end

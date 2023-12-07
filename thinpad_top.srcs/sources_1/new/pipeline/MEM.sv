@@ -70,6 +70,22 @@ module MEM (
     always_ff @(posedge clk) begin
         if (rst) begin
             wb_stb_o <= 1'b0;
+        end else begin
+            if (stall_i) begin
+            end else if (bubble_i) begin
+                if (mem_re_i || mem_we_i) begin
+                    wb_stb_o <= 1'b1;
+                end else begin
+                    wb_stb_o <= 1'b0;
+                end
+            end else begin
+                wb_stb_o <= 1'b0;
+            end
+        end
+    end
+
+    always_ff @(posedge clk) begin
+        if (rst) begin
             rf_wdata_o <= 32'b0;
             rf_wen_o <= 1'b0;
             rf_waddr_o <= 5'b0;
@@ -80,34 +96,21 @@ module MEM (
                 rf_wdata_o <= 32'b0;
                 rf_wen_o <= 0;
                 rf_waddr_o <= 5'b0;
-                if (mem_re_i || mem_we_i) begin
-                    wb_stb_o <= 1'b1;
-                end else begin
-                    wb_stb_o <= 1'b0;
-                end
                 pc_now_o <= {ADDR_WIDTH{1'b0}};
             end else begin
-                if (mem_re_i || mem_we_i) begin
-                    wb_stb_o <= 1'b0;
-                    if (mem_re_i) begin
-                        if (wb_sel_o == 4'b1111) begin
-                            rf_wdata_o <= wb_dat_i;
-                        end else begin
-                            rf_wdata_o <= {{24{lb_data[7]}}, lb_data[7:0]};
-                        end
-                        rf_wen_o <= rf_wen_i;
-                        rf_waddr_o <= rf_waddr_i;
-                    end
-                end else begin
-                    wb_stb_o <= 1'b0;
-                    if (csr_op_i) begin
-                        rf_wdata_o <= csr_rdata_i;
+                if (mem_re_i) begin
+                    if (wb_sel_o == 4'b1111) begin
+                        rf_wdata_o <= wb_dat_i;
                     end else begin
-                        rf_wdata_o <= rf_wdata_i;
+                        rf_wdata_o <= {{24{lb_data[7]}}, lb_data[7:0]};
                     end
-                    rf_wen_o <= rf_wen_i;
-                    rf_waddr_o <= rf_waddr_i;
+                end else if (csr_op_i) begin
+                    rf_wdata_o <= csr_rdata_i;
+                end else begin
+                    rf_wdata_o <= rf_wdata_i;
                 end
+                rf_wen_o <= rf_wen_i;
+                rf_waddr_o <= rf_waddr_i;
                 pc_now_o <= pc_now_i;
             end
         end

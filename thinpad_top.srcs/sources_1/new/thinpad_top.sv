@@ -463,35 +463,40 @@ module thinpad_top (
 
   /* ====================== controller ====================== */
   pipeline_controller pipeline_controller (
-    // .if_ack_i(wbm1_ack_i),
-    .mem_ack_i(wbm0_ack_i),
+    .if1_ack_i(if_mmu_ack),
+    .if2_ack_i(icache_ack),
+    .mem1_ack_i(mem_mmu_ack),
+    .mem2_ack_i(wbm0_ack_i),
+    .branch_taken_i(branch_taken),
+    .csr_branch_i(csr_branch),
+
     .exe_mem1_mem_re_i(exe_mem1_mem_re),
-    .exe_mem1_mem_we_i(exe_mem1_mem_we),
+    .exe_mem1_rf_wen_i(exe_mem1_rf_wen),
+    .exe_mem1_rf_waddr_i(exe_mem1_rf_waddr),
 
     .id_rf_raddr_a_comb_i(id_rf_raddr_a_comb),
     .id_rf_raddr_b_comb_i(id_rf_raddr_b_comb),
     .id_exe_mem_re_i(id_exe_mem_re),
-    .id_exe_mem_we_i(id_exe_mem_we),
     .id_exe_rf_wen_i(id_exe_rf_wen),
     .id_exe_rf_waddr_i(id_exe_rf_waddr),
-    .branch_taken_i(branch_taken),
 
-    .exe_mem1_rf_waddr_i(exe_mem1_rf_waddr),
-    .rf_waddr_i(rf_waddr),
+    .mem1_mem2_mem_re_i(mem1_mem2_mem_re & ~csr_branch),
+    .mem1_mem2_mem_we_i(mem1_mem2_mem_we & ~csr_branch),
 
-    .exe_branch_comb_i(exe_branch_comb),
-    .csr_branch_i(csr_branch),
+    .csr_inst_i(id_csr_op_comb || id_exe_csr_op || exe_mem1_csr_op || mem1_mem2_csr_op),
 
-    // .stall_o(stall),
-    // .bubble_o(bubble)
-    .if_stall_o(if_stall),
+    .if1_stall_o(if_stall),
+    .if2_stall_o(),
     .id_stall_o(id_stall),
     .exe_stall_o(exe_stall),
-    .mem_stall_o(mem_stall),
-    .if_bubble_o(if_bubble),
+    .mem1_stall_o(mem_stall),
+    .mem2_stall_o(),
+    .if1_bubble_o(if_bubble),
+    .if2_bubble_o(),
     .id_bubble_o(id_bubble),
     .exe_bubble_o(exe_bubble),
-    .mem_bubble_o(mem_bubble)
+    .mem1_bubble_o(mem_bubble),
+    .mem2_bubble_o()
   );
 
   /* ====================== IF1 ====================== */
@@ -535,7 +540,7 @@ module thinpad_top (
     .bubble_i(if_bubble)
   );
 
-  logic [31:0] if_mmu_ack;
+  logic if_mmu_ack;
 
   mmu if_mmu (
     .clk(sys_clk),
@@ -612,6 +617,8 @@ module thinpad_top (
   logic if2_id_instr_access_fault;
 
   /* ====================== ID ====================== */
+  logic [2:0] id_csr_op_comb;
+
   ID ID (
     .clk(sys_clk),
     .rst(sys_rst),
@@ -644,6 +651,7 @@ module thinpad_top (
     .instr_access_fault_i   (if2_id_instr_access_fault),
     .instr_page_fault_o     (id_exe_instr_page_fault),
     .instr_access_fault_o   (id_exe_instr_access_fault),
+    .csr_op_comb            (id_csr_op_comb),
 
 
     .stall_i                (id_stall),
@@ -799,7 +807,7 @@ module thinpad_top (
     .paddr_o                (mem1_mem2_paddr),
     .ack_o                  (mem_mmu_ack),
 
-    .enable_i               (exe_mem1_mem_re | exe_mem1_mem_re),  // TODO: add trap_disable?
+    .enable_i               (exe_mem1_mem_re | exe_mem1_mem_we),  // TODO: add trap_disable?
     .read_en_i              (exe_mem1_mem_re),
     .write_en_i             (exe_mem1_mem_we),
     .exe_en_i               (1'b0),
@@ -933,8 +941,8 @@ module thinpad_top (
     .rf_wdata_o(rf_wdata),
     .rf_wen_o(rf_we),
     .rf_waddr_o(rf_waddr),
-    .mem_re_i(mem1_mem2_mem_re),
-    .mem_we_i(mem1_mem2_mem_we),
+    .mem_re_i(mem1_mem2_mem_re & ~csr_branch),
+    .mem_we_i(mem1_mem2_mem_we & ~csr_branch),
     .mem_addr_i(mem1_mem2_paddr),
     .mem_sel_i(mem1_mem2_mem_sel),
     .mem_wdata_i(mem1_mem2_mem_wdata),
