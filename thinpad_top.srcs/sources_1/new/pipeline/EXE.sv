@@ -49,6 +49,8 @@ module EXE (
     output reg                          ebreak_o,
     input wire                          mret_i,
     output reg                          mret_o,
+    input wire                          sfence_i,
+    output reg                          sfence_o,
     input wire                          stall_i,
     input wire                          bubble_i,
 
@@ -133,6 +135,7 @@ module EXE (
             ecall_o <= 1'b0;
             ebreak_o <= 1'b0;
             mret_o <= 1'b0;
+            sfence_o <= 1'b0;
         end else if (stall_i) begin
         end else if (bubble_i) begin
             alu_result_o <= 32'b0;
@@ -151,6 +154,7 @@ module EXE (
             ecall_o <= 1'b0;
             ebreak_o <= 1'b0;
             mret_o <= 1'b0;
+            sfence_o <= 1'b0;
         end else begin
             if (jump_i) begin
                 alu_result_o <= pc_now_i+4;
@@ -171,6 +175,7 @@ module EXE (
             ecall_o <= ecall_i;
             ebreak_o <= ebreak_i;
             mret_o <= mret_i;
+            sfence_o <= sfence_i;
             if (csr_op_i) begin
                 if (csr_op_i[2] == 1'b0)
                     csr_data_o <= rf_rdata_a_forwarded;

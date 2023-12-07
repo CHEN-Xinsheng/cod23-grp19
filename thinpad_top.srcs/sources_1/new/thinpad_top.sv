@@ -483,6 +483,9 @@ module thinpad_top (
     .mem1_mem2_mem_re_i(mem1_mem2_mem_re & ~csr_branch),
     .mem1_mem2_mem_we_i(mem1_mem2_mem_we & ~csr_branch),
 
+    .fencei_i(fencei),
+    .sfence_i(if2_sfence),
+
     .csr_inst_i(id_csr_op_comb || id_exe_csr_op || exe_mem1_csr_op || mem1_mem2_csr_op),
 
     .if1_stall_o(if_stall),
@@ -526,7 +529,6 @@ module thinpad_top (
     .is_branch_i(id_exe_jump || id_exe_imm_type == `TYPE_B)
   );
 
-  logic fencei;
   logic [31:0] pc_vaddr;
 
   IF IF (
@@ -583,6 +585,8 @@ module thinpad_top (
 
   /* ====================== IF2 ====================== */
   logic icache_ack;
+  logic if2_sfence;
+
   icache icache (
     .clk(sys_clk),
     .rst(sys_rst),
@@ -597,6 +601,7 @@ module thinpad_top (
     .access_fault_i(if1_if2_instr_access_fault),
     .page_fault_o(if2_id_instr_page_fault),
     .access_fault_o(if2_id_instr_access_fault),
+    .sfence_o(if2_sfence),
     .stall_i(),
     .bubble_i(),
 
@@ -618,6 +623,7 @@ module thinpad_top (
 
   /* ====================== ID ====================== */
   logic [2:0] id_csr_op_comb;
+  logic fencei;
 
   ID ID (
     .clk(sys_clk),
@@ -652,6 +658,7 @@ module thinpad_top (
     .instr_page_fault_o     (id_exe_instr_page_fault),
     .instr_access_fault_o   (id_exe_instr_access_fault),
     .csr_op_comb            (id_csr_op_comb),
+    .sfence_o               (id_exe_sfence),
 
 
     .stall_i                (id_stall),
@@ -687,6 +694,7 @@ module thinpad_top (
   logic id_exe_mret;
   logic id_exe_instr_page_fault;
   logic id_exe_instr_access_fault;
+  logic id_exe_sfence;
 
   /* ====================== EXE ====================== */
 
@@ -750,6 +758,8 @@ module thinpad_top (
     .ecall_o(exe_mem1_ecall),
     .ebreak_o(exe_mem1_ebreak),
     .mret_o(exe_mem1_mret),
+    .sfence_i(id_exe_sfence),
+    .sfence_o(exe_mem1_sfence),
     
     // data forwarding
     .exe_mem1_rf_waddr_i(exe_mem1_rf_waddr),
@@ -792,6 +802,7 @@ module thinpad_top (
   logic                       exe_mem1_ecall;
   logic                       exe_mem1_ebreak;
   logic                       exe_mem1_mret;
+  logic                       exe_mem1_sfence;
 
   /* ====================== MEM1 ====================== */
   logic                       mem_mmu_ack;

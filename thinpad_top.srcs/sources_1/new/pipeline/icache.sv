@@ -21,6 +21,7 @@ module icache # (
     input wire access_fault_i,
     output reg page_fault_o,
     output reg access_fault_o,
+    output reg sfence_o,
     input wire stall_i,
     input wire bubble_i,
 
@@ -147,6 +148,8 @@ module icache # (
             end
         end
     end
+
+    assign sfence_o = inst[31:25] == 7'b0001001 && inst[14:0] == 15'b000000001110011;
 
     assign wb_cyc_o = wb_stb_o;
     assign wb_dat_o = {DATA_WIDTH{1'b0}};
