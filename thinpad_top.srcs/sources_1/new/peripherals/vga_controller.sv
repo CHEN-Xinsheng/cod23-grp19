@@ -11,9 +11,9 @@ module vga_controller (
     input wire [DATA_WIDTH/8-1:0] wb_sel_i,
     input wire wb_we_i,
     
-    input wire [7:0] bram_0_dat_i,
-    input wire [7:0] bram_1_dat_i,
-    output reg [7:0] bram_dat_o
+    input wire [BRAM_DATA_WIDTH-1:0] bram_0_dat_i,
+    input wire [BRAM_DATA_WIDTH-1:0] bram_1_dat_i,
+    output reg [BRAM_DATA_WIDTH-1:0] bram_dat_o
 
     input wire vga_ack_i
     output reg [2:0] vga_scale_o,
@@ -50,6 +50,11 @@ module vga_controller (
 
     always_ff @(posedge clk) begin
         if (rst) begin
+            wb_ack_o <= 1'b0;
+            vga_scale_reg <= 32'h0000_0001;
+            bram_which_reg <= 32'h0000_0000;
+            bram_which <= 0;
+            vga_scale <= 3'b001;
             state <= STATE_IDLE;
         end else begin
             case (state)
