@@ -24,6 +24,9 @@ module mmu (
     output reg                          store_access_fault_o,
     output reg                          instr_access_fault_o,
 
+    // tlb reset
+    input wire                          tlb_reset_i,   // for sfence.vma instruction
+
     // wishbone interface
     output reg                          wb_cyc_o,
     output reg                          wb_stb_o,
@@ -164,7 +167,12 @@ always_ff @(posedge clk) begin
                             cur_level <= 1'b1;
                         end
                     end
-                end
+                end else begin
+                    if (tlb_reset_i) begin
+                        reset_tlb();
+                    end
+                    output_other_data();
+                end 
             end
             FETCH_PTE: begin
                 if (wb_ack_i) begin
