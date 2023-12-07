@@ -2,87 +2,79 @@
 
 
 module EXE (
-    input wire clk,
-    input wire rst,
-    input wire [4:0] rf_raddr_a_i,
-    input wire [4:0] rf_raddr_b_i,
-    input wire [31:0] rf_rdata_a_i,
-    input wire [31:0] rf_rdata_b_i,
-    input wire [31:0] inst_i,
-    input wire [2:0] imm_type_i,
-    input wire use_rs2_i,
+    input wire                          clk,
+    input wire                          rst,
 
-    output reg [31:0] alu_a_o,
-    output reg [31:0] alu_b_o,
-    input wire [31:0] alu_y_i,
-    output reg [31:0] alu_result_o,
+    input wire [REG_ADDR_WIDTH-1:0]     rf_raddr_a_i,
+    input wire [REG_ADDR_WIDTH-1:0]     rf_raddr_b_i,
+    input wire [DATA_WIDTH-1:0]         rf_rdata_a_i,
+    input wire [DATA_WIDTH-1:0]         rf_rdata_b_i,
+    input wire [DATA_WIDTH-1:0]         inst_i,
+    output reg [DATA_WIDTH-1:0]         inst_o,
+    input wire [`INSTR_TYPE_WIDTH-1:0]  imm_type_i,
+    input wire                          use_rs2_i,
 
-    input wire mem_en_i,
-    output reg mem_en_o,
-    input wire rf_wen_i,
-    output reg rf_wen_o,
-    input wire [4:0] rf_waddr_i,
-    output reg [4:0] rf_waddr_o,
-    input wire mem_we_i,
-    output reg mem_we_o,
-    input wire [3:0] mem_sel_i,
-    output reg [3:0] mem_sel_o,
-    output reg [31:0] mem_dat_o_o,
-    input wire [31:0] pc_now_i,
-    output reg [31:0] pc_next_o,
-    input wire use_pc_i,
-    input wire comp_op_i,
-    input wire [2:0] csr_op_i,
-    input wire jump_i,
-    output reg branch_comb_o,
-    input wire stall_i,
-    input wire bubble_i,
+    output reg [DATA_WIDTH-1:0]         alu_a_o,
+    output reg [DATA_WIDTH-1:0]         alu_b_o,
+    input wire [DATA_WIDTH-1:0]         alu_y_i,
+    output reg [DATA_WIDTH-1:0]         alu_result_o,
 
-    output reg  [11:0] csr_raddr_o,
-    input wire  [31:0] csr_rdata_i,
-    output reg  [11:0] csr_waddr_o,
-    output reg  [31:0] csr_wdata_o,
-    output reg  csr_we_o,
+    input wire                          rf_wen_i,
+    output reg                          rf_wen_o,
+    input wire [REG_ADDR_WIDTH-1:0]     rf_waddr_i,
+    output reg [REG_ADDR_WIDTH-1:0]     rf_waddr_o,
+    input wire                          mem_re_i,
+    output reg                          mem_re_o,
+    input wire                          mem_we_i,
+    output reg                          mem_we_o,
+    input wire [DATA_WIDTH/8-1:0]       mem_sel_i,
+    output reg [DATA_WIDTH/8-1:0]       mem_sel_o,
+    output reg [DATA_WIDTH-1:0]         mem_wdata_o,
+    input wire [ADDR_WIDTH-1:0]         pc_now_i,
+    output reg [ADDR_WIDTH-1:0]         pc_next_o,
+    input wire                          use_pc_i,
+    input wire                          comp_op_i,
+    input wire [2:0]                    csr_op_i,
+    output reg [2:0]                    csr_op_o,
+    output reg [DATA_WIDTH-1:0]         csr_data_o,
+    input wire                          jump_i,
+    output reg                          branch_comb_o,
+    input wire                          instr_page_fault_i,
+    input wire                          instr_access_fault_i,
+    output reg                          instr_page_fault_o,
+    output reg                          instr_access_fault_o,
+    input wire                          ecall_i,
+    output reg                          ecall_o,
+    input wire                          ebreak_i,
+    output reg                          ebreak_o,
+    input wire                          mret_i,
+    output reg                          mret_o,
+    input wire                          sfence_vma_i,
+    output reg                          sfence_vma_o,
+    input wire                          stall_i,
+    input wire                          bubble_i,
 
     // data forwarding
-    input wire [4:0] exe_mem_rf_waddr_i,
-    input wire [31:0] exe_mem_alu_result_i,
+    input wire [REG_ADDR_WIDTH-1:0]     exe_mem1_rf_waddr_i,
+    input wire [ADDR_WIDTH-1:0]         exe_mem1_alu_result_i,
+    input wire [REG_ADDR_WIDTH-1:0]     mem1_mem2_rf_waddr_i,
+    input wire [ADDR_WIDTH-1:0]         mem1_mem2_rf_wdata_i,
 
     // debug
-    output reg [31:0] pc_now_o
+    output reg [ADDR_WIDTH-1:0]         pc_now_o
 );
-
-    always_comb begin
-        csr_raddr_o = inst_i[31:20];
-        csr_waddr_o = inst_i[31:20];
-        if (csr_op_i == 3'b001) begin   // CSRRW
-            csr_wdata_o = rf_rdata_a_i;
-            if (alu_y_i != 0) begin
-                csr_we_o = 1'b1;
-            end else begin
-                csr_we_o = 1'b0;
-            end
-        end else if (csr_op_i == 3'b010) begin   // CSRRS
-            csr_wdata_o = csr_rdata_i | rf_rdata_a_i;
-            csr_we_o = 1'b1;
-        end else if (csr_op_i == 3'b011) begin   // CSRRC
-            csr_wdata_o = csr_rdata_i & ~rf_rdata_a_i;
-            csr_we_o = 1'b1;
-        end else begin
-            csr_wdata_o = csr_rdata_i;
-            csr_we_o = 1'b0;
-        end
-    end
 
     wire [DATA_WIDTH-1:0] rf_rdata_a_forwarded;
     wire [DATA_WIDTH-1:0] rf_rdata_b_forwarded;
-    assign rf_rdata_a_forwarded = (exe_mem_rf_waddr_i != 0 && (exe_mem_rf_waddr_i == rf_raddr_a_i)) 
-                                    ? exe_mem_alu_result_i  // 这种情况下 MEM-EXE 的指令不是 load-use 关系，这一点由 pipeline_controller 保证
-                                    : rf_rdata_a_i;         // 对于 WB 正在写寄存器的情况，已经在 regfile 中实现了相应的旁路
-    assign rf_rdata_b_forwarded = (exe_mem_rf_waddr_i != 0 && (exe_mem_rf_waddr_i == rf_raddr_b_i)) 
-                                    ? exe_mem_alu_result_i  // 这种情况下 MEM-EXE 的指令不是 load-use 关系，这一点由 pipeline_controller 保证
-                                    : rf_rdata_b_i;         // 对于 WB 正在写寄存器的情况，已经在 regfile 中实现了相应的旁路
-
+    assign rf_rdata_a_forwarded = (exe_mem1_rf_waddr_i != 0  && (exe_mem1_rf_waddr_i  == rf_raddr_a_i)) ? exe_mem1_alu_result_i :
+                                  (mem1_mem2_rf_waddr_i != 0 && (mem1_mem2_rf_waddr_i == rf_raddr_a_i)) ? mem1_mem2_rf_wdata_i :
+                                   rf_rdata_a_i;
+    assign rf_rdata_b_forwarded = (exe_mem1_rf_waddr_i != 0  && (exe_mem1_rf_waddr_i  == rf_raddr_b_i)) ? exe_mem1_alu_result_i :
+                                  (mem1_mem2_rf_waddr_i != 0 && (mem1_mem2_rf_waddr_i == rf_raddr_b_i)) ? mem1_mem2_rf_wdata_i :
+                                   rf_rdata_b_i;
+    /* MEM1-EXE, MEM2-EXE 的指令都不是 load-use 关系，这�?点由 pipeline_controller 保证 */
+    /* 对于 WB 正在写寄存器的情况，已经�? regfile 中实现了相应的旁�? */
+    /* 目前的实现中，如果有 CSR 指令进入流水线，则暂�? IF，即 CSR 指令后不会再有其它任何指令，�?以不�?要�?�虑 CSR 读写指令修改�? rs1, rs2 的情�? */
 
     always_comb begin
         if (use_pc_i) begin
@@ -128,38 +120,70 @@ module EXE (
     always_ff @(posedge clk) begin
         if (rst) begin
             alu_result_o <= 32'b0;
-            mem_en_o <= 0;
+            mem_re_o <= 0;
             rf_wen_o <= 0;
             rf_waddr_o <= 5'b0;
             mem_we_o <= 0;
             mem_sel_o <= 4'b0;
-            mem_dat_o_o <= 32'b0;
+            mem_wdata_o <= 32'b0;
             pc_now_o <= pc_now_i;
+            inst_o <= 32'b0;
+            csr_op_o <= 3'b0;
+            csr_data_o <= 32'b0;
+            instr_access_fault_o <= 1'b0;
+            instr_page_fault_o <= 1'b0;
+            ecall_o <= 1'b0;
+            ebreak_o <= 1'b0;
+            mret_o <= 1'b0;
+            sfence_vma_o <= 1'b0;
         end else if (stall_i) begin
         end else if (bubble_i) begin
             alu_result_o <= 32'b0;
-            mem_en_o <= 0;
+            mem_re_o <= 0;
             rf_wen_o <= 0;
             rf_waddr_o <= 5'b0;
             mem_we_o <= 0;
             mem_sel_o <= 4'b0;
-            mem_dat_o_o <= 32'b0;
+            mem_wdata_o <= 32'b0;
             pc_now_o <= 32'b0;
+            inst_o <= 32'b0;
+            csr_op_o <= 3'b0;
+            csr_data_o <= 32'b0;
+            instr_access_fault_o <= 1'b0;
+            instr_page_fault_o <= 1'b0;
+            ecall_o <= 1'b0;
+            ebreak_o <= 1'b0;
+            mret_o <= 1'b0;
+            sfence_vma_o <= 1'b0;
         end else begin
             if (jump_i) begin
                 alu_result_o <= pc_now_i+4;
-            end else if (csr_op_i != 0) begin
-                alu_result_o <= csr_rdata_i;
             end else begin
                 alu_result_o <= alu_y_i;
             end
-            mem_en_o <= mem_en_i;
+            mem_re_o <= mem_re_i;
             rf_wen_o <= rf_wen_i;
             rf_waddr_o <= rf_waddr_i;
             mem_we_o <= mem_we_i;
             mem_sel_o <= mem_sel_i;
-            mem_dat_o_o <= rf_rdata_b_forwarded;
+            mem_wdata_o <= rf_rdata_b_forwarded;
             pc_now_o <= pc_now_i;
+            inst_o <= inst_i;
+            csr_op_o <= csr_op_i;
+            instr_access_fault_o <= instr_access_fault_i;
+            instr_page_fault_o <= instr_page_fault_i;
+            ecall_o <= ecall_i;
+            ebreak_o <= ebreak_i;
+            mret_o <= mret_i;
+            sfence_vma_o <= sfence_vma_i;
+            if (csr_op_i) begin
+                if (csr_op_i[2] == 1'b0)
+                    csr_data_o <= rf_rdata_a_forwarded;
+                else
+                    csr_data_o <= {27'b0, inst_i[19:15]};
+            end else begin
+                csr_data_o <= 32'b0;
+            end
         end
     end
 

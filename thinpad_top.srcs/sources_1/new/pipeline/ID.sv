@@ -2,34 +2,41 @@
 
 
 module ID (
-    input wire clk,
-    input wire rst,
-    input wire [31:0] inst_i,
-    output reg [31:0] inst_o,
-    output reg [4:0] rf_raddr_a_o,
-    output reg [4:0] rf_raddr_b_o,
-    output wire [4:0] id_rf_raddr_a_comb,
-    output wire [4:0] id_rf_raddr_b_comb,
-    output reg [2:0] imm_type_o,
-    output reg [3:0] alu_op_o,
-    output reg use_rs2_o,
-    output reg mem_en_o,
-    output reg rf_wen_o,
-    output reg [4:0] rf_waddr_o,
-    output reg mem_we_o,
-    output reg [3:0] mem_sel_o,
-    input wire [31:0] pc_now_i,
-    output reg [31:0] pc_now_o,
-    output reg use_pc_o,
-    output reg comp_op_o,
-    output reg jump_o,
-    output reg [2:0] csr_op_o,
-    output reg ecall_o,
-    output reg ebreak_o,
-    output reg mret_o,
-    output reg fencei_o,
-    input wire stall_i,
-    input wire bubble_i
+    input wire                          clk,
+    input wire                          rst,
+
+    input wire  [DATA_WIDTH-1:0]        inst_i,
+    output reg  [DATA_WIDTH-1:0]        inst_o,
+    output reg  [REG_ADDR_WIDTH-1:0]    rf_raddr_a_o,
+    output reg  [REG_ADDR_WIDTH-1:0]    rf_raddr_b_o,
+    output wire [REG_ADDR_WIDTH-1:0]    id_rf_raddr_a_comb,
+    output wire [REG_ADDR_WIDTH-1:0]    id_rf_raddr_b_comb,
+    output reg  [`INSTR_TYPE_WIDTH-1:0] imm_type_o,
+    output reg  [`ALU_OP_WIDTH-1:0]     alu_op_o,
+    output reg                          use_rs2_o,
+    output reg                          rf_wen_o,
+    output reg [REG_ADDR_WIDTH-1:0]     rf_waddr_o,
+    output reg                          mem_re_o,
+    output reg                          mem_we_o,
+    output reg [DATA_WIDTH/8-1:0]       mem_sel_o,
+    input wire [ADDR_WIDTH-1:0]         pc_now_i,
+    output reg [ADDR_WIDTH-1:0]         pc_now_o,
+    output reg                          use_pc_o,
+    output reg                          comp_op_o,
+    output reg                          jump_o,
+    output reg [`CSR_OP_WIDTH-1:0]      csr_op_o,
+    output reg                          ecall_o,
+    output reg                          ebreak_o,
+    output reg                          mret_o,
+    output reg                          fencei_o,
+    input wire                          instr_page_fault_i,
+    input wire                          instr_access_fault_i,
+    output reg                          instr_page_fault_o,
+    output reg                          instr_access_fault_o,
+    output reg                          csr_op_comb,
+    output reg                          sfence_vma_o,
+    input wire                          stall_i,
+    input wire                          bubble_i
 );
     
     reg [4:0] rd;
@@ -54,14 +61,13 @@ module ID (
             inst_o <= 32'h0;
             rf_raddr_a_o <= 5'd0;
             rf_raddr_b_o <= 5'd0;
-            imm_type_o <= 3'd0;
+            imm_type_o <= `INSTR_TYPE_WIDTH'd0;
             alu_op_o <= 4'd0;
             use_rs2_o <= 1'b0;
-            mem_en_o <= 1'b0;
+            mem_re_o <= 1'b0;
             mem_we_o <= 1'b0;
             rf_wen_o <= 1'b0;
             rf_waddr_o <= 5'b0;
-            mem_we_o <= 1'b0;
             pc_now_o <= 32'h0;
             mem_sel_o <= 4'b0;
             use_pc_o <= 1'b0;
@@ -71,19 +77,21 @@ module ID (
             ecall_o <= 1'b0;
             ebreak_o <= 1'b0;
             mret_o <= 1'b0;
+            instr_access_fault_o <= 1'b0;
+            instr_page_fault_o <= 1'b0;
+            sfence_vma_o <= 1'b0;
         end else if (stall_i) begin
         end else if (bubble_i) begin
             inst_o <= 32'h0;
             rf_raddr_a_o <= 5'd0;
             rf_raddr_b_o <= 5'd0;
-            imm_type_o <= 3'd0;
+            imm_type_o <= `INSTR_TYPE_WIDTH'd0;
             alu_op_o <= 4'd0;
             use_rs2_o <= 1'b0;
-            mem_en_o <= 1'b0;
+            mem_re_o <= 1'b0;
             mem_we_o <= 1'b0;
             rf_wen_o <= 1'b0;
             rf_waddr_o <= 5'b0;
-            mem_we_o <= 1'b0;
             pc_now_o <= 32'h0;
             comp_op_o <= 1'b0;
             use_pc_o <= 1'b0;
@@ -92,14 +100,20 @@ module ID (
             ecall_o <= 1'b0;
             ebreak_o <= 1'b0;
             mret_o <= 1'b0;
+            instr_access_fault_o <= 1'b0;
+            instr_page_fault_o <= 1'b0;
+            sfence_vma_o <= 1'b0;
         end else begin
             inst_o <= inst_i;
             ecall_o <= 1'b0;
             ebreak_o <= 1'b0;
             mret_o <= 1'b0;
-            fencei_o <= 1'b0;
+            // fencei_o <= 1'b0;
             comp_op_o <= 1'b0;
             pc_now_o <= pc_now_i;
+            instr_access_fault_o <= instr_access_fault_i;
+            instr_page_fault_o <= instr_page_fault_i;
+            sfence_vma_o <= 1'b0;
             case(opcode)
                 7'b0010011: begin   // TYPE_I
                     rf_raddr_a_o <= rs1;
@@ -108,7 +122,7 @@ module ID (
                     use_rs2_o <= 0;
                     use_pc_o <= 0;
                     jump_o <= 1'b0;
-                    mem_en_o <= 1'b0;
+                    mem_re_o <= 1'b0;
                     mem_we_o <= 1'b0;
                     rf_wen_o <= 1;
                     rf_waddr_o <= rd;
@@ -137,7 +151,7 @@ module ID (
                     imm_type_o <= `TYPE_R;
                     use_rs2_o <= 1;
                     use_pc_o <= 0;
-                    mem_en_o <= 1'b0;
+                    mem_re_o <= 1'b0;
                     mem_we_o <= 1'b0;
                     rf_wen_o <= 1;
                     jump_o <= 1'b0;
@@ -179,7 +193,7 @@ module ID (
                     imm_type_o <= `TYPE_S;
                     use_rs2_o <= 0;
                     use_pc_o <= 0;
-                    mem_en_o <= 1'b1;
+                    mem_re_o <= 1'b0;
                     mem_we_o <= 1'b1;
                     rf_wen_o <= 0;
                     rf_waddr_o <= 5'b0;
@@ -199,12 +213,11 @@ module ID (
                     imm_type_o <= `TYPE_I;
                     use_rs2_o <= 0;
                     use_pc_o <= 0;
-                    mem_en_o <= 1'b1;
+                    mem_re_o <= 1'b1;
                     mem_we_o <= 1'b0;
                     rf_wen_o <= 1;
                     rf_waddr_o <= rd;
                     alu_op_o <= `ALU_ADD;
-                    mem_we_o <= 0;
                     jump_o <= 1'b0;
                     csr_op_o <= 3'b0;
                     if (funct3 == 3'b000) begin     // LB
@@ -220,7 +233,7 @@ module ID (
                     imm_type_o <= `TYPE_U;
                     use_rs2_o <= 0;
                     use_pc_o <= 0;
-                    mem_en_o <= 1'b0;
+                    mem_re_o <= 1'b0;
                     mem_we_o <= 1'b0;
                     rf_wen_o <= 1;
                     rf_waddr_o <= rd;
@@ -235,7 +248,7 @@ module ID (
                     // pc_now_o <= pc_now_i;
                     use_rs2_o <= 0;
                     use_pc_o <= 1;
-                    mem_en_o <= 1'b0;
+                    mem_re_o <= 1'b0;
                     mem_we_o <= 1'b0;
                     rf_wen_o <= 0;
                     jump_o <= 1'b0;
@@ -255,7 +268,7 @@ module ID (
                     use_rs2_o <= 0;
                     use_pc_o <= 1;
                     // pc_now_o <= pc_now_i;
-                    mem_en_o <= 1'b0;
+                    mem_re_o <= 1'b0;
                     mem_we_o <= 1'b0;
                     jump_o <= 1'b0;
                     rf_wen_o <= 1;
@@ -271,7 +284,7 @@ module ID (
                     use_pc_o <= 1;
                     // pc_now_o <= pc_now_i;
                     jump_o <= 1'b1;
-                    mem_en_o <= 1'b0;
+                    mem_re_o <= 1'b0;
                     mem_we_o <= 1'b0;
                     rf_wen_o <= 1;
                     rf_waddr_o <= rd;
@@ -285,7 +298,7 @@ module ID (
                     use_rs2_o <= 0;
                     use_pc_o <= 0;
                     // pc_now_o <= pc_now_i;
-                    mem_en_o <= 1'b0;
+                    mem_re_o <= 1'b0;
                     mem_we_o <= 1'b0;
                     rf_wen_o <= 1;
                     jump_o <= 1'b1;
@@ -295,91 +308,95 @@ module ID (
                 end
                 7'b0001111: begin
                     if (funct3 == 3'b001) begin
-                        fencei_o <= 1'b1;
+                         inst_o <= 32'h0;
+                        rf_raddr_a_o <= 5'd0;
+                        rf_raddr_b_o <= 5'd0;
+                        imm_type_o <= `INSTR_TYPE_WIDTH'd0;
+                        alu_op_o <= 4'd0;
+                        use_rs2_o <= 1'b0;
+                        jump_o <= 1'b0;
+                        use_pc_o <= 1'b0;
+                        comp_op_o <= 1'b0;
+                        mem_re_o <= 1'b0;
+                        mem_we_o <= 1'b0;
+                        rf_wen_o <= 1'b0;
+                        rf_waddr_o <= 5'b0;
+                        csr_op_o <= 3'b0;
                     end else begin
-                        fencei_o <= 1'b0;
+                        // fencei_o <= 1'b0;
                     end
                 end
                 7'b1110011: begin
-                    // pc_now_o <= pc_now_i;
-                    case(funct3)
-                        3'b011: begin   // CSRRC
-                            rf_raddr_a_o <= rs1;
-                            rf_raddr_b_o <= 5'b0;
-                            imm_type_o <= 3'd0;
-                            use_rs2_o <= 1;
-                            use_pc_o <= 0;
-                            jump_o <= 1'b0;
-                            mem_en_o <= 1'b0;
-                            mem_we_o <= 1'b0;
-                            rf_wen_o <= 1;
-                            rf_waddr_o <= rd;
-                            alu_op_o <= `ALU_ADD;
-                            csr_op_o <= 3'b011;
+                    if (funct3[1:0] != 2'b0) begin
+                        rf_raddr_a_o <= rs1;
+                        rf_raddr_b_o <= 5'b0;
+                        imm_type_o <= `INSTR_TYPE_WIDTH'd0;
+                        use_rs2_o <= 1;
+                        use_pc_o <= 0;
+                        jump_o <= 1'b0;
+                        mem_re_o <= 1'b0;
+                        mem_we_o <= 1'b0;
+                        rf_wen_o <= 1;
+                        rf_waddr_o <= rd;
+                        alu_op_o <= `ALU_ADD;
+                        csr_op_o <= funct3;
+                    end else if (funct3 == 3'b0) begin
+                         inst_o <= 32'h0;
+                        rf_raddr_a_o <= 5'd0;
+                        rf_raddr_b_o <= 5'd0;
+                        imm_type_o <= `INSTR_TYPE_WIDTH'd0;
+                        alu_op_o <= 4'd0;
+                        use_rs2_o <= 1'b0;
+                        jump_o <= 1'b0;
+                        use_pc_o <= 1'b0;
+                        comp_op_o <= 1'b0;
+                        mem_re_o <= 1'b0;
+                        mem_we_o <= 1'b0;
+                        rf_wen_o <= 1'b0;
+                        rf_waddr_o <= 5'b0;
+                        csr_op_o <= 3'b0;
+                        if (inst_i[31:7] == 25'b0000000000000000000000000) begin     // ECALL
+                            ecall_o <= 1'b1;
+                        end else if (inst_i[31:7] == 25'b0000000000010000000000000) begin    // EBREAK
+                            ebreak_o <= 1'b1;
+                        end else if (inst_i[31:7] == 25'b0011000000100000000000000) begin    // MRET
+                            mret_o <= 1'b1;
+                        end else if (funct7 == 7'b0001001 && rd == 5'b0) begin    // SFENCE.VMA
+                            sfence_vma_o <= 1'b1;
+                        end else begin
+                            // Illegal instruction
                         end
-                        3'b010: begin   // CSRRS
-                            rf_raddr_a_o <= rs1;
-                            rf_raddr_b_o <= 5'b0;
-                            imm_type_o <= 3'd0;
-                            use_rs2_o <= 1;
-                            use_pc_o <= 0;
-                            jump_o <= 1'b0;
-                            mem_en_o <= 1'b0;
-                            mem_we_o <= 1'b0;
-                            rf_wen_o <= 1;
-                            rf_waddr_o <= rd;
-                            alu_op_o <= `ALU_ADD;
-                            csr_op_o <= 3'b010;
-                        end
-                        3'b001: begin   // CSRRW
-                            rf_raddr_a_o <= rs1;
-                            rf_raddr_b_o <= 5'b0;
-                            imm_type_o <= 3'd0;
-                            use_rs2_o <= 1;
-                            use_pc_o <= 0;
-                            jump_o <= 1'b0;
-                            mem_en_o <= 1'b0;
-                            mem_we_o <= 1'b0;
-                            rf_wen_o <= 1;
-                            rf_waddr_o <= rd;
-                            alu_op_o <= `ALU_ADD;
-                            csr_op_o <= 3'b001;
-                        end
-                        3'b000: begin
-                            if (inst_i[31:7] == 25'b0000000000000000000000000) begin     // ECALL
-                                ecall_o <= 1'b1;
-                            end else if (inst_i[31:7] == 25'b0000000000010000000000000) begin    // EBREAK
-                                ebreak_o <= 1'b1;
-                            end else if (inst_i[31:7] == 25'b0011000000100000000000000) begin    // MRET
-                                mret_o <= 1'b1;
-                            end else begin
-                                // Illegal instruction
-                            end
-                        end
-                    endcase
+                    end
                 end
                 default: begin
                     inst_o <= 32'h0;
                     rf_raddr_a_o <= 5'd0;
                     rf_raddr_b_o <= 5'd0;
-                    imm_type_o <= 3'd0;
+                    imm_type_o <= `INSTR_TYPE_WIDTH'd0;
                     alu_op_o <= 4'd0;
                     use_rs2_o <= 1'b0;
                     jump_o <= 1'b0;
                     use_pc_o <= 1'b0;
                     comp_op_o <= 1'b0;
-                    mem_en_o <= 1'b0;
+                    mem_re_o <= 1'b0;
                     mem_we_o <= 1'b0;
                     rf_wen_o <= 1'b0;
                     rf_waddr_o <= 5'b0;
-                    mem_we_o <= 1'b0;
                     // pc_now_o <= 32'h0;
                     csr_op_o <= 3'b0;
-                    fencei_o <= 1'b0;
+                    // fencei_o <= 1'b0;
                 end
             endcase
         end
     end
 
+    always_comb begin
+        if (funct7 == 7'b1110011)
+            csr_op_comb = funct3;
+        else
+            csr_op_comb = 3'b0;
+    end
+
+    assign fencei_o = opcode == 7'b0001111 && funct3 == 3'b001;
 
 endmodule

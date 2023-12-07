@@ -12,16 +12,26 @@ module icache # (
     input wire[31:0] pc_i,
     input wire enable_i,
 
+    output reg wb_we_o,
+    output reg [DATA_WIDTH-1:0] inst_o,
+    output reg icache_ack_o,
+    input wire [ADDR_WIDTH-1:0] pc_now_i,
+    output reg [ADDR_WIDTH-1:0] pc_now_o,
+    input wire page_fault_i,
+    input wire access_fault_i,
+    output reg page_fault_o,
+    output reg access_fault_o,
+    output reg sfence_vma_o,
+    input wire stall_i,
+    input wire bubble_i,
+
     output reg wb_cyc_o,
     output reg wb_stb_o,
     input wire wb_ack_i,
     output reg [ADDR_WIDTH-1:0] wb_adr_o,
     output reg [DATA_WIDTH-1:0] wb_dat_o,
     input wire [DATA_WIDTH-1:0] wb_dat_i,
-    output reg [DATA_WIDTH/8-1:0] wb_sel_o,
-    output reg wb_we_o,
-    output reg [DATA_WIDTH-1:0] inst_o,
-    output reg icache_ack_o
+    output reg [DATA_WIDTH/8-1:0] wb_sel_o
 );
 
     typedef enum logic { 
@@ -29,6 +39,8 @@ module icache # (
         IF_MEM 
     } if_state_t;
     if_state_t if_state;
+
+    logic [DATA_WIDTH - 1:0] inst;
 
     logic [TAG_WIDTH + DATA_WIDTH:0] cache[ICACHE_SIZE];
     logic [TAG_WIDTH + DATA_WIDTH:0] cacheline_hit;
@@ -89,33 +101,55 @@ module icache # (
             IF_ICACHE: begin
                 if (enable_i) begin
                     if (cache_hit) begin
-                        inst_o = cacheline_hit_data;
+                        inst = cacheline_hit_data;
                         icache_ack_o = 1'b1;
                     end else begin
-                        inst_o = 32'h0;
+                        inst = 32'h0;
                         icache_ack_o = 1'b0;
                     end
                 end else begin
                     // wb_stb_o = 1'b0;
-                    inst_o = 32'h0;
+                    inst = 32'h0;
                     icache_ack_o = 1'b1;
                 end
             end
             IF_MEM: begin
                 if (wb_ack_i) begin
-                    inst_o = wb_dat_i;
+                    inst = wb_dat_i;
                     icache_ack_o = 1'b1;
                 end else begin
-                    inst_o = 32'h0;
+                    inst = 32'h0;
                     icache_ack_o = 1'b0;
                 end
             end
             default: begin
-                inst_o = 32'h0;
+                inst = 32'h0;
                 icache_ack_o = 1'b0;
             end
         endcase
     end
+
+    always_ff @(posedge clk) begin
+        if (rst) begin
+            inst_o <= 32'h0;
+            pc_now_o <= 32'h0;
+        end else begin
+            if (stall_i) begin
+            end else if (bubble_i) begin
+                inst_o <= 32'h0;
+                pc_now_o <= 32'h0;
+                page_fault_o <= 1'b0;
+                access_fault_o <= 1'b0;
+            end else begin
+                inst_o <= inst;
+                pc_now_o <= pc_now_i;
+                page_fault_o <= page_fault_i;
+                access_fault_o <= access_fault_i;
+            end
+        end
+    end
+
+    assign sfence_vma_o = inst[31:25] == 7'b0001001 && inst[14:0] == 15'b000000001110011;
 
     assign wb_cyc_o = wb_stb_o;
     assign wb_dat_o = {DATA_WIDTH{1'b0}};
