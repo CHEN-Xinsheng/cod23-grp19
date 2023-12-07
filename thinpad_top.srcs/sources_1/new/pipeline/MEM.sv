@@ -45,22 +45,27 @@ module MEM (
     always_comb begin
         csr_raddr_o = inst_i[31:20];
         csr_waddr_o = inst_i[31:20];
-        if (csr_op_i[1:0] == 2'b01) begin   // CSRRW
-            csr_wdata_o = csr_data_i;
-        //    if (alu_y_i != 0) begin
-            csr_we_o = 1'b1;
-        //    end else begin
-        //        csr_we_o = 1'b0;
-        //    end
-        end else if (csr_op_i[1:0] == 2'b10) begin   // CSRRS
-            csr_wdata_o = csr_rdata_i | csr_data_i;
-            csr_we_o = 1'b1;
-        end else if (csr_op_i[1:0] == 2'b11) begin   // CSRRC
-            csr_wdata_o = csr_rdata_i & ~csr_data_i;
-            csr_we_o = 1'b1;
-        end else begin
+        if (inst[19:15] == 5'b0) begin
             csr_wdata_o = csr_rdata_i;
             csr_we_o = 1'b0;
+        end else begin
+            if (csr_op_i[1:0] == 2'b01) begin   // CSRRW
+                csr_wdata_o = csr_data_i;
+            //    if (alu_y_i != 0) begin
+                csr_we_o = 1'b1;
+            //    end else begin
+            //        csr_we_o = 1'b0;
+            //    end
+            end else if (csr_op_i[1:0] == 2'b10) begin   // CSRRS
+                csr_wdata_o = csr_rdata_i | csr_data_i;
+                csr_we_o = 1'b1;
+            end else if (csr_op_i[1:0] == 2'b11) begin   // CSRRC
+                csr_wdata_o = csr_rdata_i & ~csr_data_i;
+                csr_we_o = 1'b1;
+            end else begin
+                csr_wdata_o = csr_rdata_i;
+                csr_we_o = 1'b0;
+            end
         end
     end
 
