@@ -569,6 +569,10 @@ module thinpad_top (
     .load_access_fault_o    (),
     .store_access_fault_o   (),
     .instr_access_fault_o   (if1_if2_instr_access_fault),
+    .load_misaligned_o      (),
+    .store_misaligned_o     (),
+    .instr_misaligned_o     (),  // TODO
+
 
     .tlb_reset_i            (if2_sfence_vma),
     .stall_i                (if1_stall),
@@ -844,6 +848,9 @@ module thinpad_top (
     .load_access_fault_o    (mem1_mem2_load_access_fault),
     .store_access_fault_o   (mem1_mem2_store_access_fault),
     .instr_access_fault_o   (),
+    .load_misaligned_o      (), // TODO
+    .store_misaligned_o     (), // TODO
+    .instr_misaligned_o     (),
 
     .tlb_reset_i            (exe_mem1_sfence_vma),
     .stall_i                (mem1_stall),

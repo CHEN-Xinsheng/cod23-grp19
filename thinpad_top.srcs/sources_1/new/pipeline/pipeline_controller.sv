@@ -44,7 +44,7 @@ module pipeline_controller (
     output reg                      mem2_bubble_o
 );
 
-    // TODO：pipeline_controller �?要保�? MEM1-EXE, MEM2-EXE 的指令都不是 load-use 关系
+    // TODO (DONE?): pipeline_controller �?要保�? MEM1-EXE, MEM2-EXE 的指令都不是 load-use 关系
 
     always_comb begin
         if (((mem1_mem2_mem_re_i || mem1_mem2_mem_we_i) && ~mem2_ack_i) || (csr_branch_i && (~mem1_ack_i || ~if2_ack_i || ~if1_ack_i))) begin

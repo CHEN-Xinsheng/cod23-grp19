@@ -23,6 +23,9 @@ module mmu (
     output reg                          load_access_fault_o,
     output reg                          store_access_fault_o,
     output reg                          instr_access_fault_o,
+    output reg                          load_misaligned_o,
+    output reg                          store_misaligned_o,
+    output reg                          instr_misaligned_o,
 
     // tlb reset
     input wire                          tlb_reset_i,   // for sfence.vma instruction
@@ -83,12 +86,16 @@ module mmu (
 
 reg page_fault_o;
 reg access_fault_o;
+reg misaligned_o;
 assign load_page_fault_o    = page_fault_o   & read_en_i;
 assign store_page_fault_o   = page_fault_o   & write_en_i;
 assign instr_page_fault_o   = page_fault_o   & exe_en_i;
 assign load_access_fault_o  = access_fault_o & read_en_i;
 assign store_access_fault_o = access_fault_o & write_en_i;
 assign instr_access_fault_o = access_fault_o & exe_en_i;
+assign load_misaligned_o    = misaligned_o   & read_en_i;
+assign store_misaligned_o   = misaligned_o   & write_en_i;
+assign instr_misaligned_o   = misaligned_o   & exe_en_i;
 
 
 wire direct_trans = (mode_i == `MODE_M || satp_i.mode == 1'b0);
@@ -128,6 +135,7 @@ wire                        tlb_hit   = tlb_entry.valid
 logic [ADDR_WIDTH-1:0] paddr_comb;
 logic                  page_fault_comb;
 logic                  access_fault_comb;
+logic                  misaligned_comb;
 
 
 // for convenience
@@ -153,21 +161,24 @@ always_comb begin: output_ack_and_output_comb
     paddr_comb        = {ADDR_WIDTH{1'b0}};
     page_fault_comb   = 1'b0;
     access_fault_comb = 1'b0;
-    fault_case   = 0;
+    misaligned_comb   = 1'b0;
+    fault_case   = 0;  // [debug]
     // cases
     casez (state)
         IDLE: begin
             if (enable_i) begin
-                // do not translate (i.e., direct translatation)
-                if (direct_trans) begin
+                if (vaddr_i[1:0] != 2'b00) begin
+                    raise_misaligned_comb();
+                end else if (direct_trans) begin
+                    /* do not translate (i.e., direct translatation) */
                     if (!paddr_valid(vaddr_i)) begin
                         raise_access_fault_comb();
                         fault_case = 1;
                     end else begin
                         ack_paddr_comb(vaddr_i);
                     end
-                // need translation (vaddr -> paddr)
                 end else begin
+                    /* need translation (vaddr -> paddr) */
                     if (!paddr_valid(pte_addr[ADDR_WIDTH-1:0])) begin
                         raise_access_fault_comb();
                         fault_case = 2;
@@ -320,6 +331,7 @@ always_ff @(posedge clk) begin: output_data
         paddr_o               <= paddr_comb;
         page_fault_o          <= page_fault_comb;
         access_fault_o        <= access_fault_comb;
+        misaligned_o          <= misaligned_comb;
         if1_if2_icache_enable <= ~page_fault_comb & ~access_fault_comb;
         direct_pass_data();
     end
@@ -346,18 +358,28 @@ function automatic logic paddr_valid(
      */
 endfunction
 
+function raise_misaligned_comb();
+    ack_o             = 1'b1;
+    // paddr_comb        = {ADDR_WIDTH{1'b0}};  // omitted, because it is default value
+    // page_fault_comb   = 1'b0;
+    // access_fault_comb = 1'b0;
+    misaligned_comb   = 1'b1;
+endfunction
+
 function raise_page_fault_comb();
     ack_o             = 1'b1;
-    paddr_comb        = {ADDR_WIDTH{1'b0}};
+    // paddr_comb        = {ADDR_WIDTH{1'b0}};
     page_fault_comb   = 1'b1;
-    access_fault_comb = 1'b0;
+    // access_fault_comb = 1'b0;
+    // misaligned_comb   = 1'b0;
 endfunction
 
 function raise_access_fault_comb();
     ack_o             = 1'b1;
-    paddr_comb        = {ADDR_WIDTH{1'b0}};
-    page_fault_comb   = 1'b0;
+    // paddr_comb        = {ADDR_WIDTH{1'b0}};
+    // page_fault_comb   = 1'b0;
     access_fault_comb = 1'b1;
+    // misaligned_comb   = 1'b0;
 endfunction
 
 function automatic ack_paddr_comb(
@@ -365,8 +387,9 @@ function automatic ack_paddr_comb(
 );
     ack_o             = 1'b1;
     paddr_comb        = paddr_to_ret;
-    page_fault_comb   = 1'b0;
-    access_fault_comb = 1'b0;
+    // page_fault_comb   = 1'b0;
+    // access_fault_comb = 1'b0;
+    // misaligned_comb   = 1'b0;
 endfunction
 
 
@@ -397,6 +420,7 @@ task output_bubble();
     paddr_o               <= {ADDR_WIDTH{1'b0}};
     page_fault_o          <= 1'b0;
     access_fault_o        <= 1'b0;
+    misaligned_o          <= 1'b0;
     if1_if2_icache_enable <= 1'b0;
     // IF1/IF2
     if1_if2_pc_now                  <= 0;
