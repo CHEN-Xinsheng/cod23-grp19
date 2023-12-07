@@ -4,8 +4,10 @@
 
 localparam DATA_WIDTH = 32;
 localparam ADDR_WIDTH = 32;
-localparam BRAM_DATA_WIDTH = 8,
-localparam BRAM_ADDR_WIDTH = 19
+localparam BRAM_DATA_WIDTH = 8;
+localparam BRAM_ADDR_WIDTH = 19;
+localparam FLASH_DATA_WIDTH = 8;
+localparam FLASH_ADDR_WIDTH = 23;
 
 `define TYPE_R 3'd1
 `define TYPE_I 3'd2
