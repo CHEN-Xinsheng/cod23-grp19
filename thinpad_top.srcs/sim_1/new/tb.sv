@@ -46,8 +46,8 @@ module tb;
   wire uart_tsre;  // 数据发�?�完毕标�?
 
   // Windows �?要注意路径分隔符的转义，例如 "D:\\foo\\bar.bin"
-  // parameter BASE_RAM_INIT_FILE = "D:\\organization\\rv-2023\\supervisor-sv\\kernel\\kernel.bin";
-  parameter BASE_RAM_INIT_FILE = "D:\\Codes\\Computer_Organization\\rv-2023\\supervisor-sv\\kernel\\kernel.bin";
+  // parameter BASE_RAM_INIT_FILE = "D:\\organization\\rv-2023\\supervisor-rv\\kernel\\kernel.bin";
+  parameter BASE_RAM_INIT_FILE = "D:\\Codes\\Computer_Organization\\rv-2023\\supervisor-rv\\kernel\\kernel.bin";
 //   parameter BASE_RAM_INIT_FILE = "D:\\organization\\rvtests_simple\\test19.bin";
 //  parameter BASE_RAM_INIT_FILE = "D:\\Codes\\Computer_Organization\\rv-2023\\asmcode\\rvtests_simple\\test19.bin";
   // parameter BASE_RAM_INIT_FILE = "E:\\2023\\2023 fall\\Computer Organization\\cod23-grp19\\kernel.bin"; // BaseRAM 初始化文件，请修改为实际的绝对路�?
