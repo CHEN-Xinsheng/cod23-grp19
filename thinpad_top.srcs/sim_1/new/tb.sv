@@ -76,7 +76,22 @@ module tb;
 //    uart.pc_send_byte(8'h32); // ASCII '2'
 //    #10000;
 //    uart.pc_send_byte(8'h33); // ASCII '3'
+    
+    #5_200_000
+    // term operation-G
+    uart.pc_send_byte(8'h47);  // ASCII 'G'
+    // input addr
+    uart.pc_send_byte(8'h00);
+    uart.pc_send_byte(8'h10);
+    uart.pc_send_byte(8'h00);
+    uart.pc_send_byte(8'h80);
+    // uart.pc_send_byte(little_endian_32bit(32'h8000_1000));
+
   end
+
+  function automatic little_endian_32bit(input [31:0] data);
+    return {data[7:0], data[15:8], data[23:16], data[31:24]};
+  endfunction
 
   // 待测试用户设�?
   thinpad_top dut (

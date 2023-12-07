@@ -144,6 +144,8 @@ wire leaf_pte_access_allowed =
         || (mode_i == `MODE_S && read_pte.u && !mstatus_sum_i);
         /* (Ref: page 23) When SUM=0, S-mode memory accesses to pages that are accessible by U-mode (U=1 in Figure 4.18) will fault. */
 
+// [debug]
+logic [4:0] fault_case;
 
 always_comb begin: output_ack_and_output_comb
     // default
@@ -151,6 +153,7 @@ always_comb begin: output_ack_and_output_comb
     paddr_comb        = {ADDR_WIDTH{1'b0}};
     page_fault_comb   = 1'b0;
     access_fault_comb = 1'b0;
+    fault_case   = 0;
     // cases
     casez (state)
         IDLE: begin
@@ -159,6 +162,7 @@ always_comb begin: output_ack_and_output_comb
                 if (direct_trans) begin
                     if (!paddr_valid(vaddr_i)) begin
                         raise_access_fault_comb();
+                        fault_case = 1;
                     end else begin
                         ack_paddr_comb(vaddr_i);
                     end
@@ -166,6 +170,7 @@ always_comb begin: output_ack_and_output_comb
                 end else begin
                     if (!paddr_valid(pte_addr[ADDR_WIDTH-1:0])) begin
                         raise_access_fault_comb();
+                        fault_case = 2;
                     end else if (tlb_hit) begin
                         ack_paddr_comb({tlb_entry.ppn[19:0], vaddr_i[11:0]});
                     end else begin
@@ -184,6 +189,7 @@ always_comb begin: output_ack_and_output_comb
                         future standard use are set within pte, stop and raise a page-fault exception corresponding
                         to the original access type.*/
                     raise_page_fault_comb();
+                    fault_case = 3;
                 // Otherwise, the PTE is valid
                 // If it is leaf PTE
                 end else if (read_pte.r || read_pte.x) begin
@@ -193,12 +199,15 @@ always_comb begin: output_ack_and_output_comb
                     // TODO (DONE?): "the value of the SUM and MXR fields of the mstatus register"?
                     if (leaf_pte_access_allowed) begin
                         raise_page_fault_comb();
+                        fault_case = 4;
                     end else if (cur_level == 1 && read_pte.ppn0 != 0) begin
                         /* 6. If i > 0 and pte.ppn[i-1 : 0] != 0, this is a misaligned superpage; 
                             stop and raise a page-fault exception corresponding to the original access type */
                         raise_page_fault_comb();
+                        fault_case = 5;
                     end else if (!paddr_valid(pte_addr[ADDR_WIDTH-1:0])) begin
                         raise_access_fault_comb();
+                        fault_case = 6;
                     end else begin
                         ack_paddr_comb({wb_dat_i[29:10], vaddr_i[11:0]});
                     end
@@ -209,8 +218,10 @@ always_comb begin: output_ack_and_output_comb
                         Otherwise, let a = pte.ppn × PAGESIZE and go to step 2. */
                     if (cur_level == 0) begin
                         raise_page_fault_comb();
+                        fault_case = 7;
                     end else if (!paddr_valid(pte_addr[ADDR_WIDTH-1:0])) begin
                         raise_access_fault_comb();
+                        fault_case = 8;
                     end else begin
                         ack_o = 1'b0;
                     end
