@@ -602,6 +602,7 @@ module thinpad_top (
   icache icache (
     .clk(sys_clk),
     .rst(sys_rst),
+
     .fence_i(fencei),
     .pc_i(if1_if2_pc_paddr),
     .enable_i(if1_if2_icache_enable),

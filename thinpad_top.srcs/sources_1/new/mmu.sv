@@ -91,11 +91,9 @@ assign store_access_fault_o = access_fault_o & write_en_i;
 assign instr_access_fault_o = access_fault_o & exe_en_i;
 
 
-wire direct_trans;
-assign direct_trans = (mode_i == `MODE_M || satp_i.mode == 1'b0);
+wire direct_trans = (mode_i == `MODE_M || satp_i.mode == 1'b0);
 
-pte_t read_pte;
-assign read_pte = pte_t'(wb_dat_i);
+pte_t read_pte = pte_t'(wb_dat_i);
 // Ref: 4.3.2 Virtual Address Translation Process
 reg         cur_level;
 pte_t       lv1_pte;
@@ -120,14 +118,11 @@ enum logic [2:0] {
 // TLB
 tlb_entry_t  tlb[0: N_TLB_ENTRY-1];
 
-wire [TLB_INDEX_WIDTH-1:0]  tlb_index;
-tlb_entry_t                 tlb_entry;
-wire                        tlb_hit;
-assign tlb_index = vaddr_i[12+TLB_INDEX_WIDTH-1: 12];
-assign tlb_entry = tlb[tlb_index];
-assign tlb_hit = tlb_entry.valid 
-                && tlb_entry.asid == satp_i.asid
-                && tlb_entry.tag == vaddr_i[31:31-TLB_TAG_WIDTH+1];
+wire [TLB_INDEX_WIDTH-1:0]  tlb_index = vaddr_i[12+TLB_INDEX_WIDTH-1: 12];
+tlb_entry_t                 tlb_entry = tlb[tlb_index];
+wire                        tlb_hit   = tlb_entry.valid 
+                                        && tlb_entry.asid == satp_i.asid
+                                        && tlb_entry.tag == vaddr_i[31:31-TLB_TAG_WIDTH+1];
 
 
 logic [ADDR_WIDTH-1:0] paddr_comb;
@@ -136,8 +131,7 @@ logic                  access_fault_comb;
 
 
 // for convenience
-logic leaf_pte_access_allowed;
-assign leaf_pte_access_allowed = 
+wire leaf_pte_access_allowed = 
            (read_en_i        && !read_pte.r)
         // (!mstatus_mxr_i && read_en_i && !read_pte.r)
         // || (mstatus_mxr_i  && read_en_i && !(read_pte.r || read_pte.x))
