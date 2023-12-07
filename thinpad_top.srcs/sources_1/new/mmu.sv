@@ -179,7 +179,7 @@ always_comb begin: output_ack_and_output_comb
                     end
                 end
             end else begin
-                // default
+                ack_o = 1'b1;
             end
         end
         FETCH_PTE: begin
@@ -312,9 +312,9 @@ always_ff @(posedge clk) begin: output_data
     end else if (bubble_i) begin
         output_bubble();
     end else begin
-        paddr_o        <= paddr_comb;
-        page_fault_o   <= page_fault_comb;
-        access_fault_o <= access_fault_comb;
+        paddr_o               <= paddr_comb;
+        page_fault_o          <= page_fault_comb;
+        access_fault_o        <= access_fault_comb;
         if1_if2_icache_enable <= ~page_fault_comb & ~access_fault_comb;
         direct_pass_data();
     end
@@ -389,9 +389,9 @@ endtask
 
 task output_bubble();
     // CPU interface
-    paddr_o           <= {ADDR_WIDTH{1'b0}};
-    page_fault_o      <= 1'b0;
-    access_fault_o    <= 1'b0;
+    paddr_o               <= {ADDR_WIDTH{1'b0}};
+    page_fault_o          <= 1'b0;
+    access_fault_o        <= 1'b0;
     if1_if2_icache_enable <= 1'b0;
     // IF1/IF2
     if1_if2_pc_now                  <= 0;
