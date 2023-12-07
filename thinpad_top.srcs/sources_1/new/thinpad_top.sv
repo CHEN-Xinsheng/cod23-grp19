@@ -775,6 +775,8 @@ module thinpad_top (
     // data forwarding
     .exe_mem1_rf_waddr_i(exe_mem1_rf_waddr),
     .exe_mem1_alu_result_i(exe_mem1_alu_result),
+    .mem1_mem2_rf_waddr_i(mem1_mem2_rf_waddr),
+    .mem1_mem2_rf_wdata_i(mem1_mem2_rf_wdata),
 
     // stall & bubble
     .stall_i(exe_stall),
