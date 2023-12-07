@@ -134,6 +134,22 @@ logic                  page_fault_comb;
 logic                  access_fault_comb;
 
 
+// for convenience
+logic leaf_pte_access_allowed;
+assign leaf_pte_access_allowed = 
+           (read_en_i        && !read_pte.r)
+        // (!mstatus_mxr_i && read_en_i && !read_pte.r)
+        // || (mstatus_mxr_i  && read_en_i && !(read_pte.r || read_pte.x))
+        // /* (Ref: page 23) When MXR=0, only loads from pages marked readable (R=1 in Figure 4.18) will succeed.
+        //     When MXR=1, loads from pages marked either readable or executable (R=1 or X=1) will succeed. */
+        // /* mstatus.mxr is not implemented */
+        || (write_en_i        && !read_pte.w)
+        || (exe_en_i          && !read_pte.x)
+        || (mode_i == `MODE_U && !read_pte.u)
+        || (mode_i == `MODE_S && read_pte.u && !mstatus_sum_i);
+        /* (Ref: page 23) When SUM=0, S-mode memory accesses to pages that are accessible by U-mode (U=1 in Figure 4.18) will fault. */
+
+
 always_comb begin: output_ack_and_output_comb
     // default
     ack_o             = 1'b0;
@@ -180,18 +196,7 @@ always_comb begin: output_ack_and_output_comb
                         given the current privilege mode and the value of the SUM and MXR fields of the mstatus register. 
                         If not, stop and raise a page-fault exception corresponding to the original access type.*/
                     // TODO (DONE?): "the value of the SUM and MXR fields of the mstatus register"?
-                    if (   (read_en_i        && !read_pte.r)   
-                        // (!mstatus_mxr_i && read_en_i && !read_pte.r)
-                        // || (mstatus_mxr_i  && read_en_i && !(read_pte.r || read_pte.x))
-                        // /* (Ref: page 23) When MXR=0, only loads from pages marked readable (R=1 in Figure 4.18) will succeed.
-                        //     When MXR=1, loads from pages marked either readable or executable (R=1 or X=1) will succeed. */
-                        // /* mstatus.mxr is not implemented */
-                        || (write_en_i        && !read_pte.w)
-                        || (exe_en_i          && !read_pte.x)
-                        || (mode_i == `MODE_U && !read_pte.u)
-                        || (mode_i == `MODE_S && read_pte.u && !mstatus_sum_i)
-                        /* (Ref: page 23) When SUM=0, S-mode memory accesses to pages that are accessible by U-mode (U=1 in Figure 4.18) will fault. */
-                        ) begin
+                    if (leaf_pte_access_allowed) begin
                         raise_page_fault_comb();
                     end else if (cur_level == 1 && read_pte.ppn0 != 0) begin
                         /* 6. If i > 0 and pte.ppn[i-1 : 0] != 0, this is a misaligned superpage; 
@@ -262,12 +267,7 @@ always_ff @(posedge clk) begin: inner_data_and_wishbone
                     if (!read_pte.v || (!read_pte.r && read_pte.w)) begin
                         reset_state_and_wb();
                     end else if (read_pte.r || read_pte.x) begin
-                        if (   (read_en_i         && !read_pte.r)
-                            || (write_en_i        && !read_pte.w)
-                            || (exe_en_i          && !read_pte.x)
-                            || (mode_i == `MODE_U && !read_pte.u)
-                            || (mode_i == `MODE_S && read_pte.u && !mstatus_sum_i)
-                        ) begin
+                        if (leaf_pte_access_allowed) begin
                             reset_state_and_wb();
                         end else if (cur_level == 1 && read_pte.ppn0 != 0) begin
                             reset_state_and_wb();
