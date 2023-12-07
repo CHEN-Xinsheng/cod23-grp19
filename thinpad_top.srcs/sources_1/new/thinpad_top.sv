@@ -583,6 +583,7 @@ module thinpad_top (
     .wb_sel_o(wbm3_sel_o),
     .wb_we_o(wbm3_we_o),
 
+    .if1_if2_icache_enable(if1_if2_icache_enable),
     // data direct pass
     .if1_if2_pc_now         (if1_if2_pc_now)
   );
@@ -590,6 +591,7 @@ module thinpad_top (
   /* ====================== IF1/IF2 regs ====================== */
   logic if1_if2_instr_page_fault;
   logic if1_if2_instr_access_fault;
+  logic if1_if2_icache_enable;
   logic [31:0] if1_if2_pc_paddr;
   logic [31:0] if1_if2_pc_now;
 
@@ -602,7 +604,7 @@ module thinpad_top (
     .rst(sys_rst),
     .fence_i(fencei),
     .pc_i(if1_if2_pc_paddr),
-    .enable_i(1'b1),
+    .enable_i(if1_if2_icache_enable),
     .icache_ack_o(icache_ack),
     .inst_o(if2_id_inst),
     .pc_now_i(if1_if2_pc_now),

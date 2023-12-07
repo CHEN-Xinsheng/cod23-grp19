@@ -43,6 +43,7 @@ module mmu (
 
     // data direct pass (for IF1/IF2)
     output reg [ADDR_WIDTH-1:0]         if1_if2_pc_now,
+    output reg                          if1_if2_icache_enable,
 
     // data direct pass (for MEM1/MEM2)
     input wire  [ADDR_WIDTH-1:0]        exe_mem1_pc_now,
@@ -314,6 +315,7 @@ always_ff @(posedge clk) begin: output_data
         paddr_o        <= paddr_comb;
         page_fault_o   <= page_fault_comb;
         access_fault_o <= access_fault_comb;
+        if1_if2_icache_enable <= ~page_fault_comb & ~access_fault_comb;
         direct_pass_data();
     end
 end
@@ -390,6 +392,7 @@ task output_bubble();
     paddr_o           <= {ADDR_WIDTH{1'b0}};
     page_fault_o      <= 1'b0;
     access_fault_o    <= 1'b0;
+    if1_if2_icache_enable <= 1'b0;
     // IF1/IF2
     if1_if2_pc_now                  <= 0;
     // MEM1/MEM2
