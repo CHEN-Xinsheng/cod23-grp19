@@ -34,7 +34,7 @@ module ID (
     output reg                          instr_page_fault_o,
     output reg                          instr_access_fault_o,
     output reg                          csr_op_comb,
-    output reg                          sfence_o,
+    output reg                          sfence_vma_o,
     input wire                          stall_i,
     input wire                          bubble_i
 );
@@ -79,7 +79,7 @@ module ID (
             mret_o <= 1'b0;
             instr_access_fault_o <= 1'b0;
             instr_page_fault_o <= 1'b0;
-            sfence_o <= 1'b0;
+            sfence_vma_o <= 1'b0;
         end else if (stall_i) begin
         end else if (bubble_i) begin
             inst_o <= 32'h0;
@@ -102,7 +102,7 @@ module ID (
             mret_o <= 1'b0;
             instr_access_fault_o <= 1'b0;
             instr_page_fault_o <= 1'b0;
-            sfence_o <= 1'b0;
+            sfence_vma_o <= 1'b0;
         end else begin
             inst_o <= inst_i;
             ecall_o <= 1'b0;
@@ -113,7 +113,7 @@ module ID (
             pc_now_o <= pc_now_i;
             instr_access_fault_o <= instr_access_fault_i;
             instr_page_fault_o <= instr_page_fault_i;
-            sfence_o <= 1'b0;
+            sfence_vma_o <= 1'b0;
             case(opcode)
                 7'b0010011: begin   // TYPE_I
                     rf_raddr_a_o <= rs1;
@@ -362,7 +362,7 @@ module ID (
                         end else if (inst_i[31:7] == 25'b0011000000100000000000000) begin    // MRET
                             mret_o <= 1'b1;
                         end else if (funct7 == 7'b0001001 && rd == 5'b0) begin    // SFENCE.VMA
-                            sfence_o <= 1'b1;
+                            sfence_vma_o <= 1'b1;
                         end else begin
                             // Illegal instruction
                         end

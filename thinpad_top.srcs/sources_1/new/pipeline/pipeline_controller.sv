@@ -24,7 +24,7 @@ module pipeline_controller (
     input wire                      mem1_mem2_mem_we_i, 
 
     input wire                      fencei_i,
-    input wire                      sfence_i,
+    input wire                      sfence_vma_i,
 
 
     // output reg [3:0] stall_o,
@@ -79,7 +79,7 @@ module pipeline_controller (
         end else if (~if2_ack_i) begin
             {if1_stall_o, if2_stall_o, id_stall_o, exe_stall_o, mem1_stall_o, mem2_stall_o}       = 6'b100000;
             {if1_bubble_o, if2_bubble_o, id_bubble_o, exe_bubble_o, mem1_bubble_o, mem2_bubble_o} = 6'b010000;
-        end else if (sfence_i) begin
+        end else if (sfence_vma_i) begin
             {if1_stall_o, if2_stall_o, id_stall_o, exe_stall_o, mem1_stall_o, mem2_stall_o}       = 6'b000000;
             {if1_bubble_o, if2_bubble_o, id_bubble_o, exe_bubble_o, mem1_bubble_o, mem2_bubble_o} = 6'b100000;
         end else if (~if1_ack_i) begin

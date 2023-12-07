@@ -194,7 +194,7 @@ always_comb begin: output_ack_and_output_comb
                         ) begin
                         raise_page_fault_comb();
                     end else if (cur_level == 1 && read_pte.ppn0 != 0) begin
-                        /* 6. If i > 0 and pte.ppn[i �?? 1 : 0] != 0, this is a misaligned superpage; 
+                        /* 6. If i > 0 and pte.ppn[i-1 : 0] != 0, this is a misaligned superpage; 
                             stop and raise a page-fault exception corresponding to the original access type */
                         raise_page_fault_comb();
                     end else if (!paddr_valid(pte_addr[ADDR_WIDTH-1:0])) begin
@@ -368,10 +368,10 @@ task direct_pass_data();
     if1_if2_pc_now        <= vaddr_i;
     // MEM1/MEM2
     mem1_mem2_pc_now      <= exe_mem1_pc_now;      // only for debug
-    mem1_mem2_mem_re      <= exe_mem1_mem_re;
     mem1_mem2_rf_wen      <= exe_mem1_rf_wen;
     mem1_mem2_rf_waddr    <= exe_mem1_rf_waddr;
-    mem1_mem2_rf_wdata    <= exe_mem1_alu_result;  // only for debug
+    mem1_mem2_rf_wdata    <= exe_mem1_alu_result;
+    mem1_mem2_mem_re      <= exe_mem1_mem_re;
     mem1_mem2_mem_we      <= exe_mem1_mem_we;
     mem1_mem2_mem_sel     <= exe_mem1_mem_sel;
     mem1_mem2_mem_wdata   <= exe_mem1_mem_wdata;
@@ -387,18 +387,17 @@ endtask
 
 task output_bubble();
     // CPU interface
-    ack_o             <= 1'b0;
     paddr_o           <= {ADDR_WIDTH{1'b0}};
     page_fault_o      <= 1'b0;
     access_fault_o    <= 1'b0;
     // IF1/IF2
     if1_if2_pc_now                  <= 0;
     // MEM1/MEM2
-    mem1_mem2_pc_now                <= 0;      // only for debug
-    mem1_mem2_mem_re                <= 0;
+    mem1_mem2_pc_now                <= 0;  // only for debug
     mem1_mem2_rf_wen                <= 0;
     mem1_mem2_rf_waddr              <= 0;
-    mem1_mem2_rf_wdata              <= 0;  // only for debug
+    mem1_mem2_rf_wdata              <= 0;
+    mem1_mem2_mem_re                <= 0;
     mem1_mem2_mem_we                <= 0;
     mem1_mem2_mem_sel               <= 0;
     mem1_mem2_mem_wdata             <= 0;

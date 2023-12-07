@@ -444,14 +444,18 @@ module thinpad_top (
 
   // logic [3:0] stall;
   // logic [3:0] bubble;
-  logic if_stall;
+  logic if1_stall;
+  logic if2_stall;
   logic id_stall;
   logic exe_stall;
-  logic mem_stall;
-  logic if_bubble;
+  logic mem1_stall;
+  logic mem2_stall;
+  logic if1_bubble;
+  logic if2_bubble;
   logic id_bubble;
   logic exe_bubble;
-  logic mem_bubble;
+  logic mem1_bubble;
+  logic mem2_bubble;
 
   logic [4:0] id_rf_raddr_a_comb;
   logic [4:0] id_rf_raddr_b_comb;
@@ -484,22 +488,22 @@ module thinpad_top (
     .mem1_mem2_mem_we_i(mem1_mem2_mem_we & ~csr_branch),
 
     .fencei_i(fencei),
-    .sfence_i(if2_sfence),
+    .sfence_vma_i(if2_sfence_vma),
 
     .csr_inst_i(id_csr_op_comb || id_exe_csr_op || exe_mem1_csr_op || mem1_mem2_csr_op),
 
-    .if1_stall_o(if_stall),
-    .if2_stall_o(),
+    .if1_stall_o(if1_stall),
+    .if2_stall_o(if2_stall),
     .id_stall_o(id_stall),
     .exe_stall_o(exe_stall),
-    .mem1_stall_o(mem_stall),
-    .mem2_stall_o(),
-    .if1_bubble_o(if_bubble),
-    .if2_bubble_o(),
+    .mem1_stall_o(mem1_stall),
+    .mem2_stall_o(mem2_stall),
+    .if1_bubble_o(if1_bubble),
+    .if2_bubble_o(if2_bubble),
     .id_bubble_o(id_bubble),
     .exe_bubble_o(exe_bubble),
-    .mem1_bubble_o(mem_bubble),
-    .mem2_bubble_o()
+    .mem1_bubble_o(mem1_bubble),
+    .mem2_bubble_o(mem2_bubble)
   );
 
   /* ====================== IF1 ====================== */
@@ -538,8 +542,8 @@ module thinpad_top (
     .branch_taken_i(branch_taken),
     .pc_true_i(pc_true),
     .pc_pred_i(pred_pc),
-    .stall_i(if_stall),
-    .bubble_i(if_bubble)
+    .stall_i(if1_stall),
+    .bubble_i(if1_bubble)
   );
 
   logic if_mmu_ack;
@@ -559,13 +563,16 @@ module thinpad_top (
     .read_en_i              (1'b0),
     .write_en_i             (1'b0),
     .exe_en_i               (1'b1),
-    .if1_if2_pc_now         (if1_if2_pc_now),
     .load_page_fault_o      (),
     .store_page_fault_o     (),
     .instr_page_fault_o     (if1_if2_instr_page_fault),
     .load_access_fault_o    (),
     .store_access_fault_o   (),
     .instr_access_fault_o   (if1_if2_instr_access_fault),
+
+    .tlb_reset_i            (if2_sfence_vma),
+    .stall_i                (if1_stall),
+    .bubble_i               (if1_bubble),
 
     .wb_cyc_o(wbm3_cyc_o),
     .wb_stb_o(wbm3_stb_o),
@@ -574,7 +581,10 @@ module thinpad_top (
     .wb_dat_o(wbm3_dat_o),
     .wb_dat_i(wbm3_dat_i),
     .wb_sel_o(wbm3_sel_o),
-    .wb_we_o(wbm3_we_o)
+    .wb_we_o(wbm3_we_o),
+
+    // data direct pass
+    .if1_if2_pc_now         (if1_if2_pc_now)
   );
 
   /* ====================== IF1/IF2 regs ====================== */
@@ -585,7 +595,7 @@ module thinpad_top (
 
   /* ====================== IF2 ====================== */
   logic icache_ack;
-  logic if2_sfence;
+  logic if2_sfence_vma;
 
   icache icache (
     .clk(sys_clk),
@@ -601,9 +611,10 @@ module thinpad_top (
     .access_fault_i(if1_if2_instr_access_fault),
     .page_fault_o(if2_id_instr_page_fault),
     .access_fault_o(if2_id_instr_access_fault),
-    .sfence_o(if2_sfence),
-    .stall_i(),
-    .bubble_i(),
+    .sfence_vma_o(if2_sfence_vma),
+
+    .stall_i(if2_stall),
+    .bubble_i(if2_bubble),
 
     .wb_cyc_o(wbm2_cyc_o),
     .wb_stb_o(wbm2_stb_o),
@@ -658,11 +669,11 @@ module thinpad_top (
     .instr_page_fault_o     (id_exe_instr_page_fault),
     .instr_access_fault_o   (id_exe_instr_access_fault),
     .csr_op_comb            (id_csr_op_comb),
-    .sfence_o               (id_exe_sfence),
+    .sfence_vma_o            (id_exe_sfence_vma),
 
 
     .stall_i                (id_stall),
-    .bubble_i               (if_bubble)
+    .bubble_i               (id_bubble)
   );
 
   /* ====================== ID/EXE regs ====================== */
@@ -694,7 +705,7 @@ module thinpad_top (
   logic id_exe_mret;
   logic id_exe_instr_page_fault;
   logic id_exe_instr_access_fault;
-  logic id_exe_sfence;
+  logic id_exe_sfence_vma;
 
   /* ====================== EXE ====================== */
 
@@ -758,8 +769,8 @@ module thinpad_top (
     .ecall_o(exe_mem1_ecall),
     .ebreak_o(exe_mem1_ebreak),
     .mret_o(exe_mem1_mret),
-    .sfence_i(id_exe_sfence),
-    .sfence_o(exe_mem1_sfence),
+    .sfence_vma_i(id_exe_sfence_vma),
+    .sfence_vma_o(exe_mem1_sfence_vma),
     
     // data forwarding
     .exe_mem1_rf_waddr_i(exe_mem1_rf_waddr),
@@ -802,7 +813,7 @@ module thinpad_top (
   logic                       exe_mem1_ecall;
   logic                       exe_mem1_ebreak;
   logic                       exe_mem1_mret;
-  logic                       exe_mem1_sfence;
+  logic                       exe_mem1_sfence_vma;
 
   /* ====================== MEM1 ====================== */
   logic                       mem_mmu_ack;
@@ -828,6 +839,10 @@ module thinpad_top (
     .load_access_fault_o    (mem1_mem2_load_access_fault),
     .store_access_fault_o   (mem1_mem2_store_access_fault),
     .instr_access_fault_o   (),
+
+    .tlb_reset_i            (exe_mem1_sfence_vma),
+    .stall_i                (mem1_stall),
+    .bubble_i               (mem1_bubble),
 
     .wb_cyc_o(wbm1_cyc_o),
     .wb_stb_o(wbm1_stb_o),
@@ -959,8 +974,8 @@ module thinpad_top (
     .mem_wdata_i(mem1_mem2_mem_wdata),
     .inst_i(mem1_mem2_inst),
 
-    .stall_i(mem_stall),
-    .bubble_i(mem_bubble),
+    .stall_i(mem2_stall),
+    .bubble_i(mem2_bubble),
 
     .wb_cyc_o(wbm0_cyc_o),
     .wb_stb_o(wbm0_stb_o),
