@@ -34,6 +34,7 @@ module ID (
     output reg                          instr_page_fault_o,
     output reg                          instr_access_fault_o,
     output reg                          csr_op_comb,
+    output reg                          sfence_o,
     input wire                          stall_i,
     input wire                          bubble_i
 );
@@ -78,6 +79,7 @@ module ID (
             mret_o <= 1'b0;
             instr_access_fault_o <= 1'b0;
             instr_page_fault_o <= 1'b0;
+            sfence_o <= 1'b0;
         end else if (stall_i) begin
         end else if (bubble_i) begin
             inst_o <= 32'h0;
@@ -100,16 +102,18 @@ module ID (
             mret_o <= 1'b0;
             instr_access_fault_o <= 1'b0;
             instr_page_fault_o <= 1'b0;
+            sfence_o <= 1'b0;
         end else begin
             inst_o <= inst_i;
             ecall_o <= 1'b0;
             ebreak_o <= 1'b0;
             mret_o <= 1'b0;
-            fencei_o <= 1'b0;
+            // fencei_o <= 1'b0;
             comp_op_o <= 1'b0;
             pc_now_o <= pc_now_i;
             instr_access_fault_o <= instr_access_fault_i;
             instr_page_fault_o <= instr_page_fault_i;
+            sfence_o <= 1'b0;
             case(opcode)
                 7'b0010011: begin   // TYPE_I
                     rf_raddr_a_o <= rs1;
@@ -304,9 +308,22 @@ module ID (
                 end
                 7'b0001111: begin
                     if (funct3 == 3'b001) begin
-                        fencei_o <= 1'b1;
+                         inst_o <= 32'h0;
+                        rf_raddr_a_o <= 5'd0;
+                        rf_raddr_b_o <= 5'd0;
+                        imm_type_o <= `INSTR_TYPE_WIDTH'd0;
+                        alu_op_o <= 4'd0;
+                        use_rs2_o <= 1'b0;
+                        jump_o <= 1'b0;
+                        use_pc_o <= 1'b0;
+                        comp_op_o <= 1'b0;
+                        mem_re_o <= 1'b0;
+                        mem_we_o <= 1'b0;
+                        rf_wen_o <= 1'b0;
+                        rf_waddr_o <= 5'b0;
+                        csr_op_o <= 3'b0;
                     end else begin
-                        fencei_o <= 1'b0;
+                        // fencei_o <= 1'b0;
                     end
                 end
                 7'b1110011: begin
@@ -324,12 +341,28 @@ module ID (
                         alu_op_o <= `ALU_ADD;
                         csr_op_o <= funct3;
                     end else if (funct3 == 3'b0) begin
+                         inst_o <= 32'h0;
+                        rf_raddr_a_o <= 5'd0;
+                        rf_raddr_b_o <= 5'd0;
+                        imm_type_o <= `INSTR_TYPE_WIDTH'd0;
+                        alu_op_o <= 4'd0;
+                        use_rs2_o <= 1'b0;
+                        jump_o <= 1'b0;
+                        use_pc_o <= 1'b0;
+                        comp_op_o <= 1'b0;
+                        mem_re_o <= 1'b0;
+                        mem_we_o <= 1'b0;
+                        rf_wen_o <= 1'b0;
+                        rf_waddr_o <= 5'b0;
+                        csr_op_o <= 3'b0;
                         if (inst_i[31:7] == 25'b0000000000000000000000000) begin     // ECALL
                             ecall_o <= 1'b1;
                         end else if (inst_i[31:7] == 25'b0000000000010000000000000) begin    // EBREAK
                             ebreak_o <= 1'b1;
                         end else if (inst_i[31:7] == 25'b0011000000100000000000000) begin    // MRET
                             mret_o <= 1'b1;
+                        end else if (funct7 == 7'b0001001 && rd == 5'b0) begin    // SFENCE.VMA
+                            sfence_o <= 1'b1;
                         end else begin
                             // Illegal instruction
                         end
@@ -351,7 +384,7 @@ module ID (
                     rf_waddr_o <= 5'b0;
                     // pc_now_o <= 32'h0;
                     csr_op_o <= 3'b0;
-                    fencei_o <= 1'b0;
+                    // fencei_o <= 1'b0;
                 end
             endcase
         end
@@ -363,5 +396,7 @@ module ID (
         else
             csr_op_comb = 3'b0;
     end
+
+    assign fencei_o = opcode == 7'b0001111 && funct3 == 3'b001;
 
 endmodule
