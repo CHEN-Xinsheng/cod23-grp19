@@ -11,7 +11,7 @@ module mmu (
     // input wire                          mstatus_mxr_i, // mstatus.mxr is not implemented
     input wire vaddr_t                  vaddr_i,  // virtual address
     output reg [ADDR_WIDTH-1:0]         paddr_o,  // physical address
-    output reg                          ack_o,    // Only when ack_o == 1, the data that output to CPU interface is valid
+    output reg                          ack_o,    // If enable_i == 1, then only when ack_o == 1, the data that output to CPU interface is valid
 
     input wire                          enable_i,   // use MMU (some instructions does not need to read/write MEM, in such case, let enable_i = 0 in MEM stage)
     input wire                          read_en_i,  // for MEM stage, load instruction
