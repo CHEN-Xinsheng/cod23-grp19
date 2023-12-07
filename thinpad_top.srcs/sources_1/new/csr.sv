@@ -29,6 +29,7 @@ module csrfile (
     input wire store_page_fault_i,
     
     output satp_t satp_o,
+    output reg sum_o,
     output reg [1:0] mode_o
 );
 
@@ -56,6 +57,7 @@ logic [1:0] mode;
 
 assign satp_o = satp;
 assign mode_o = mode;
+assign sum_o = mstatus.sum;
 
 logic [30:0] exception_code;
 logic [2:0] handle_type;

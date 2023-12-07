@@ -51,6 +51,9 @@ module mmu (
     input wire  [DATA_WIDTH-1:0]        exe_mem1_csr_data,
     input wire                          exe_mem1_instr_page_fault,
     input wire                          exe_mem1_instr_access_fault,
+    input wire                          exe_mem1_ecall,
+    input wire                          exe_mem1_ebreak,
+    input wire                          exe_mem1_mret,
 
     output reg  [ADDR_WIDTH-1:0]        mem1_mem2_pc_now,      // only for debug
     output reg                          mem1_mem2_rf_wen,
@@ -64,7 +67,10 @@ module mmu (
     output reg  [2:0]                   mem1_mem2_csr_op,
     output reg  [DATA_WIDTH-1:0]        mem1_mem2_csr_data,
     output reg                          mem1_mem2_instr_page_fault,
-    output reg                          mem1_mem2_instr_access_fault
+    output reg                          mem1_mem2_instr_access_fault,
+    output reg                          mem1_mem2_ecall,
+    output reg                          mem1_mem2_ebreak,
+    output reg                          mem1_mem2_mret
 );
 
 reg page_fault;
@@ -324,6 +330,9 @@ task output_other_data();
     mem1_mem2_csr_data    <= exe_mem1_csr_data;
     mem1_mem2_instr_page_fault   <= exe_mem1_instr_page_fault;
     mem1_mem2_instr_access_fault <= exe_mem1_instr_access_fault;
+    mem1_mem2_ecall       <= exe_mem1_ecall;
+    mem1_mem2_ebreak      <= exe_mem1_ebreak;
+    mem1_mem2_mret        <= exe_mem1_mret;
 
 endtask
 

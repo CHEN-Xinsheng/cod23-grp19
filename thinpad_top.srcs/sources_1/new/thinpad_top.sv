@@ -543,8 +543,7 @@ module thinpad_top (
 
     .mode_i                 (csr_mode),
     .satp_i                 (csr_satp),
-    .mstatus_sum_i          (),  // TODO
-    .mstatus_mxr_i          (),  // TODO
+    .mstatus_sum_i          (mstatus_sum),
     .vaddr_i                (pc_vaddr),
     .paddr_o                (if1_if2_pc_paddr),
     .ack_o                  (if_mmu_ack),
@@ -737,6 +736,12 @@ module thinpad_top (
     .instr_access_fault_i(id_exe_instr_access_fault),
     .instr_page_fault_o(exe_mem1_instr_page_fault),
     .instr_access_fault_o(exe_mem1_instr_access_fault),
+    .ecall_i(id_exe_ecall),
+    .ebreak_i(id_exe_ebreak),
+    .mret_i(id_exe_mret),
+    .ecall_o(exe_mem1_ecall),
+    .ebreak_o(exe_mem1_ebreak),
+    .mret_o(exe_mem1_mret),
     
     // data forwarding
     .exe_mem1_rf_waddr_i(exe_mem1_rf_waddr),
@@ -776,6 +781,9 @@ module thinpad_top (
   logic [DATA_WIDTH-1:0]      exe_mem1_csr_data;
   logic                       exe_mem1_instr_page_fault;
   logic                       exe_mem1_instr_access_fault;
+  logic                       exe_mem1_ecall;
+  logic                       exe_mem1_ebreak;
+  logic                       exe_mem1_mret;
 
   /* ====================== MEM1 ====================== */
   logic                       mem_mmu_ack;
@@ -786,8 +794,7 @@ module thinpad_top (
 
     .mode_i                 (csr_mode),
     .satp_i                 (csr_satp),
-    .mstatus_sum_i          (),  // TODO
-    .mstatus_mxr_i          (),  // TODO
+    .mstatus_sum_i          (mstatus_sum),
     .vaddr_i                (exe_mem1_alu_result),
     .paddr_o                (mem1_mem2_paddr),
     .ack_o                  (mem_mmu_ack),
@@ -826,6 +833,9 @@ module thinpad_top (
     .exe_mem1_csr_data    (exe_mem1_csr_data),
     .exe_mem1_instr_page_fault (exe_mem1_instr_page_fault),
     .exe_mem1_instr_access_fault (exe_mem1_instr_access_fault),
+    .exe_mem1_ecall       (exe_mem1_ecall),
+    .exe_mem1_ebreak      (exe_mem1_ebreak),
+    .exe_mem1_mret        (exe_mem1_mret),
 
     .mem1_mem2_pc_now     (mem1_mem2_pc_now),  // only for debug
     .mem1_mem2_rf_wen     (mem1_mem2_rf_wen),
@@ -839,7 +849,10 @@ module thinpad_top (
     .mem1_mem2_csr_op     (mem1_mem2_csr_op),
     .mem1_mem2_csr_data   (mem1_mem2_csr_data),
     .mem1_mem2_instr_page_fault (mem1_mem2_instr_page_fault),
-    .mem1_mem2_instr_access_fault (mem1_mem2_instr_access_fault)
+    .mem1_mem2_instr_access_fault (mem1_mem2_instr_access_fault),
+    .mem1_mem2_ecall      (mem1_mem2_ecall),
+    .mem1_mem2_ebreak     (mem1_mem2_ebreak),
+    .mem1_mem2_mret       (mem1_mem2_mret)
 
   );
 
@@ -864,6 +877,9 @@ module thinpad_top (
   logic                       mem1_mem2_store_access_fault;
   logic                       mem1_mem2_instr_page_fault;
   logic                       mem1_mem2_instr_access_fault;
+  logic                       mem1_mem2_ecall;
+  logic                       mem1_mem2_ebreak;
+  logic                       mem1_mem2_mret;
 
 
   /* ====================== MEM2 ====================== */
@@ -878,6 +894,7 @@ module thinpad_top (
 
   logic [1:0] csr_mode;
   satp_t csr_satp;
+  logic mstatus_sum;
 
   csrfile csrfile (
     .clk(sys_clk),
@@ -890,11 +907,12 @@ module thinpad_top (
     .pc_now_i(mem1_mem2_pc_now),
     .pc_next_o(csr_pc_next),
     .branch_o(csr_branch),
-    .ecall_i(id_exe_ecall),
-    .ebreak_i(id_exe_ebreak),
-    .mret_i(id_exe_mret),
+    .ecall_i(mem1_mem2_ecall),
+    .ebreak_i(mem1_mem2_ebreak),
+    .mret_i(mem1_mem2_mret),
     .time_interrupt_i(time_interrupt),
     .satp_o(csr_satp),
+    .sum_o(mstatus_sum),
     .mode_o(csr_mode),
     .mtime_i(mtime),
     .if_page_fault_i(mem1_mem2_instr_page_fault),
