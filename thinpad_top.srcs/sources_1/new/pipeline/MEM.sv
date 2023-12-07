@@ -45,7 +45,7 @@ module MEM (
     always_comb begin
         csr_raddr_o = inst_i[31:20];
         csr_waddr_o = inst_i[31:20];
-        if (inst[19:15] == 5'b0) begin
+        if (inst_i[19:15] == 5'b0) begin
             csr_wdata_o = csr_rdata_i;
             csr_we_o = 1'b0;
         end else begin
