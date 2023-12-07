@@ -6,21 +6,22 @@
       <db_ref path="tb_behav.wdb" id="1">
          <top_modules>
             <top_module name="\$unit_csr_sv " />
+            <top_module name="\$unit_thinpad_top_sv " />
             <top_module name="glbl" />
             <top_module name="tb" />
          </top_modules>
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="1633278817fs"></ZoomStartTime>
-      <ZoomEndTime time="1634120818fs"></ZoomEndTime>
-      <Cursor1Time time="1633801817fs"></Cursor1Time>
+      <ZoomStartTime time="595579491fs"></ZoomStartTime>
+      <ZoomEndTime time="596396492fs"></ZoomEndTime>
+      <Cursor1Time time="595938491fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="279"></NameColumnWidth>
-      <ValueColumnWidth column_width="127"></ValueColumnWidth>
+      <ValueColumnWidth column_width="121"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="54" />
+   <WVObjectSize size="50" />
    <wvobject fp_name="/tb/dut/sys_clk" type="logic">
       <obj_property name="ElementShortName">sys_clk</obj_property>
       <obj_property name="ObjectShortName">sys_clk</obj_property>
@@ -29,43 +30,35 @@
       <obj_property name="ElementShortName">sys_rst</obj_property>
       <obj_property name="ObjectShortName">sys_rst</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb/dut/IF/pc_o" type="array">
+   <wvobject fp_name="/tb/dut/if_mmu/vaddr_i" type="array">
       <obj_property name="DisplayName">label</obj_property>
-      <obj_property name="ElementShortName">pc_o[31:0]</obj_property>
-      <obj_property name="ObjectShortName">pc_o[31:0]</obj_property>
-      <obj_property name="label">IF/pc_o[31:0]</obj_property>
+      <obj_property name="ElementShortName">vaddr_i</obj_property>
+      <obj_property name="ObjectShortName">vaddr_i</obj_property>
+      <obj_property name="label">IF1/vaddr_i</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb/dut/ID/pc_now_i" type="array">
+   <wvobject fp_name="/tb/dut/icache/pc_i" type="array">
       <obj_property name="DisplayName">label</obj_property>
-      <obj_property name="ElementShortName">pc_now_i[31:0]</obj_property>
-      <obj_property name="ObjectShortName">pc_now_i[31:0]</obj_property>
-      <obj_property name="label">ID/pc_now_i[31:0]</obj_property>
+      <obj_property name="ElementShortName">pc_i[31:0]</obj_property>
+      <obj_property name="ObjectShortName">pc_i[31:0]</obj_property>
+      <obj_property name="label">IF2/pc_i</obj_property>
    </wvobject>
    <wvobject fp_name="/tb/dut/EXE/pc_now_i" type="array">
       <obj_property name="DisplayName">label</obj_property>
       <obj_property name="ElementShortName">pc_now_i[31:0]</obj_property>
       <obj_property name="ObjectShortName">pc_now_i[31:0]</obj_property>
-      <obj_property name="label">EXE/pc_now_i[31:0]</obj_property>
+      <obj_property name="label">EXE/pc_now_i</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/mem_mmu/vaddr_i" type="array">
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="ElementShortName">vaddr_i</obj_property>
+      <obj_property name="ObjectShortName">vaddr_i</obj_property>
+      <obj_property name="label">MEM1/vaddr_i</obj_property>
    </wvobject>
    <wvobject fp_name="/tb/dut/MEM/pc_now_i" type="array">
       <obj_property name="DisplayName">label</obj_property>
       <obj_property name="ElementShortName">pc_now_i[31:0]</obj_property>
       <obj_property name="ObjectShortName">pc_now_i[31:0]</obj_property>
-      <obj_property name="label">MEM/pc_now_i[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/mem_wb_pc_now" type="array">
-      <obj_property name="DisplayName">label</obj_property>
-      <obj_property name="ElementShortName">mem_wb_pc_now[31:0]</obj_property>
-      <obj_property name="ObjectShortName">mem_wb_pc_now[31:0]</obj_property>
-      <obj_property name="label">WB/pc_now[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/pipeline_controller/stall_o" type="array">
-      <obj_property name="ElementShortName">stall_o[3:0]</obj_property>
-      <obj_property name="ObjectShortName">stall_o[3:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/pipeline_controller/bubble_o" type="array">
-      <obj_property name="ElementShortName">bubble_o[3:0]</obj_property>
-      <obj_property name="ObjectShortName">bubble_o[3:0]</obj_property>
+      <obj_property name="label">MEM2/pc_now_i</obj_property>
    </wvobject>
    <wvobject fp_name="/tb/dut/EXE/alu_a_o" type="array">
       <obj_property name="ElementShortName">alu_a_o[31:0]</obj_property>
@@ -78,14 +71,6 @@
    <wvobject fp_name="/tb/dut/EXE/alu_y_i" type="array">
       <obj_property name="ElementShortName">alu_y_i[31:0]</obj_property>
       <obj_property name="ObjectShortName">alu_y_i[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/EXE/exe_mem_rf_waddr_i" type="array">
-      <obj_property name="ElementShortName">exe_mem_rf_waddr_i[4:0]</obj_property>
-      <obj_property name="ObjectShortName">exe_mem_rf_waddr_i[4:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/EXE/exe_mem_alu_result_i" type="array">
-      <obj_property name="ElementShortName">exe_mem_alu_result_i[31:0]</obj_property>
-      <obj_property name="ObjectShortName">exe_mem_alu_result_i[31:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb/dut/EXE/rf_raddr_a_i" type="array">
       <obj_property name="ElementShortName">rf_raddr_a_i[4:0]</obj_property>
@@ -246,8 +231,8 @@
       <obj_property name="ObjectShortName">uart_tsre</obj_property>
    </wvobject>
    <wvobject fp_name="/tb/BASE_RAM_INIT_FILE" type="array">
-      <obj_property name="ElementShortName">BASE_RAM_INIT_FILE[575:0]</obj_property>
-      <obj_property name="ObjectShortName">BASE_RAM_INIT_FILE[575:0]</obj_property>
+      <obj_property name="ElementShortName">BASE_RAM_INIT_FILE[559:0]</obj_property>
+      <obj_property name="ObjectShortName">BASE_RAM_INIT_FILE[559:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb/EXT_RAM_INIT_FILE" type="array">
       <obj_property name="ElementShortName">EXT_RAM_INIT_FILE[103:0]</obj_property>
