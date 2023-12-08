@@ -22,7 +22,8 @@ module ID (
     input wire [ADDR_WIDTH-1:0]         pc_now_i,
     output reg [ADDR_WIDTH-1:0]         pc_now_o,
     output reg                          use_pc_o,
-    output reg                          comp_op_o,
+    output reg [2:0]                    comp_op_o,
+    output reg                          load_type_o,
     output reg                          jump_o,
     output reg [`CSR_OP_WIDTH-1:0]      csr_op_o,
     output reg                          ecall_o,
@@ -75,7 +76,8 @@ module ID (
             pc_now_o <= 32'h0;
             mem_sel_o <= 4'b0;
             use_pc_o <= 1'b0;
-            comp_op_o <= 1'b0;
+            comp_op_o <= 3'b0;
+            load_type_o <= 1'b0;
             jump_o <= 1'b0;
             csr_op_o <= 3'b0;
             ecall_o <= 1'b0;
@@ -100,7 +102,8 @@ module ID (
             rf_wen_o <= 1'b0;
             rf_waddr_o <= 5'b0;
             pc_now_o <= 32'h0;
-            comp_op_o <= 1'b0;
+            comp_op_o <= 3'b0;
+            load_type_o <= 1'b0;
             use_pc_o <= 1'b0;
             jump_o <= 1'b0;
             csr_op_o <= 3'b0;
@@ -119,8 +122,7 @@ module ID (
             ebreak_o <= 1'b0;
             mret_o <= 1'b0;
             sret_o <= 1'b0;
-            // fencei_o <= 1'b0;
-            comp_op_o <= 1'b0;
+            comp_op_o <= 3'b0;
             pc_now_o <= pc_now_i;
             instr_access_fault_o <= instr_access_fault_i;
             instr_page_fault_o <= instr_page_fault_i;
@@ -155,7 +157,20 @@ module ID (
                             alu_op_o <= `ALU_ADD;
                         end
                     end else if (funct3 == 3'b101) begin
-                        alu_op_o <= `ALU_SRL;  
+                        if (funct7 == 7'b0000000) begin
+                            alu_op_o <= `ALU_SRL;    
+                        end else if (funct7 == 7'b0100000) begin
+                            alu_op_o <= `ALU_SRA;    
+                        end else begin
+                            alu_op_o <= `ALU_ADD;
+                            illegal_instr_o <= 1'b1;
+                        end
+                    end else if (funct3 == 3'b100) begin
+                        alu_op_o <= `ALU_XOR;
+                    end else if (funct3 == 3'b010) begin
+                        alu_op_o <= `ALU_SLT;
+                    end else if (funct3 == 3'b011) begin
+                        alu_op_o <= `ALU_SLTU;
                     end else begin
                         alu_op_o <= `ALU_ADD;
                         illegal_instr_o <= 1'b1;
@@ -185,6 +200,15 @@ module ID (
                         alu_op_o <= `ALU_AND;  
                     end else if (funct3 == 3'b110) begin
                         alu_op_o <= `ALU_OR; 
+                    end else if (funct3 == 3'b101) begin
+                        if (funct7 == 7'b0000000) begin
+                            alu_op_o <= `ALU_SRL; 
+                        end else if (funct7 == 7'b0100000) begin
+                            alu_op_o <= `ALU_SRA; 
+                        end else begin
+                            alu_op_o <= `ALU_ADD;
+                            illegal_instr_o <= 1'b1;
+                        end
                     end else if (funct3 == 3'b100) begin
                         if (funct7 == 7'b0000000) begin
                             alu_op_o <= `ALU_XOR; 
@@ -202,6 +226,13 @@ module ID (
                             alu_op_o <= `ALU_ADD;
                             illegal_instr_o <= 1'b1;
                         end
+                    end else if (funct3 == 3'b010) begin
+                        alu_op_o <= `ALU_SLT;
+                    end else if (funct3 == 3'b011) begin
+                        alu_op_o <= `ALU_SLTU;
+                    end else begin
+                        alu_op_o <= `ALU_ADD;
+                        illegal_instr_o <= 1'b1;
                     end
                 end
                 7'b0100011: begin   // Store
@@ -219,9 +250,10 @@ module ID (
                     csr_op_o <= 3'b0;
                     if (funct3 == 3'b010) begin     // SW
                         mem_sel_o <= 4'b1111;
-                    end
-                    else if (funct3 == 3'b000) begin    // SB
+                    end else if (funct3 == 3'b000) begin    // SB
                         mem_sel_o <= 4'b0001;
+                    end else if (funct3 == 3'b001) begin    // SH
+                        mem_sel_o <= 4'b0011;
                     end else begin
                         illegal_instr_o <= 1'b1;
                     end
@@ -241,9 +273,19 @@ module ID (
                     csr_op_o <= 3'b0;
                     if (funct3 == 3'b000) begin     // LB
                         mem_sel_o <= 4'b0001;
-                    end
-                    else if (funct3 == 3'b010) begin    // LW
+                        load_type_o <= 1'b1;
+                    end else if (funct3 == 3'b010) begin    // LW
                         mem_sel_o <= 4'b1111;
+                        load_type_o <= 1'b1;
+                    end else if (funct3 == 3'b001) begin    // LH
+                        mem_sel_o <= 4'b0011;
+                        load_type_o <= 1'b1;
+                    end else if (funct3 == 3'b100) begin    // LBU
+                        mem_sel_o <= 4'b0001;
+                        load_type_o <= 1'b0;
+                    end else if (funct3 == 3'b101) begin    // LHU
+                        mem_sel_o <= 4'b0011;
+                        load_type_o <= 1'b0;
                     end else begin
                         illegal_instr_o <= 1'b1;
                     end
@@ -266,7 +308,6 @@ module ID (
                     rf_raddr_a_o <= rs1;
                     rf_raddr_b_o <= rs2;
                     imm_type_o <= `TYPE_B;
-                    // pc_now_o <= pc_now_i;
                     use_rs2_o <= 0;
                     use_pc_o <= 1;
                     mem_re_o <= 1'b0;
@@ -276,10 +317,8 @@ module ID (
                     rf_waddr_o <= 5'b0;
                     alu_op_o <= `ALU_ADD; 
                     csr_op_o <= 3'b0;
-                    if (funct3 == 3'b000) begin     // BEQ
-                        comp_op_o <= 1;
-                    end else if (funct3 == 3'b001) begin   // BNE
-                        comp_op_o <= 0;
+                    if (funct3 != 3'b010 && funct3 != 3'b011) begin
+                        comp_op_o <= funct3;
                     end else begin
                         illegal_instr_o <= 1'b1;
                     end
@@ -339,7 +378,7 @@ module ID (
                         use_rs2_o <= 1'b0;
                         jump_o <= 1'b0;
                         use_pc_o <= 1'b0;
-                        comp_op_o <= 1'b0;
+                        comp_op_o <= 3'b0;
                         mem_re_o <= 1'b0;
                         mem_we_o <= 1'b0;
                         rf_wen_o <= 1'b0;
@@ -351,7 +390,7 @@ module ID (
                     end
                 end
                 7'b1110011: begin
-                    if (funct3[1:0] != 2'b0) begin
+                    if (funct3[1:0] != 2'b0) begin      // CSRW
                         rf_raddr_a_o <= rs1;
                         rf_raddr_b_o <= 5'b0;
                         imm_type_o <= `INSTR_TYPE_WIDTH'd0;
@@ -373,7 +412,7 @@ module ID (
                         use_rs2_o <= 1'b0;
                         jump_o <= 1'b0;
                         use_pc_o <= 1'b0;
-                        comp_op_o <= 1'b0;
+                        comp_op_o <= 3'b0;
                         mem_re_o <= 1'b0;
                         mem_we_o <= 1'b0;
                         rf_wen_o <= 1'b0;
@@ -405,7 +444,7 @@ module ID (
                     use_rs2_o <= 1'b0;
                     jump_o <= 1'b0;
                     use_pc_o <= 1'b0;
-                    comp_op_o <= 1'b0;
+                    comp_op_o <= 3'b0;
                     mem_re_o <= 1'b0;
                     mem_we_o <= 1'b0;
                     rf_wen_o <= 1'b0;
