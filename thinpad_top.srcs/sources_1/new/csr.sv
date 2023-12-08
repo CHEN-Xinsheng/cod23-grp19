@@ -17,12 +17,12 @@ module csrfile (
     input wire mret_i,
     input wire sret_i,
     input wire time_interrupt_i,
-    input wire if_misalingned_i,
+    input wire if_misaligned_i,
     input wire if_access_fault_i,
     input wire if_illegal_i,
-    input wire load_misalingned_i,
+    input wire load_misaligned_i,
     input wire load_access_fault_i,
-    input wire store_misalingned_i,
+    input wire store_misaligned_i,
     input wire store_access_fault_i,
     input wire if_page_fault_i,
     input wire load_page_fault_i,
@@ -82,7 +82,7 @@ always_comb begin
     end else if (if_illegal_i) begin
         exception_code = 31'd2;
         handle_type = 3'd1;
-    end else if (if_misalingned_i) begin
+    end else if (if_misaligned_i) begin
         exception_code = 31'd0;
         handle_type = 3'd1;
     end else if (ecall_i) begin
@@ -94,10 +94,10 @@ always_comb begin
             exception_code = 31'd8;
         end
         handle_type = 3'd1;
-    end else if (store_misalingned_i) begin
+    end else if (store_misaligned_i) begin
         exception_code = 31'd6;
         handle_type = 3'd1;
-    end else if (load_misalingned_i) begin
+    end else if (load_misaligned_i) begin
         exception_code = 31'd4;
         handle_type = 3'd1;
     end else if (store_page_fault_i) begin

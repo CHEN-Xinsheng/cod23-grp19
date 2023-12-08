@@ -106,7 +106,9 @@ assign instr_misaligned_o   = misaligned_o   & exe_en_i;
 
 wire direct_trans = (mode_i == `MODE_M || satp_i.mode == 1'b0);
 
-pte_t read_pte = pte_t'(wb_dat_i);
+// pte_t read_pte = pte_t'(wb_dat_i);
+pte_t read_pte;
+assign {read_pte.ppn0, read_pte.ppn1, read_pte.rsw, read_pte.d, read_pte.a, read_pte.g, read_pte.u, read_pte.x, read_pte.w, read_pte.r, read_pte.v} = wb_dat_i;
 // Ref: 4.3.2 Virtual Address Translation Process
 reg         cur_level;
 pte_t       lv1_pte;
@@ -311,7 +313,8 @@ always_ff @(posedge clk) begin: inner_data_and_wishbone
                             reset_state_and_wb();
                         end else begin
                             wb_cyc_o <= 1'b0;   // close wishbone for a cycle
-                            lv1_pte <= pte_t'(wb_dat_i);  // cache the just-read level-1 PTE
+                            // lv1_pte <= pte_t'(wb_dat_i);  // cache the just-read level-1 PTE
+                            {lv1_pte.ppn0, lv1_pte.ppn1, lv1_pte.rsw, lv1_pte.d, lv1_pte.a, lv1_pte.g, lv1_pte.u, lv1_pte.x, lv1_pte.w, lv1_pte.r, lv1_pte.v} <= wb_dat_i;
                             cur_level <= cur_level -1;  // cur_level <= 1'b0;
                             state <= FETCH_PTE_LV0;
                         end
