@@ -33,7 +33,9 @@ module EXE (
     input wire [ADDR_WIDTH-1:0]         pc_now_i,
     output reg [ADDR_WIDTH-1:0]         pc_next_o,
     input wire                          use_pc_i,
-    input wire                          comp_op_i,
+    input wire [2:0]                    comp_op_i,
+    input wire                          load_type_i,
+    output reg                          load_type_o,
     input wire [2:0]                    csr_op_i,
     output reg [2:0]                    csr_op_o,
     output reg [DATA_WIDTH-1:0]         csr_data_o,
@@ -107,11 +109,15 @@ module EXE (
             pc_next_o = alu_y_i;
             branch_comb_o = 1;
         end else if (imm_type_i == `TYPE_B) begin
-            if (comp_op_i) begin
-                branch_comb_o = (rf_rdata_a_forwarded == rf_rdata_b_forwarded);
-            end else begin
-                branch_comb_o = (rf_rdata_a_forwarded != rf_rdata_b_forwarded);
-            end
+            case(comp_op_i) 
+                `COMP_EQ: branch_comb_o = (rf_rdata_a_forwarded == rf_rdata_b_forwarded);
+                `COMP_NE: branch_comb_o = (rf_rdata_a_forwarded != rf_rdata_b_forwarded);
+                `COMP_LT: branch_comb_o = (rf_rdata_a_forwarded < rf_rdata_b_forwarded);
+                `COMP_GE: branch_comb_o = (rf_rdata_a_forwarded >= rf_rdata_b_forwarded);
+                `COMP_LTU: branch_comb_o = ($signed(rf_rdata_a_forwarded) < $signed(rf_rdata_b_forwarded));
+                `COMP_GEU: branch_comb_o = ($signed(rf_rdata_a_forwarded) >= $signed(rf_rdata_b_forwarded));
+                default: branch_comb_o = 0;
+            endcase
             if (branch_comb_o) begin
                 pc_next_o = alu_y_i;
             end else begin
@@ -132,6 +138,7 @@ module EXE (
             mem_we_o <= 0;
             mem_sel_o <= 4'b0;
             mem_wdata_o <= 32'b0;
+            load_type_o <= 0;
             pc_now_o <= pc_now_i;
             inst_o <= 32'b0;
             csr_op_o <= 3'b0;
@@ -154,6 +161,7 @@ module EXE (
             mem_we_o <= 0;
             mem_sel_o <= 4'b0;
             mem_wdata_o <= 32'b0;
+            load_type_o <= 0;
             pc_now_o <= 32'b0;
             inst_o <= 32'b0;
             csr_op_o <= 3'b0;
@@ -179,6 +187,7 @@ module EXE (
             mem_we_o <= mem_we_i;
             mem_sel_o <= mem_sel_i;
             mem_wdata_o <= rf_rdata_b_forwarded;
+            load_type_o <= load_type_i;
             pc_now_o <= pc_now_i;
             inst_o <= inst_i;
             csr_op_o <= csr_op_i;

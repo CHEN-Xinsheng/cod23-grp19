@@ -16,6 +16,7 @@ module MEM (
     input wire [ADDR_WIDTH-1:0]         mem_addr_i,
     input wire [DATA_WIDTH/8-1:0]       mem_sel_i,
     input wire [ADDR_WIDTH-1:0]         mem_wdata_i,
+    input wire                          load_type_i,
     input wire [DATA_WIDTH-1:0]         inst_i,
 
     output reg                          wb_cyc_o,
@@ -104,10 +105,20 @@ module MEM (
                 pc_now_o <= {ADDR_WIDTH{1'b0}};
             end else begin
                 if (mem_re_i) begin
-                    if (wb_sel_o == 4'b1111) begin
+                    if (mem_sel_i == 4'b1111) begin
                         rf_wdata_o <= wb_dat_i;
-                    end else begin
-                        rf_wdata_o <= {{24{lb_data[7]}}, lb_data[7:0]};
+                    end else if (mem_sel_i == 4'b0001) begin
+                        if (load_type_i) begin
+                            rf_wdata_o <= {{24{lb_data[7]}}, lb_data[7:0]};
+                        end else begin
+                            rf_wdata_o <= {24'b0, lb_data[7:0]};
+                        end
+                    end else if (mem_sel_i == 4'b0011) begin
+                        if (load_type_i) begin
+                            rf_wdata_o <= {{16{lb_data[15]}}, lb_data[15:0]};
+                        end else begin
+                            rf_wdata_o <= {16'b0, lb_data[15:0]};
+                        end
                     end
                 end else if (csr_op_i) begin
                     rf_wdata_o <= csr_rdata_i;
@@ -123,8 +134,22 @@ module MEM (
 
     assign wb_cyc_o = wb_stb_o;
     assign wb_adr_o = mem_addr_i;
-    assign wb_dat_o = mem_sel_i == 4'b1111 ? mem_wdata_i : (mem_wdata_i << ((mem_addr_i << 3) & 32'h1f));
-    assign wb_sel_o = mem_sel_i == 4'b1111 ? 4'b1111 : (mem_sel_i << mem_addr_i[1:0]);
     assign wb_we_o = mem_we_i;
+
+    always_comb begin
+        if (mem_sel_i == 4'b1111) begin
+            wb_sel_o = 4'b1111;
+            wb_dat_o = mem_wdata_i;
+        end else if (mem_sel_i == 4'b0011) begin
+            wb_sel_o = (mem_sel_i << mem_addr_i[1:0]);
+            wb_dat_o = (mem_wdata_i << ((mem_addr_i << 3) & 32'h000011000));
+        end else if (mem_sel_i == 4'b0001) begin
+            wb_sel_o = (mem_sel_i << mem_addr_i[1:0]);
+            wb_dat_o = (mem_wdata_i << ((mem_addr_i << 3) & 32'h000011000));
+        end else begin
+            wb_sel_o = 4'b0000;
+        end
+
+    end
 
 endmodule

@@ -57,6 +57,7 @@ module mmu (
     input wire                          exe_mem1_mem_we,
     input wire  [DATA_WIDTH/8-1:0]      exe_mem1_mem_sel,
     input wire  [DATA_WIDTH-1:0]        exe_mem1_mem_wdata,
+    input wire                          exe_mem1_load_type,
     input wire  [DATA_WIDTH-1:0]        exe_mem1_inst,
     input wire  [2:0]                   exe_mem1_csr_op,
     input wire  [DATA_WIDTH-1:0]        exe_mem1_csr_data,
@@ -73,6 +74,7 @@ module mmu (
     output reg                          mem1_mem2_rf_wen,
     output reg  [REG_ADDR_WIDTH-1:0]    mem1_mem2_rf_waddr,
     output reg  [DATA_WIDTH-1:0]        mem1_mem2_rf_wdata,
+    output reg                          mem1_mem2_load_type,
     output reg                          mem1_mem2_mem_re,
     output reg                          mem1_mem2_mem_we,
     output reg  [DATA_WIDTH/8-1:0]      mem1_mem2_mem_sel,
@@ -414,6 +416,7 @@ task direct_pass_data();
     mem1_mem2_mem_we      <= exe_mem1_mem_we;
     mem1_mem2_mem_sel     <= exe_mem1_mem_sel;
     mem1_mem2_mem_wdata   <= exe_mem1_mem_wdata;
+    mem1_mem2_load_type   <= exe_mem1_load_type;
     mem1_mem2_inst        <= exe_mem1_inst;
     mem1_mem2_csr_op      <= exe_mem1_csr_op;
     mem1_mem2_csr_data    <= exe_mem1_csr_data;
@@ -441,6 +444,7 @@ task output_bubble();
     mem1_mem2_rf_wen                <= 0;
     mem1_mem2_rf_waddr              <= 0;
     mem1_mem2_rf_wdata              <= 0;
+    mem1_mem2_load_type             <= 0;
     mem1_mem2_mem_re                <= 0;
     mem1_mem2_mem_we                <= 0;
     mem1_mem2_mem_sel               <= 0;

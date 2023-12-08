@@ -670,6 +670,7 @@ module thinpad_top (
     .use_pc_o               (id_exe_use_pc),
     .jump_o                 (id_exe_jump),
     .comp_op_o              (id_exe_comp_op),
+    .load_type_o            (id_exe_load_type),
     .csr_op_o               (id_exe_csr_op),
     .ecall_o                (id_exe_ecall),
     .ebreak_o               (id_exe_ebreak),
@@ -712,7 +713,8 @@ module thinpad_top (
   logic [3:0] id_exe_mem_sel;
   logic [31:0] id_exe_pc_now;
   logic id_exe_use_pc;
-  logic id_exe_comp_op;
+  logic [2:0] id_exe_comp_op;
+  logic id_exe_load_type;
   logic id_exe_jump;
   logic [2:0] id_exe_csr_op;
   logic id_exe_ecall;
@@ -770,6 +772,8 @@ module thinpad_top (
     .mem_wdata_o            (exe_mem1_mem_wdata),
     .use_pc_i               (id_exe_use_pc),
     .comp_op_i              (id_exe_comp_op),
+    .load_type_i            (id_exe_load_type),
+    .load_type_o            (exe_mem1_load_type),
     .jump_i                 (id_exe_jump),
     .pc_now_i               (id_exe_pc_now),
     .pc_next_o              (pc_next_comb),
@@ -831,6 +835,7 @@ module thinpad_top (
   logic                       exe_mem1_mem_we;
   logic [DATA_WIDTH/8-1:0]    exe_mem1_mem_sel;
   logic [DATA_WIDTH-1:0]      exe_mem1_mem_wdata;
+  logic                       exe_mem1_load_type;
   logic [2:0]                 exe_mem1_csr_op;
   logic [DATA_WIDTH-1:0]      exe_mem1_inst;
   logic [DATA_WIDTH-1:0]      exe_mem1_csr_data;
@@ -894,6 +899,7 @@ module thinpad_top (
     .exe_mem1_mem_we              (exe_mem1_mem_we),
     .exe_mem1_mem_sel             (exe_mem1_mem_sel),
     .exe_mem1_mem_wdata           (exe_mem1_mem_wdata),
+    .exe_mem1_load_type           (exe_mem1_load_type),
     .exe_mem1_inst                (exe_mem1_inst),
     .exe_mem1_csr_op              (exe_mem1_csr_op),
     .exe_mem1_csr_data            (exe_mem1_csr_data),
@@ -910,6 +916,7 @@ module thinpad_top (
     .mem1_mem2_rf_wen             (mem1_mem2_rf_wen),
     .mem1_mem2_rf_waddr           (mem1_mem2_rf_waddr),
     .mem1_mem2_rf_wdata           (mem1_mem2_rf_wdata),
+    .mem1_mem2_load_type          (mem1_mem2_load_type),
     .mem1_mem2_mem_re             (mem1_mem2_mem_re),
     .mem1_mem2_mem_we             (mem1_mem2_mem_we),
     .mem1_mem2_mem_sel            (mem1_mem2_mem_sel),
@@ -940,6 +947,7 @@ module thinpad_top (
   logic                       mem1_mem2_mem_we;
   logic [DATA_WIDTH/8-1:0]    mem1_mem2_mem_sel;
   logic [DATA_WIDTH-1:0]      mem1_mem2_mem_wdata;
+  logic                       mem1_mem2_load_type;
   logic [2:0]                 mem1_mem2_csr_op;
   logic [DATA_WIDTH-1:0]      mem1_mem2_inst;
   logic [DATA_WIDTH-1:0]      mem1_mem2_csr_data;
@@ -999,10 +1007,10 @@ module thinpad_top (
     .if_misaligned_i(mem1_mem2_instr_misaligned),
     .load_page_fault_i(mem1_mem2_load_page_fault),
     .load_access_fault_i(mem1_mem2_load_access_fault),
-    .load_misaligned_i(mem1_mem2_load_misaligned),
+    .load_misaligned_i(),
     .store_page_fault_i(mem1_mem2_store_page_fault),
     .store_access_fault_i(mem1_mem2_store_access_fault),
-    .store_misaligned_i(mem1_mem2_store_misaligned)
+    .store_misaligned_i()
   );
 
   MEM MEM (
@@ -1020,6 +1028,7 @@ module thinpad_top (
     .mem_addr_i(mem1_mem2_paddr),
     .mem_sel_i(mem1_mem2_mem_sel),
     .mem_wdata_i(mem1_mem2_mem_wdata),
+    .load_type_i(mem1_mem2_load_type),
     .inst_i(mem1_mem2_inst),
 
     .stall_i(mem2_stall),

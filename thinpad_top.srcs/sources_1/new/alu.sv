@@ -19,6 +19,8 @@ module alu_32 (
             `ALU_ROL   : y = (a << b[4:0]) | (a >> (32 - b[4:0]));
             `ALU_MIN   : y = $signed(a) < $signed(b) ? a : b;
             `ALU_SBCLR : y = a & ~({31'b0, 1'b1} << (b[4:0]));
+            `ALU_SLT   : y = $signed(a) < $signed(b) ? 32'h1 : 32'h0;
+            `ALU_SLTU  : y = a < b ? 32'h1 : 32'h0;
             `ALU_CTZ   : begin
                 casez (a)
                     32'b????_????_????_????_????_????_????_???1: y = 32'd0;

@@ -29,6 +29,15 @@ localparam CSR_ADDR_WIDTH = 12;
 `define ALU_MIN           `ALU_OP_WIDTH'd11
 `define ALU_SBCLR         `ALU_OP_WIDTH'd12
 `define ALU_CTZ           `ALU_OP_WIDTH'd13
+`define ALU_SLT           `ALU_OP_WIDTH'd14
+`define ALU_SLTU          `ALU_OP_WIDTH'd15
+
+`define COMP_EQ           3'b000
+`define COMP_NE           3'b001
+`define COMP_LT           3'b100
+`define COMP_GE           3'b101
+`define COMP_LTU          3'b110
+`define COMP_GEU          3'b111
 
 `define MODE_WIDTH  2
 `define MODE_M      `MODE_WIDTH'b11
