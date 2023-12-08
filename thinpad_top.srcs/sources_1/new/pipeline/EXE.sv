@@ -43,12 +43,18 @@ module EXE (
     input wire                          instr_access_fault_i,
     output reg                          instr_page_fault_o,
     output reg                          instr_access_fault_o,
+    input wire                          instr_misaligned_i,
+    output reg                          instr_misaligned_o,
+    input wire                          illegal_instr_i,
+    output reg                          illegal_instr_o,
     input wire                          ecall_i,
     output reg                          ecall_o,
     input wire                          ebreak_i,
     output reg                          ebreak_o,
     input wire                          mret_i,
     output reg                          mret_o,
+    input wire                          sret_i,
+    output reg                          sret_o,
     input wire                          sfence_vma_i,
     output reg                          sfence_vma_o,
     input wire                          stall_i,
@@ -132,9 +138,12 @@ module EXE (
             csr_data_o <= 32'b0;
             instr_access_fault_o <= 1'b0;
             instr_page_fault_o <= 1'b0;
+            instr_misaligned_o <= 1'b0;
+            illegal_instr_o <= 1'b0;
             ecall_o <= 1'b0;
             ebreak_o <= 1'b0;
             mret_o <= 1'b0;
+            sret_o <= 1'b0;
             sfence_vma_o <= 1'b0;
         end else if (stall_i) begin
         end else if (bubble_i) begin
@@ -151,9 +160,12 @@ module EXE (
             csr_data_o <= 32'b0;
             instr_access_fault_o <= 1'b0;
             instr_page_fault_o <= 1'b0;
+            instr_misaligned_o <= 1'b0;
+            illegal_instr_o <= 1'b0;
             ecall_o <= 1'b0;
             ebreak_o <= 1'b0;
             mret_o <= 1'b0;
+            sret_o <= 1'b0;
             sfence_vma_o <= 1'b0;
         end else begin
             if (jump_i) begin
@@ -172,9 +184,12 @@ module EXE (
             csr_op_o <= csr_op_i;
             instr_access_fault_o <= instr_access_fault_i;
             instr_page_fault_o <= instr_page_fault_i;
+            instr_misaligned_o <= instr_misaligned_i;
+            illegal_instr_o <= illegal_instr_i;
             ecall_o <= ecall_i;
             ebreak_o <= ebreak_i;
             mret_o <= mret_i;
+            sret_o <= sret_i;
             sfence_vma_o <= sfence_vma_i;
             if (csr_op_i) begin
                 if (csr_op_i[2] == 1'b0)

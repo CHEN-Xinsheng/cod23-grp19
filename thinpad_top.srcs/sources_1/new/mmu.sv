@@ -62,9 +62,12 @@ module mmu (
     input wire  [DATA_WIDTH-1:0]        exe_mem1_csr_data,
     input wire                          exe_mem1_instr_page_fault,
     input wire                          exe_mem1_instr_access_fault,
+    input wire                          exe_mem1_instr_misaligned,
+    input wire                          exe_mem1_illegal_instr,
     input wire                          exe_mem1_ecall,
     input wire                          exe_mem1_ebreak,
     input wire                          exe_mem1_mret,
+    input wire                          exe_mem1_sret,
 
     output reg  [ADDR_WIDTH-1:0]        mem1_mem2_pc_now,      // only for debug
     output reg                          mem1_mem2_rf_wen,
@@ -79,9 +82,12 @@ module mmu (
     output reg  [DATA_WIDTH-1:0]        mem1_mem2_csr_data,
     output reg                          mem1_mem2_instr_page_fault,
     output reg                          mem1_mem2_instr_access_fault,
+    output reg                          mem1_mem2_instr_misaligned,
+    output reg                          mem1_mem2_illegal_instr,
     output reg                          mem1_mem2_ecall,
     output reg                          mem1_mem2_ebreak,
-    output reg                          mem1_mem2_mret
+    output reg                          mem1_mem2_mret,
+    output reg                          mem1_mem2_sret
 );
 
 reg page_fault_o;
@@ -410,9 +416,12 @@ task direct_pass_data();
     mem1_mem2_csr_data    <= exe_mem1_csr_data;
     mem1_mem2_instr_page_fault   <= exe_mem1_instr_page_fault;
     mem1_mem2_instr_access_fault <= exe_mem1_instr_access_fault;
+    mem1_mem2_instr_misaligned   <= exe_mem1_instr_misaligned;
+    mem1_mem2_illegal_instr      <= exe_mem1_illegal_instr;
     mem1_mem2_ecall       <= exe_mem1_ecall;
     mem1_mem2_ebreak      <= exe_mem1_ebreak;
     mem1_mem2_mret        <= exe_mem1_mret;
+    mem1_mem2_sret        <= exe_mem1_sret;
 endtask
 
 task output_bubble();
@@ -438,9 +447,12 @@ task output_bubble();
     mem1_mem2_csr_data              <= 0;
     mem1_mem2_instr_page_fault      <= 0;
     mem1_mem2_instr_access_fault    <= 0;
+    mem1_mem2_instr_misaligned      <= 0;
+    mem1_mem2_illegal_instr         <= 0;
     mem1_mem2_ecall                 <= 0;
     mem1_mem2_ebreak                <= 0;
     mem1_mem2_mret                  <= 0;
+    mem1_mem2_sret                  <= 0;
 endtask
 
 task reset_state_and_wb();

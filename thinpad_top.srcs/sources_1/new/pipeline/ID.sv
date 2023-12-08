@@ -28,11 +28,15 @@ module ID (
     output reg                          ecall_o,
     output reg                          ebreak_o,
     output reg                          mret_o,
+    output reg                          sret_o,
     output reg                          fencei_o,
     input wire                          instr_page_fault_i,
     input wire                          instr_access_fault_i,
     output reg                          instr_page_fault_o,
     output reg                          instr_access_fault_o,
+    input wire                          instr_misaligned_i,
+    output reg                          instr_misaligned_o,
+    output reg                          illegal_instr_o,
     output reg                          csr_op_comb,
     output reg                          sfence_vma_o,
     input wire                          stall_i,
@@ -77,8 +81,11 @@ module ID (
             ecall_o <= 1'b0;
             ebreak_o <= 1'b0;
             mret_o <= 1'b0;
+            sret_o <= 1'b0;
             instr_access_fault_o <= 1'b0;
             instr_page_fault_o <= 1'b0;
+            instr_misaligned_o <= 1'b0;
+            illegal_instr_o <= 1'b0;
             sfence_vma_o <= 1'b0;
         end else if (stall_i) begin
         end else if (bubble_i) begin
@@ -100,19 +107,25 @@ module ID (
             ecall_o <= 1'b0;
             ebreak_o <= 1'b0;
             mret_o <= 1'b0;
+            sret_o <= 1'b0;
             instr_access_fault_o <= 1'b0;
             instr_page_fault_o <= 1'b0;
+            instr_misaligned_o <= 1'b0;
+            illegal_instr_o <= 1'b0;
             sfence_vma_o <= 1'b0;
         end else begin
             inst_o <= inst_i;
             ecall_o <= 1'b0;
             ebreak_o <= 1'b0;
             mret_o <= 1'b0;
+            sret_o <= 1'b0;
             // fencei_o <= 1'b0;
             comp_op_o <= 1'b0;
             pc_now_o <= pc_now_i;
             instr_access_fault_o <= instr_access_fault_i;
             instr_page_fault_o <= instr_page_fault_i;
+            instr_misaligned_o <= instr_misaligned_i;
+            illegal_instr_o <= 1'b0;
             sfence_vma_o <= 1'b0;
             case(opcode)
                 7'b0010011: begin   // TYPE_I
@@ -143,6 +156,9 @@ module ID (
                         end
                     end else if (funct3 == 3'b101) begin
                         alu_op_o <= `ALU_SRL;  
+                    end else begin
+                        alu_op_o <= `ALU_ADD;
+                        illegal_instr_o <= 1'b1;
                     end
                 end
                 7'b0110011: begin   // TYPE_R
@@ -184,6 +200,7 @@ module ID (
                             alu_op_o <= `ALU_SBCLR; 
                         end else begin
                             alu_op_o <= `ALU_ADD;
+                            illegal_instr_o <= 1'b1;
                         end
                     end
                 end
@@ -205,6 +222,8 @@ module ID (
                     end
                     else if (funct3 == 3'b000) begin    // SB
                         mem_sel_o <= 4'b0001;
+                    end else begin
+                        illegal_instr_o <= 1'b1;
                     end
                 end
                 7'b0000011: begin       // Load
@@ -225,6 +244,8 @@ module ID (
                     end
                     else if (funct3 == 3'b010) begin    // LW
                         mem_sel_o <= 4'b1111;
+                    end else begin
+                        illegal_instr_o <= 1'b1;
                     end
                 end
                 7'b0110111: begin       // LUI
@@ -259,6 +280,8 @@ module ID (
                         comp_op_o <= 1;
                     end else if (funct3 == 3'b001) begin   // BNE
                         comp_op_o <= 0;
+                    end else begin
+                        illegal_instr_o <= 1'b1;
                     end
                 end
                 7'b0010111: begin    // AUIPC
@@ -323,6 +346,7 @@ module ID (
                         rf_waddr_o <= 5'b0;
                         csr_op_o <= 3'b0;
                     end else begin
+                        illegal_instr_o <= 1'b1;
                         // fencei_o <= 1'b0;
                     end
                 end
@@ -361,11 +385,15 @@ module ID (
                             ebreak_o <= 1'b1;
                         end else if (inst_i[31:7] == 25'b0011000000100000000000000) begin    // MRET
                             mret_o <= 1'b1;
+                        end else if (inst_i[31:7] == 25'b0001000000100000000000000) begin    // MRET
+                            sret_o <= 1'b1;
                         end else if (funct7 == 7'b0001001 && rd == 5'b0) begin    // SFENCE.VMA
                             sfence_vma_o <= 1'b1;
                         end else begin
-                            // Illegal instruction
+                            illegal_instr_o <= 1'b1;
                         end
+                    end else begin
+                        illegal_instr_o <= 1'b1;
                     end
                 end
                 default: begin
@@ -382,9 +410,12 @@ module ID (
                     mem_we_o <= 1'b0;
                     rf_wen_o <= 1'b0;
                     rf_waddr_o <= 5'b0;
-                    // pc_now_o <= 32'h0;
                     csr_op_o <= 3'b0;
-                    // fencei_o <= 1'b0;
+                    if (inst_i == 32'h0) begin
+                        illegal_instr_o <= 1'b0;
+                    end else begin
+                        illegal_instr_o <= 1'b1;
+                    end
                 end
             endcase
         end

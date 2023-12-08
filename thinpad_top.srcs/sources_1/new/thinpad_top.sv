@@ -571,7 +571,7 @@ module thinpad_top (
     .instr_access_fault_o   (if1_if2_instr_access_fault),
     .load_misaligned_o      (),
     .store_misaligned_o     (),
-    .instr_misaligned_o     (),  // TODO
+    .instr_misaligned_o     (if1_if2_instr_misaligned),  // TODO
 
 
     .tlb_reset_i            (if2_sfence_vma),
@@ -595,6 +595,7 @@ module thinpad_top (
   /* ====================== IF1/IF2 regs ====================== */
   logic if1_if2_instr_page_fault;
   logic if1_if2_instr_access_fault;
+  logic if1_if2_instr_misaligned;
   logic if1_if2_icache_enable;
   logic [31:0] if1_if2_pc_paddr;
   logic [31:0] if1_if2_pc_now;
@@ -618,6 +619,8 @@ module thinpad_top (
     .access_fault_i(if1_if2_instr_access_fault),
     .page_fault_o(if2_id_instr_page_fault),
     .access_fault_o(if2_id_instr_access_fault),
+    .instr_misaligned_i(if1_if2_instr_misaligned),
+    .instr_misaligned_o(if2_id_instr_misaligned),
     .sfence_vma_o(if2_sfence_vma),
 
     .stall_i(if2_stall),
@@ -638,6 +641,7 @@ module thinpad_top (
   logic [31:0] if2_id_pc_now;
   logic if2_id_instr_page_fault;
   logic if2_id_instr_access_fault;
+  logic if2_id_instr_misaligned;
 
   /* ====================== ID ====================== */
   logic [2:0] id_csr_op_comb;
@@ -670,11 +674,15 @@ module thinpad_top (
     .ecall_o                (id_exe_ecall),
     .ebreak_o               (id_exe_ebreak),
     .mret_o                 (id_exe_mret),
+    .sret_o                 (id_exe_sret),
     .fencei_o               (fencei),
     .instr_page_fault_i     (if2_id_instr_page_fault),
     .instr_access_fault_i   (if2_id_instr_access_fault),
     .instr_page_fault_o     (id_exe_instr_page_fault),
     .instr_access_fault_o   (id_exe_instr_access_fault),
+    .instr_misaligned_i     (if2_id_instr_misaligned),
+    .instr_misaligned_o     (id_exe_instr_misaligned),
+    .illegal_instr_o        (id_exe_illegal_instr),
     .csr_op_comb            (id_csr_op_comb),
     .sfence_vma_o            (id_exe_sfence_vma),
 
@@ -710,8 +718,11 @@ module thinpad_top (
   logic id_exe_ecall;
   logic id_exe_ebreak;
   logic id_exe_mret;
+  logic id_exe_sret;
   logic id_exe_instr_page_fault;
   logic id_exe_instr_access_fault;
+  logic id_exe_instr_misaligned;
+  logic id_exe_illegal_instr;
   logic id_exe_sfence_vma;
 
   /* ====================== EXE ====================== */
@@ -770,12 +781,18 @@ module thinpad_top (
     .instr_access_fault_i   (id_exe_instr_access_fault),
     .instr_page_fault_o     (exe_mem1_instr_page_fault),
     .instr_access_fault_o   (exe_mem1_instr_access_fault),
+    .instr_misaligned_i     (id_exe_instr_misaligned),
+    .instr_misaligned_o     (exe_mem1_instr_misaligned),
+    .illegal_instr_i        (id_exe_illegal_instr),
+    .illegal_instr_o        (exe_mem1_illegal_instr),
     .ecall_i                (id_exe_ecall),
     .ebreak_i               (id_exe_ebreak),
     .mret_i                 (id_exe_mret),
     .ecall_o                (exe_mem1_ecall),
     .ebreak_o               (exe_mem1_ebreak),
     .mret_o                 (exe_mem1_mret),
+    .sret_i                 (id_exe_sret),
+    .sret_o                 (exe_mem1_sret),
     .sfence_vma_i           (id_exe_sfence_vma),
     .sfence_vma_o           (exe_mem1_sfence_vma),
     
@@ -819,9 +836,12 @@ module thinpad_top (
   logic [DATA_WIDTH-1:0]      exe_mem1_csr_data;
   logic                       exe_mem1_instr_page_fault;
   logic                       exe_mem1_instr_access_fault;
+  logic                       exe_mem1_instr_misaligned;
+  logic                       exe_mem1_illegal_instr;
   logic                       exe_mem1_ecall;
   logic                       exe_mem1_ebreak;
   logic                       exe_mem1_mret;
+  logic                       exe_mem1_sret;
   logic                       exe_mem1_sfence_vma;
 
   /* ====================== MEM1 ====================== */
@@ -848,8 +868,8 @@ module thinpad_top (
     .load_access_fault_o    (mem1_mem2_load_access_fault),
     .store_access_fault_o   (mem1_mem2_store_access_fault),
     .instr_access_fault_o   (),
-    .load_misaligned_o      (), // TODO
-    .store_misaligned_o     (), // TODO
+    .load_misaligned_o      (mem1_mem2_load_misaligned), // TODO
+    .store_misaligned_o     (mem1_mem2_store_misaligned), // TODO
     .instr_misaligned_o     (),
 
     .tlb_reset_i            (exe_mem1_sfence_vma),
@@ -879,9 +899,12 @@ module thinpad_top (
     .exe_mem1_csr_data            (exe_mem1_csr_data),
     .exe_mem1_instr_page_fault    (exe_mem1_instr_page_fault),
     .exe_mem1_instr_access_fault  (exe_mem1_instr_access_fault),
+    .exe_mem1_instr_misaligned    (exe_mem1_instr_misaligned),
+    .exe_mem1_illegal_instr       (exe_mem1_illegal_instr),
     .exe_mem1_ecall               (exe_mem1_ecall),
     .exe_mem1_ebreak              (exe_mem1_ebreak),
     .exe_mem1_mret                (exe_mem1_mret),
+    .exe_mem1_sret                (exe_mem1_sret),
 
     .mem1_mem2_pc_now             (mem1_mem2_pc_now),  // only for debug
     .mem1_mem2_rf_wen             (mem1_mem2_rf_wen),
@@ -896,9 +919,12 @@ module thinpad_top (
     .mem1_mem2_csr_data           (mem1_mem2_csr_data),
     .mem1_mem2_instr_page_fault   (mem1_mem2_instr_page_fault),
     .mem1_mem2_instr_access_fault (mem1_mem2_instr_access_fault),
+    .mem1_mem2_instr_misaligned   (mem1_mem2_instr_misaligned),
+    .mem1_mem2_illegal_instr      (mem1_mem2_illegal_instr),
     .mem1_mem2_ecall              (mem1_mem2_ecall),
     .mem1_mem2_ebreak             (mem1_mem2_ebreak),
-    .mem1_mem2_mret               (mem1_mem2_mret)
+    .mem1_mem2_mret               (mem1_mem2_mret),
+    .mem1_mem2_sret               (mem1_mem2_sret)
 
   );
 
@@ -921,11 +947,16 @@ module thinpad_top (
   logic                       mem1_mem2_store_page_fault;
   logic                       mem1_mem2_load_access_fault;
   logic                       mem1_mem2_store_access_fault;
+  logic                       mem1_mem2_load_misaligned;
+  logic                       mem1_mem2_store_misaligned;
   logic                       mem1_mem2_instr_page_fault;
   logic                       mem1_mem2_instr_access_fault;
+  logic                       mem1_mem2_instr_misaligned;
+  logic                       mem1_mem2_illegal_instr;
   logic                       mem1_mem2_ecall;
   logic                       mem1_mem2_ebreak;
   logic                       mem1_mem2_mret;
+  logic                       mem1_mem2_sret;
 
 
   /* ====================== MEM2 ====================== */
@@ -956,17 +987,22 @@ module thinpad_top (
     .ecall_i(mem1_mem2_ecall),
     .ebreak_i(mem1_mem2_ebreak),
     .mret_i(mem1_mem2_mret),
+    .sret_i(mem1_mem2_sret),
     .time_interrupt_i(time_interrupt),
     .satp_o(csr_satp),
     .sum_o(mstatus_sum),
     .mode_o(csr_mode),
     .mtime_i(mtime),
+    .if_illegal_i(mem1_mem2_illegal_instr),
     .if_page_fault_i(mem1_mem2_instr_page_fault),
     .if_access_fault_i(mem1_mem2_instr_access_fault),
+    .if_misaligned_i(mem1_mem2_instr_misaligned),
     .load_page_fault_i(mem1_mem2_load_page_fault),
     .load_access_fault_i(mem1_mem2_load_access_fault),
+    .load_misaligned_i(mem1_mem2_load_misaligned),
     .store_page_fault_i(mem1_mem2_store_page_fault),
-    .store_access_fault_i(mem1_mem2_store_access_fault)
+    .store_access_fault_i(mem1_mem2_store_access_fault),
+    .store_misaligned_i(mem1_mem2_store_misaligned)
   );
 
   MEM MEM (
