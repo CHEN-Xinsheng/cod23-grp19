@@ -13,6 +13,7 @@ module mmu (
     output reg [ADDR_WIDTH-1:0]         paddr_o,  // physical address
     output reg                          ack_o,    // If enable_i == 1, then only when ack_o == 1, the data that output to CPU interface is valid
 
+    input wire [ADDR_WIDTH/8-1:0]       mem_sel_i,
     input wire                          enable_i,   // use MMU (some instructions does not need to read/write MEM, in such case, let enable_i = 0 in MEM stage)
     input wire                          read_en_i,  // for MEM stage, load instruction
     input wire                          write_en_i, // for MEM stage, store instruction
@@ -108,16 +109,17 @@ assign instr_misaligned_o   = misaligned_o   & exe_en_i;
 
 wire direct_trans = (mode_i == `MODE_M || satp_i.mode == 1'b0);
 
-// pte_t read_pte = pte_t'(wb_dat_i);
-pte_t read_pte;
-assign {read_pte.ppn1, read_pte.ppn0, read_pte.rsw, read_pte.d, read_pte.a, read_pte.g, read_pte.u, read_pte.x, read_pte.w, read_pte.r, read_pte.v} = wb_dat_i;
+wire pte_t  read_pte = pte_t'(wb_dat_i);
 // Ref: 4.3.2 Virtual Address Translation Process
 reg         cur_level;
 pte_t       lv1_pte;
-wire [33:0] pte_addr;
-assign pte_addr = (cur_level == 1'b1) 
-                    ? (satp_i.ppn << 12)                   + (vaddr_i.vpn1 << 2)
-                    : ({lv1_pte.ppn1, lv1_pte.ppn0} << 12) + (vaddr_i.vpn0 << 2);
+wire [33:0] pte_addr = (cur_level == 1'b1) 
+                        ? {satp_i.ppn,                 vaddr_i.vpn1, 2'b00}   // (satp_i.ppn << 12)                   + (vaddr_i.vpn1 << 2)
+                        : {lv1_pte.ppn1, lv1_pte.ppn0, vaddr_i.vpn0, 2'b00};  // ({lv1_pte.ppn1, lv1_pte.ppn0} << 12) + (vaddr_i.vpn0 << 2)
+                        // |          PPN(22)        |   VPN(10)   |  00  |
+                        // e.g. vaddr = 0x80000010: 
+                        // | 0b00, 0x80002 |  0b10, 0x00 | 0b00 |
+                        // [31:0] = 0x80002_800
 
 // wishbone interface
 assign wb_stb_o = wb_cyc_o;
@@ -136,7 +138,7 @@ enum logic [2:0] {
 tlb_entry_t  tlb[0: N_TLB_ENTRY-1];
 
 wire [TLB_INDEX_WIDTH-1:0]  tlb_index = vaddr_i[12+TLB_INDEX_WIDTH-1: 12];
-tlb_entry_t                 tlb_entry = tlb[tlb_index];
+wire tlb_entry_t            tlb_entry = tlb[tlb_index];
 wire                        tlb_hit   = tlb_entry.valid 
                                         && tlb_entry.asid == satp_i.asid
                                         && tlb_entry.tag == vaddr_i[31:31-TLB_TAG_WIDTH+1];
@@ -177,11 +179,14 @@ always_comb begin: output_ack_and_output_comb
     casez (state)
         IDLE: begin
             if (enable_i) begin
-                // if (vaddr_i[1:0] != 2'b00) begin
-                //     raise_misaligned_comb();
-                // end else if (direct_trans) begin
-                    if (direct_trans) begin
-                    /* do not translate (i.e., direct translatation) */
+                if (!(
+                       (mem_sel_i == 4'b1111 && vaddr_i[1:0] == 2'b00)
+                    || (mem_sel_i == 4'b0011 && vaddr_i[0]   == 1'b0)
+                    || (mem_sel_i == 4'b0001)
+                )) begin
+                    raise_misaligned_comb();
+                    fault_case = 9;
+                end else if (direct_trans) begin
                     if (!paddr_valid(vaddr_i)) begin
                         raise_access_fault_comb();
                         fault_case = 1;
@@ -261,6 +266,7 @@ end
 always_ff @(posedge clk) begin: inner_data_and_wishbone
     if (rst) begin
         reset_state_and_wb();
+        reset_tlb();
     end else begin
         casez (state)
             IDLE: begin
@@ -316,8 +322,7 @@ always_ff @(posedge clk) begin: inner_data_and_wishbone
                             reset_state_and_wb();
                         end else begin
                             wb_cyc_o <= 1'b0;   // close wishbone for a cycle
-                            // lv1_pte <= pte_t'(wb_dat_i);  // cache the just-read level-1 PTE
-                            {lv1_pte.ppn1, lv1_pte.ppn0, lv1_pte.rsw, lv1_pte.d, lv1_pte.a, lv1_pte.g, lv1_pte.u, lv1_pte.x, lv1_pte.w, lv1_pte.r, lv1_pte.v} <= wb_dat_i;
+                            lv1_pte <= read_pte;  // cache the just-read level-1 PTE
                             cur_level <= cur_level -1;  // cur_level <= 1'b0;
                             state <= FETCH_PTE_LV0;
                         end

@@ -227,9 +227,9 @@ typedef struct packed {
   |     12     |    10    |     12     |
  */
 
-localparam N_TLB_ENTRY     = 32;
 localparam TLB_INDEX_WIDTH = 5;
 localparam TLB_TAG_WIDTH   = 32-12-TLB_INDEX_WIDTH;
+localparam N_TLB_ENTRY     = 1 << TLB_INDEX_WIDTH;
 /* virtual address:
   |    VPN (virtual page number)    | offset |
   |        TLB tag      | TLB index |        |

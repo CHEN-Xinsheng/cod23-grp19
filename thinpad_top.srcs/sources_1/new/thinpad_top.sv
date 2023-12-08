@@ -559,6 +559,7 @@ module thinpad_top (
     .paddr_o                (if1_if2_pc_paddr),
     .ack_o                  (if_mmu_ack),
 
+    .mem_sel_i              (4'b1111),
     .enable_i               (1'b1),
     .read_en_i              (1'b0),
     .write_en_i             (1'b0),
@@ -863,6 +864,7 @@ module thinpad_top (
     .paddr_o                (mem1_mem2_paddr),
     .ack_o                  (mem_mmu_ack),
 
+    .mem_sel_i              (exe_mem1_mem_sel),
     .enable_i               (exe_mem1_mem_re | exe_mem1_mem_we),  // TODO: add trap_disable?
     .read_en_i              (exe_mem1_mem_re),
     .write_en_i             (exe_mem1_mem_we),

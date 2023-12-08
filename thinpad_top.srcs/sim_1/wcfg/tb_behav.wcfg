@@ -13,15 +13,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="5626465006fs"></ZoomStartTime>
-      <ZoomEndTime time="5629757007fs"></ZoomEndTime>
-      <Cursor1Time time="6565380000fs"></Cursor1Time>
+      <ZoomStartTime time="5687641580fs"></ZoomStartTime>
+      <ZoomEndTime time="5690945581fs"></ZoomEndTime>
+      <Cursor1Time time="5688610000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="333"></NameColumnWidth>
-      <ValueColumnWidth column_width="117"></ValueColumnWidth>
+      <ValueColumnWidth column_width="111"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="156" />
+   <WVObjectSize size="123" />
    <wvobject fp_name="/tb/dut/sys_clk" type="logic">
       <obj_property name="ElementShortName">sys_clk</obj_property>
       <obj_property name="ObjectShortName">sys_clk</obj_property>
@@ -37,8 +37,8 @@
       <obj_property name="label">IF1/pc_vaddr</obj_property>
    </wvobject>
    <wvobject fp_name="/tb/dut/if_mmu/fault_case" type="array">
-      <obj_property name="ElementShortName">fault_case[3:0]</obj_property>
-      <obj_property name="ObjectShortName">fault_case[3:0]</obj_property>
+      <obj_property name="ElementShortName">fault_case[4:0]</obj_property>
+      <obj_property name="ObjectShortName">fault_case[4:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb/dut/icache/pc_i" type="array">
       <obj_property name="DisplayName">label</obj_property>
@@ -95,6 +95,7 @@
    <wvobject fp_name="/tb/dut/csrfile/satp" type="array">
       <obj_property name="ElementShortName">satp</obj_property>
       <obj_property name="ObjectShortName">satp</obj_property>
+      <obj_property name="isExpanded"></obj_property>
    </wvobject>
    <wvobject fp_name="/tb/dut/if_mmu/mstatus_sum_i" type="logic">
       <obj_property name="ElementShortName">mstatus_sum_i</obj_property>
@@ -184,10 +185,6 @@
       <obj_property name="ElementShortName">wb_dat_o[31:0]</obj_property>
       <obj_property name="ObjectShortName">wb_dat_o[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb/dut/if_mmu/wb_dat_i" type="array">
-      <obj_property name="ElementShortName">wb_dat_i[31:0]</obj_property>
-      <obj_property name="ObjectShortName">wb_dat_i[31:0]</obj_property>
-   </wvobject>
    <wvobject fp_name="/tb/dut/if_mmu/wb_sel_o" type="array">
       <obj_property name="ElementShortName">wb_sel_o[3:0]</obj_property>
       <obj_property name="ObjectShortName">wb_sel_o[3:0]</obj_property>
@@ -204,134 +201,6 @@
       <obj_property name="ElementShortName">if1_if2_icache_enable</obj_property>
       <obj_property name="ObjectShortName">if1_if2_icache_enable</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb/dut/if_mmu/exe_mem1_pc_now" type="array">
-      <obj_property name="ElementShortName">exe_mem1_pc_now[31:0]</obj_property>
-      <obj_property name="ObjectShortName">exe_mem1_pc_now[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/if_mmu/exe_mem1_rf_wen" type="logic">
-      <obj_property name="ElementShortName">exe_mem1_rf_wen</obj_property>
-      <obj_property name="ObjectShortName">exe_mem1_rf_wen</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/if_mmu/exe_mem1_rf_waddr" type="array">
-      <obj_property name="ElementShortName">exe_mem1_rf_waddr[4:0]</obj_property>
-      <obj_property name="ObjectShortName">exe_mem1_rf_waddr[4:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/if_mmu/exe_mem1_alu_result" type="array">
-      <obj_property name="ElementShortName">exe_mem1_alu_result[31:0]</obj_property>
-      <obj_property name="ObjectShortName">exe_mem1_alu_result[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/if_mmu/exe_mem1_mem_re" type="logic">
-      <obj_property name="ElementShortName">exe_mem1_mem_re</obj_property>
-      <obj_property name="ObjectShortName">exe_mem1_mem_re</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/if_mmu/exe_mem1_mem_we" type="logic">
-      <obj_property name="ElementShortName">exe_mem1_mem_we</obj_property>
-      <obj_property name="ObjectShortName">exe_mem1_mem_we</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/if_mmu/exe_mem1_mem_sel" type="array">
-      <obj_property name="ElementShortName">exe_mem1_mem_sel[3:0]</obj_property>
-      <obj_property name="ObjectShortName">exe_mem1_mem_sel[3:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/if_mmu/exe_mem1_mem_wdata" type="array">
-      <obj_property name="ElementShortName">exe_mem1_mem_wdata[31:0]</obj_property>
-      <obj_property name="ObjectShortName">exe_mem1_mem_wdata[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/if_mmu/exe_mem1_inst" type="array">
-      <obj_property name="ElementShortName">exe_mem1_inst[31:0]</obj_property>
-      <obj_property name="ObjectShortName">exe_mem1_inst[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/if_mmu/exe_mem1_csr_op" type="array">
-      <obj_property name="ElementShortName">exe_mem1_csr_op[2:0]</obj_property>
-      <obj_property name="ObjectShortName">exe_mem1_csr_op[2:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/if_mmu/exe_mem1_csr_data" type="array">
-      <obj_property name="ElementShortName">exe_mem1_csr_data[31:0]</obj_property>
-      <obj_property name="ObjectShortName">exe_mem1_csr_data[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/if_mmu/exe_mem1_instr_page_fault" type="logic">
-      <obj_property name="ElementShortName">exe_mem1_instr_page_fault</obj_property>
-      <obj_property name="ObjectShortName">exe_mem1_instr_page_fault</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/if_mmu/exe_mem1_instr_access_fault" type="logic">
-      <obj_property name="ElementShortName">exe_mem1_instr_access_fault</obj_property>
-      <obj_property name="ObjectShortName">exe_mem1_instr_access_fault</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/if_mmu/exe_mem1_ecall" type="logic">
-      <obj_property name="ElementShortName">exe_mem1_ecall</obj_property>
-      <obj_property name="ObjectShortName">exe_mem1_ecall</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/if_mmu/exe_mem1_ebreak" type="logic">
-      <obj_property name="ElementShortName">exe_mem1_ebreak</obj_property>
-      <obj_property name="ObjectShortName">exe_mem1_ebreak</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/if_mmu/exe_mem1_mret" type="logic">
-      <obj_property name="ElementShortName">exe_mem1_mret</obj_property>
-      <obj_property name="ObjectShortName">exe_mem1_mret</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/if_mmu/mem1_mem2_pc_now" type="array">
-      <obj_property name="ElementShortName">mem1_mem2_pc_now[31:0]</obj_property>
-      <obj_property name="ObjectShortName">mem1_mem2_pc_now[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/if_mmu/mem1_mem2_rf_wen" type="logic">
-      <obj_property name="ElementShortName">mem1_mem2_rf_wen</obj_property>
-      <obj_property name="ObjectShortName">mem1_mem2_rf_wen</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/if_mmu/mem1_mem2_rf_waddr" type="array">
-      <obj_property name="ElementShortName">mem1_mem2_rf_waddr[4:0]</obj_property>
-      <obj_property name="ObjectShortName">mem1_mem2_rf_waddr[4:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/if_mmu/mem1_mem2_rf_wdata" type="array">
-      <obj_property name="ElementShortName">mem1_mem2_rf_wdata[31:0]</obj_property>
-      <obj_property name="ObjectShortName">mem1_mem2_rf_wdata[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/if_mmu/mem1_mem2_mem_re" type="logic">
-      <obj_property name="ElementShortName">mem1_mem2_mem_re</obj_property>
-      <obj_property name="ObjectShortName">mem1_mem2_mem_re</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/if_mmu/mem1_mem2_mem_we" type="logic">
-      <obj_property name="ElementShortName">mem1_mem2_mem_we</obj_property>
-      <obj_property name="ObjectShortName">mem1_mem2_mem_we</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/if_mmu/mem1_mem2_mem_sel" type="array">
-      <obj_property name="ElementShortName">mem1_mem2_mem_sel[3:0]</obj_property>
-      <obj_property name="ObjectShortName">mem1_mem2_mem_sel[3:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/if_mmu/mem1_mem2_mem_wdata" type="array">
-      <obj_property name="ElementShortName">mem1_mem2_mem_wdata[31:0]</obj_property>
-      <obj_property name="ObjectShortName">mem1_mem2_mem_wdata[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/if_mmu/mem1_mem2_inst" type="array">
-      <obj_property name="ElementShortName">mem1_mem2_inst[31:0]</obj_property>
-      <obj_property name="ObjectShortName">mem1_mem2_inst[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/if_mmu/mem1_mem2_csr_op" type="array">
-      <obj_property name="ElementShortName">mem1_mem2_csr_op[2:0]</obj_property>
-      <obj_property name="ObjectShortName">mem1_mem2_csr_op[2:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/if_mmu/mem1_mem2_csr_data" type="array">
-      <obj_property name="ElementShortName">mem1_mem2_csr_data[31:0]</obj_property>
-      <obj_property name="ObjectShortName">mem1_mem2_csr_data[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/if_mmu/mem1_mem2_instr_page_fault" type="logic">
-      <obj_property name="ElementShortName">mem1_mem2_instr_page_fault</obj_property>
-      <obj_property name="ObjectShortName">mem1_mem2_instr_page_fault</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/if_mmu/mem1_mem2_instr_access_fault" type="logic">
-      <obj_property name="ElementShortName">mem1_mem2_instr_access_fault</obj_property>
-      <obj_property name="ObjectShortName">mem1_mem2_instr_access_fault</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/if_mmu/mem1_mem2_ecall" type="logic">
-      <obj_property name="ElementShortName">mem1_mem2_ecall</obj_property>
-      <obj_property name="ObjectShortName">mem1_mem2_ecall</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/if_mmu/mem1_mem2_ebreak" type="logic">
-      <obj_property name="ElementShortName">mem1_mem2_ebreak</obj_property>
-      <obj_property name="ObjectShortName">mem1_mem2_ebreak</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/if_mmu/mem1_mem2_mret" type="logic">
-      <obj_property name="ElementShortName">mem1_mem2_mret</obj_property>
-      <obj_property name="ObjectShortName">mem1_mem2_mret</obj_property>
-   </wvobject>
    <wvobject fp_name="/tb/dut/if_mmu/page_fault_o" type="logic">
       <obj_property name="ElementShortName">page_fault_o</obj_property>
       <obj_property name="ObjectShortName">page_fault_o</obj_property>
@@ -344,13 +213,13 @@
       <obj_property name="ElementShortName">direct_trans</obj_property>
       <obj_property name="ObjectShortName">direct_trans</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb/dut/if_mmu/xilinx_isim_temp_13_ln96castingOp" type="array">
-      <obj_property name="ElementShortName">xilinx_isim_temp_13_ln96castingOp</obj_property>
-      <obj_property name="ObjectShortName">xilinx_isim_temp_13_ln96castingOp</obj_property>
-   </wvobject>
    <wvobject fp_name="/tb/dut/if_mmu/read_pte" type="array">
       <obj_property name="ElementShortName">read_pte</obj_property>
       <obj_property name="ObjectShortName">read_pte</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/if_mmu/wb_dat_i" type="array">
+      <obj_property name="ElementShortName">wb_dat_i[31:0]</obj_property>
+      <obj_property name="ObjectShortName">wb_dat_i[31:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb/dut/if_mmu/cur_level" type="logic">
       <obj_property name="ElementShortName">cur_level</obj_property>
@@ -401,8 +270,8 @@
       <obj_property name="ObjectShortName">leaf_pte_access_allowed</obj_property>
    </wvobject>
    <wvobject fp_name="/tb/dut/if_mmu/fault_case" type="array">
-      <obj_property name="ElementShortName">fault_case[3:0]</obj_property>
-      <obj_property name="ObjectShortName">fault_case[3:0]</obj_property>
+      <obj_property name="ElementShortName">fault_case[4:0]</obj_property>
+      <obj_property name="ObjectShortName">fault_case[4:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb/dut/icache/fence_i" type="logic">
       <obj_property name="DisplayName">label</obj_property>
