@@ -177,9 +177,10 @@ always_comb begin: output_ack_and_output_comb
     casez (state)
         IDLE: begin
             if (enable_i) begin
-                if (vaddr_i[1:0] != 2'b00) begin
-                    raise_misaligned_comb();
-                end else if (direct_trans) begin
+                // if (vaddr_i[1:0] != 2'b00) begin
+                //     raise_misaligned_comb();
+                // end else if (direct_trans) begin
+                    if (direct_trans) begin
                     /* do not translate (i.e., direct translatation) */
                     if (!paddr_valid(vaddr_i)) begin
                         raise_access_fault_comb();

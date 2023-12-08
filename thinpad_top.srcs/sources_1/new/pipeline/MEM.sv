@@ -142,12 +142,13 @@ module MEM (
             wb_dat_o = mem_wdata_i;
         end else if (mem_sel_i == 4'b0011) begin
             wb_sel_o = (mem_sel_i << mem_addr_i[1:0]);
-            wb_dat_o = (mem_wdata_i << ((mem_addr_i << 3) & 32'h000011000));
+            wb_dat_o = (mem_wdata_i << ((mem_addr_i << 3) & 32'b000011000));
         end else if (mem_sel_i == 4'b0001) begin
             wb_sel_o = (mem_sel_i << mem_addr_i[1:0]);
-            wb_dat_o = (mem_wdata_i << ((mem_addr_i << 3) & 32'h000011000));
+            wb_dat_o = (mem_wdata_i << ((mem_addr_i << 3) & 32'b000011000));
         end else begin
             wb_sel_o = 4'b0000;
+            wb_dat_o = 32'b0;
         end
 
     end
