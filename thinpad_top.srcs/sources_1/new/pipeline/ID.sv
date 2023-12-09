@@ -22,7 +22,7 @@ module ID (
     input wire [ADDR_WIDTH-1:0]         pc_now_i,
     output reg [ADDR_WIDTH-1:0]         pc_now_o,
     output reg                          use_pc_o,
-    output reg [2:0]                    comp_op_o,
+    output reg [`CSR_OP_WIDTH-1:0]      comp_op_o,
     output reg                          load_type_o,
     output reg                          jump_o,
     output reg [`CSR_OP_WIDTH-1:0]      csr_op_o,
@@ -38,7 +38,7 @@ module ID (
     input wire                          instr_misaligned_i,
     output reg                          instr_misaligned_o,
     output reg                          illegal_instr_o,
-    output reg                          csr_op_comb,
+    output reg [`CSR_OP_WIDTH-1:0]      csr_op_comb,
     output reg                          sfence_vma_o,
     input wire                          stall_i,
     input wire                          bubble_i

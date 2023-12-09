@@ -117,15 +117,23 @@ wire [33:0] pte_addr = (cur_level == 1'b1)
                         ? {satp_i.ppn,                 vaddr_i.vpn1, 2'b00}   // (satp_i.ppn << 12)                   + (vaddr_i.vpn1 << 2)
                         : {lv1_pte.ppn1, lv1_pte.ppn0, vaddr_i.vpn0, 2'b00};  // ({lv1_pte.ppn1, lv1_pte.ppn0} << 12) + (vaddr_i.vpn0 << 2)
                         // |          PPN(22)        |   VPN(10)   |  00  |
-                        // e.g. vaddr = 0x80000010: 
-                        // | 0b00, 0x80002 |  0b10, 0x00 | 0b00 |
-                        // [31:0] = 0x80002_800
+
+                        // e.g. vaddr = 0x80001000:   offset = 0x000;
+                        // pte_addr = | 0b00, 0x80002 |  0b10, 0x00 | 0b00 |
+                        // pte_addr[31:0] = 0x80002_800
+                        // -> lv1_pte = 0x2000_10_f1,
+                        // ppn1 = 0x200, ppn0 = {0b00, 0x04}
+                        // pte_addr = 0x200, 0b00, 0x04; 0b00, 0x01; 0b00 
+                        // pte_addr[31:0] = 0x800_04_004
+                        // -> lv2_pte = 0x2000_04fb
+                        // ppn1 = 0x200, ppn0 = 0b00, 0x01
+                        // paddr[31:0] = 0x800_01_000
 
 // wishbone interface
 assign wb_stb_o = wb_cyc_o;
 assign wb_adr_o = pte_addr[ADDR_WIDTH-1:0];  // "拼出来的 34 位物理地址可以直接去掉最高的两位当作 32 位地址进行使用。"
 assign wb_dat_o = {DATA_WIDTH{1'b0}};
-assign wb_sel_o = {{DATA_WIDTH/8}{1'b0}};
+assign wb_sel_o = {{DATA_WIDTH/8}{1'b1}};
 assign wb_we_o  = 1'b0;
 
 enum logic [2:0] {

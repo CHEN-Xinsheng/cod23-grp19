@@ -78,15 +78,40 @@ module tb;
 //    uart.pc_send_byte(8'h33); // ASCII '3'
     
     #5_200_000
-    // term operation-G
+    /* term operation-G */
     uart.pc_send_byte(8'h47);  // ASCII 'G'
     // input addr
     uart.pc_send_byte(8'h00);
     uart.pc_send_byte(8'h10);
     uart.pc_send_byte(8'h00);
     uart.pc_send_byte(8'h80);
-    // uart.pc_send_byte(little_endian_32bit(32'h8000_1000));
+    
+    // /* term operation-T */
+    // uart.pc_send_byte(8'h44);  // ASCII 'D'
+    // // input addr  0x8000_2800
+    // uart.pc_send_byte(8'h00);
+    // uart.pc_send_byte(8'h28);
+    // uart.pc_send_byte(8'h00);
+    // uart.pc_send_byte(8'h80);
+    // // input num
+    // uart.pc_send_byte(8'h04);
+    // uart.pc_send_byte(8'h00);
+    // uart.pc_send_byte(8'h00);
+    // uart.pc_send_byte(8'h00);
 
+    // #2_000_000
+    // /* term operation-T */
+    // uart.pc_send_byte(8'h44);  // ASCII 'D'
+    // // input addr  0x2000_04fb
+    // uart.pc_send_byte(8'hfb);
+    // uart.pc_send_byte(8'h04);
+    // uart.pc_send_byte(8'h00);
+    // uart.pc_send_byte(8'h20);
+    // // input num
+    // uart.pc_send_byte(8'h04);
+    // uart.pc_send_byte(8'h00);
+    // uart.pc_send_byte(8'h00);
+    // uart.pc_send_byte(8'h00);
   end
 
   function automatic little_endian_32bit(input [31:0] data);
