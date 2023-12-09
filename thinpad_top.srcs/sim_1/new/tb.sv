@@ -46,12 +46,14 @@ module tb;
   wire uart_tsre;  // 数据发�?�完毕标�???
 
   // Windows �???要注意路径分隔符的转义，例如 "D:\\foo\\bar.bin"
-   parameter BASE_RAM_INIT_FILE = "D:\\organization\\rv-2023\\supervisor-rv\\kernel\\kernel.bin";
-  // parameter BASE_RAM_INIT_FILE = "D:\\organization\\rvtests_simple\\test19.bin";
+//   parameter BASE_RAM_INIT_FILE = "D:\\organization\\rv-2023\\supervisor-rv\\kernel\\kernel.bin";
+   parameter BASE_RAM_INIT_FILE = "D:\\organization\\rvtests_simple\\testall.bin";
 //  parameter BASE_RAM_INIT_FILE = "D:\\Codes\\Computer_Organization\\rv-2023\\supervisor-rv\\kernel\\kernel.bin";
   // parameter BASE_RAM_INIT_FILE = "D:\\Codes\\Computer_Organization\\rv-2023\\asmcode\\rvtests_simple\\test19.bin";
   // parameter BASE_RAM_INIT_FILE = "E:\\2023\\2023 fall\\Computer Organization\\cod23-grp19\\kernel.bin"; // BaseRAM 初始化文件，请修改为实际的绝对路�???
-  parameter EXT_RAM_INIT_FILE = "/tmp/eram.bin";  // ExtRAM 初始化文件，请修改为实际的绝对路�???
+//  parameter BASE_RAM_INIT_FILE = "D:\\organization\\rbl.img";
+
+  parameter EXT_RAM_INIT_FILE = "D:\\organization\\ucore.img";  // ExtRAM 初始化文件，请修改为实际的绝对路�???
   parameter FLASH_INIT_FILE = "/tmp/kernel.elf";  // Flash 初始化文件，请修改为实际的绝对路�???
 
   initial begin
@@ -77,14 +79,14 @@ module tb;
 //    #10000;
 //    uart.pc_send_byte(8'h33); // ASCII '3'
     
-    #5_200_000
-    /* term operation-G */
-    uart.pc_send_byte(8'h47);  // ASCII 'G'
-    // input addr
-    uart.pc_send_byte(8'h00);
-    uart.pc_send_byte(8'h10);
-    uart.pc_send_byte(8'h00);
-    uart.pc_send_byte(8'h80);
+//    #5_200_000
+//    /* term operation-G */
+//    uart.pc_send_byte(8'h47);  // ASCII 'G'
+//    // input addr
+//    uart.pc_send_byte(8'h00);
+//    uart.pc_send_byte(8'h10);
+//    uart.pc_send_byte(8'h00);
+//    uart.pc_send_byte(8'h80);
     
     // /* term operation-T */
     // uart.pc_send_byte(8'h44);  // ASCII 'D'
