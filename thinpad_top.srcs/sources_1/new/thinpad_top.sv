@@ -417,6 +417,7 @@ module thinpad_top (
     .id_exe_mem_en_i(id_exe_mem_en),
     .id_exe_rf_wen_i(id_exe_rf_wen),
     .id_exe_rf_waddr_i(id_exe_rf_waddr),
+    .exe_mem_rf_waddr_i(exe_mem_rf_waddr),
 
     .rf_waddr_i(rf_waddr),
     .exe_branch_comb_i(exe_branch_comb),

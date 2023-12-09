@@ -2,8 +2,8 @@
 module EXE (
     input wire clk,
     input wire rst,
-    input wire [31:0] rf_raddr_a_i,
-    input wire [31:0] rf_raddr_b_i,
+    input wire [4:0] rf_raddr_a_i,
+    input wire [4:0] rf_raddr_b_i,
     input wire [31:0] rf_rdata_a_i,
     input wire [31:0] rf_rdata_b_i,
     input wire [31:0] inst_i,
@@ -73,14 +73,16 @@ module EXE (
         if (use_pc_i) begin
             alu_a_o = pc_now_i;
         end else begin
-            alu_a_o = (exe_mem_rf_waddr_i != 0 && (exe_mem_rf_waddr_i == rf_raddr_a_i)) 
-                        ? exe_mem_alu_result_i  // 这种情况下 MEM-EXE 的指令不是 load-use 关系，这一点由 pipeline_controller 保证
-                        : rf_rdata_a_i;         // 对于 WB 正在写寄存器的情况，已经在 regfile 中实现了相应的旁路
+            alu_a_o = rf_rdata_a_i;
+            // alu_a_o = (exe_mem_rf_waddr_i != 0 && (exe_mem_rf_waddr_i == rf_raddr_a_i)) 
+            //             ? exe_mem_alu_result_i  // 这种情况下 MEM-EXE 的指令不是 load-use 关系，这一点由 pipeline_controller 保证
+            //             : rf_rdata_a_i;         // 对于 WB 正在写寄存器的情况，已经在 regfile 中实现了相应的旁路
         end
         if (use_rs2_i) begin
-            alu_b_o = (exe_mem_rf_waddr_i != 0 && (exe_mem_rf_waddr_i == rf_raddr_b_i)) 
-                        ? exe_mem_alu_result_i  // 这种情况下 MEM-EXE 的指令不是 load-use 关系，这一点由 pipeline_controller 保证
-                        : rf_rdata_b_i;         // 对于 WB 正在写寄存器的情况，已经在 regfile 中实现了相应的旁路
+            alu_b_o = rf_rdata_b_i;
+            // alu_b_o = (exe_mem_rf_waddr_i != 0 && (exe_mem_rf_waddr_i == rf_raddr_b_i)) 
+            //             ? exe_mem_alu_result_i  // 这种情况下 MEM-EXE 的指令不是 load-use 关系，这一点由 pipeline_controller 保证
+            //             : rf_rdata_b_i;         // 对于 WB 正在写寄存器的情况，已经在 regfile 中实现了相应的旁路
         end else begin
             case (imm_type_i) 
                 `TYPE_I: alu_b_o = {{20{inst_i[31]}}, inst_i[31:20]};
@@ -97,12 +99,14 @@ module EXE (
     logic [31:0] comp_b;
 
     always_comb begin
-        comp_a = (exe_mem_rf_waddr_i != 0 && (exe_mem_rf_waddr_i == rf_raddr_a_i)) 
-                    ? exe_mem_alu_result_i  // 这种情况下 MEM-EXE 的指令不是 load-use 关系，这一点由 pipeline_controller 保证
-                    : rf_rdata_a_i;         // 对于 WB 正在写寄存器的情况，已经在 regfile 中实现了相应的旁路
-        comp_b = (exe_mem_rf_waddr_i != 0 && (exe_mem_rf_waddr_i == rf_raddr_b_i)) 
-                    ? exe_mem_alu_result_i  // 这种情况下 MEM-EXE 的指令不是 load-use 关系，这一点由 pipeline_controller 保证
-                    : rf_rdata_b_i;         // 对于 WB 正在写寄存器的情况，已经在 regfile 中实现了相应的旁路
+        comp_a = rf_rdata_a_i;
+        comp_b = rf_rdata_b_i;
+        // comp_a = (exe_mem_rf_waddr_i != 0 && (exe_mem_rf_waddr_i == rf_raddr_a_i)) 
+        //             ? exe_mem_alu_result_i  // 这种情况下 MEM-EXE 的指令不是 load-use 关系，这一点由 pipeline_controller 保证
+        //             : rf_rdata_a_i;         // 对于 WB 正在写寄存器的情况，已经在 regfile 中实现了相应的旁路
+        // comp_b = (exe_mem_rf_waddr_i != 0 && (exe_mem_rf_waddr_i == rf_raddr_b_i)) 
+        //             ? exe_mem_alu_result_i  // 这种情况下 MEM-EXE 的指令不是 load-use 关系，这一点由 pipeline_controller 保证
+        //             : rf_rdata_b_i;         // 对于 WB 正在写寄存器的情况，已经在 regfile 中实现了相应的旁路
     end
 
     always_comb begin
