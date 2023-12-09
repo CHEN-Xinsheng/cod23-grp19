@@ -1010,10 +1010,10 @@ module thinpad_top (
     .if_misaligned_i(mem1_mem2_instr_misaligned),
     .load_page_fault_i(mem1_mem2_load_page_fault),
     .load_access_fault_i(mem1_mem2_load_access_fault),
-    .load_misaligned_i(),
+    .load_misaligned_i(mem1_mem2_load_misaligned),
     .store_page_fault_i(mem1_mem2_store_page_fault),
     .store_access_fault_i(mem1_mem2_store_access_fault),
-    .store_misaligned_i()
+    .store_misaligned_i(mem1_mem2_store_misaligned)
   );
 
   MEM MEM (
