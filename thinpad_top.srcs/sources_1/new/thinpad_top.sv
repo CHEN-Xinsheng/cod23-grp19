@@ -828,7 +828,7 @@ module thinpad_top (
 
   /* ====================== EXE/MEM1 regs ====================== */
 
-  logic [ADDR_WIDTH-1:0]      exe_mem1_pc_now;  // only for debug
+  logic [ADDR_WIDTH-1:0]      exe_mem1_pc_now;
   logic                       exe_mem1_rf_wen;
   logic [REG_ADDR_WIDTH-1:0]  exe_mem1_rf_waddr;
   logic [DATA_WIDTH-1:0]      exe_mem1_alu_result;
@@ -852,6 +852,9 @@ module thinpad_top (
 
   /* ====================== MEM1 ====================== */
   logic                       mem_mmu_ack;
+  logic                       mem1_trap;
+
+  assign mem1_trap = exe_mem1_instr_page_fault | exe_mem1_instr_access_fault | exe_mem1_instr_misaligned | exe_mem1_illegal_instr;
 
   mmu mem_mmu (
     .clk(sys_clk),
@@ -865,7 +868,7 @@ module thinpad_top (
     .ack_o                  (mem_mmu_ack),
 
     .mem_sel_i              (exe_mem1_mem_sel),
-    .enable_i               (exe_mem1_mem_re | exe_mem1_mem_we),  // TODO: add trap_disable?
+    .enable_i               ((exe_mem1_mem_re | exe_mem1_mem_we) & ~mem1_trap),
     .read_en_i              (exe_mem1_mem_re),
     .write_en_i             (exe_mem1_mem_we),
     .exe_en_i               (1'b0),
@@ -875,8 +878,8 @@ module thinpad_top (
     .load_access_fault_o    (mem1_mem2_load_access_fault),
     .store_access_fault_o   (mem1_mem2_store_access_fault),
     .instr_access_fault_o   (),
-    .load_misaligned_o      (mem1_mem2_load_misaligned), // TODO
-    .store_misaligned_o     (mem1_mem2_store_misaligned), // TODO
+    .load_misaligned_o      (mem1_mem2_load_misaligned),
+    .store_misaligned_o     (mem1_mem2_store_misaligned),
     .instr_misaligned_o     (),
 
     .tlb_reset_i            (exe_mem1_sfence_vma),
@@ -893,7 +896,7 @@ module thinpad_top (
     .wb_we_o(wbm1_we_o),
 
     // data direct pass
-    .exe_mem1_pc_now              (exe_mem1_pc_now),  // only for debug
+    .exe_mem1_pc_now              (exe_mem1_pc_now),
     .exe_mem1_rf_wen              (exe_mem1_rf_wen),
     .exe_mem1_rf_waddr            (exe_mem1_rf_waddr),
     .exe_mem1_alu_result          (exe_mem1_alu_result),
@@ -914,7 +917,7 @@ module thinpad_top (
     .exe_mem1_mret                (exe_mem1_mret),
     .exe_mem1_sret                (exe_mem1_sret),
 
-    .mem1_mem2_pc_now             (mem1_mem2_pc_now),  // only for debug
+    .mem1_mem2_pc_now             (mem1_mem2_pc_now),
     .mem1_mem2_rf_wen             (mem1_mem2_rf_wen),
     .mem1_mem2_rf_waddr           (mem1_mem2_rf_waddr),
     .mem1_mem2_rf_wdata           (mem1_mem2_rf_wdata),
@@ -941,7 +944,7 @@ module thinpad_top (
 
   logic [ADDR_WIDTH-1:0]      mem1_mem2_paddr;
 
-  logic [ADDR_WIDTH-1:0]      mem1_mem2_pc_now;      // only for debug
+  logic [ADDR_WIDTH-1:0]      mem1_mem2_pc_now;
   logic                       mem1_mem2_rf_wen;
   logic [REG_ADDR_WIDTH-1:0]  mem1_mem2_rf_waddr;
   logic [DATA_WIDTH-1:0]      mem1_mem2_rf_wdata;
@@ -983,6 +986,12 @@ module thinpad_top (
   satp_t csr_satp;
   logic mstatus_sum;
 
+  logic [31:0] csr_tval;
+  assign csr_tval = (mem1_mem2_instr_page_fault | mem1_mem2_instr_access_fault | mem1_mem2_instr_misaligned) ? mem1_mem2_pc_now :
+                      mem1_mem2_illegal_instr ? mem1_mem2_inst :
+                     (mem1_mem2_load_page_fault | mem1_mem2_load_access_fault | mem1_mem2_load_misaligned 
+                     | mem1_mem2_store_page_fault | mem1_mem2_store_access_fault | mem1_mem2_store_misaligned) ? mem1_mem2_rf_wdata : 32'b0; 
+
   csrfile csrfile (
     .clk(sys_clk),
     .rst(sys_rst),
@@ -1004,6 +1013,7 @@ module thinpad_top (
     .sum_o(mstatus_sum),
     .mode_o(csr_mode),
     .mtime_i(mtime),
+    .tval_i(csr_tval),
     .if_illegal_i(mem1_mem2_illegal_instr),
     .if_page_fault_i(mem1_mem2_instr_page_fault),
     .if_access_fault_i(mem1_mem2_instr_access_fault),

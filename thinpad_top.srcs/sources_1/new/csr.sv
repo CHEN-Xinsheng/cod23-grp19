@@ -16,6 +16,7 @@ module csrfile (
     input wire ebreak_i,
     input wire mret_i,
     input wire sret_i,
+    input wire [31:0] tval_i,
     input wire time_interrupt_i,
     input wire if_misaligned_i,
     input wire if_access_fault_i,
@@ -79,11 +80,11 @@ always_comb begin
     end else if (if_access_fault_i) begin
         exception_code = 31'd1;
         handle_type = 3'd1;
-    end else if (if_illegal_i) begin
-        exception_code = 31'd2;
-        handle_type = 3'd1;
     end else if (if_misaligned_i) begin
         exception_code = 31'd0;
+        handle_type = 3'd1;
+    end else if (if_illegal_i) begin
+        exception_code = 31'd2;
         handle_type = 3'd1;
     end else if (ecall_i) begin
         if (mode == `MODE_M) begin
@@ -183,31 +184,23 @@ always_ff @(posedge clk) begin
         stvec <= 32'h0;
         sscratch <= 32'h0;
         satp <= 32'h0;
-        // pc_next_o <= 32'h0;
-        // branch_o <= 1'b0;
         mode <= `MODE_M;
     end else begin
         mip.mtip <= time_interrupt_i;
         if (mret_i) begin
             mode <= mstatus.mpp;
-            // pc_next_o <= mepc;
-            // branch_o <= 1'b1;
             mstatus.mpp <= 2'b0;
             mstatus.mpie <= 1'b1; 
             mstatus.mie <= mstatus.mpie;
         end else if (sret_i) begin
             mode <= {1'b0, mstatus.spp};
-            // pc_next_o <= sepc;
-            // branch_o <= 1'b1;
             mstatus.spp <= 1'b0;
             mstatus.spie <= 1'b1; 
             mstatus.sie <= mstatus.spie;
         end else if (handle_type) begin
-            // branch_o <= 1'b1;
             if (handle_mode) begin
                 mode <= `MODE_S;
                 sepc <= pc_now_i;
-                // pc_next_o <= stvec.mode == 2'b0 ? {stvec.base, 2'b0} : {stvec.base, 2'b0} + (exception_code << 2);
                 if (handle_type == 3'd2) begin
                     scause.interrupt <= 1'b1;
                 end else begin
@@ -217,11 +210,10 @@ always_ff @(posedge clk) begin
                 mstatus.spp <= mode;
                 mstatus.spie <= mstatus.sie; 
                 mstatus.sie <= 0;
-                // stval <= ;
+                stval <= tval_i;
             end else begin
                 mode <= `MODE_M;
                 mepc <= pc_now_i;
-                // pc_next_o <= mtvec.mode == 2'b0 ? {mtvec.base, 2'b0} : {mtvec.base, 2'b0} + (exception_code << 2);
                 if (handle_type == 3'd2) begin
                     mcause.interrupt <= 1'b1;
                 end else begin
@@ -231,11 +223,9 @@ always_ff @(posedge clk) begin
                 mstatus.mpp <= mode;
                 mstatus.mpie <= mstatus.mie; 
                 mstatus.mie <= 0;
-                // mtval <= ;
+                mtval <= tval_i;
             end
         end else begin
-            // pc_next_o <= 32'h0;
-            // branch_o <= 1'b0;
             if (we_i) begin
                 if (mode == `MODE_M) begin
                     case(waddr_i)
