@@ -12,13 +12,14 @@ module mtime (
     output reg [31:0] wb_dat_o,
     input wire [3:0] wb_sel_i,
     input wire wb_we_i,
-
+    output reg [63:0] mtime_o,
     output reg time_interrupt_o
 );
 
     mtime_t mtime;
     mtimecmp_t mtimecmp;
 
+    assign mtime_o = mtime;
     assign time_interrupt_o = mtime >= mtimecmp;
 
     always_comb begin

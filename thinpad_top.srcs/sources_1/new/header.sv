@@ -2,29 +2,42 @@
 `define __PARAM_H_
 
 
-localparam DATA_WIDTH = 32;
-localparam ADDR_WIDTH = 32;
+localparam DATA_WIDTH     = 32;
+localparam ADDR_WIDTH     = 32;
+localparam REG_ADDR_WIDTH = 5;
+localparam CSR_ADDR_WIDTH = 12;
 
-`define TYPE_R 3'd1
-`define TYPE_I 3'd2
-`define TYPE_S 3'd3
-`define TYPE_B 3'd4
-`define TYPE_U 3'd5
-`define TYPE_J 3'd6
+`define INSTR_TYPE_WIDTH  3
+`define TYPE_R            `INSTR_TYPE_WIDTH'd1
+`define TYPE_I            `INSTR_TYPE_WIDTH'd2
+`define TYPE_S            `INSTR_TYPE_WIDTH'd3
+`define TYPE_B            `INSTR_TYPE_WIDTH'd4
+`define TYPE_U            `INSTR_TYPE_WIDTH'd5
+`define TYPE_J            `INSTR_TYPE_WIDTH'd6
 
-`define ALU_ADD    4'd1
-`define ALU_SUB    4'd2
-`define ALU_AND    4'd3
-`define ALU_OR     4'd4
-`define ALU_XOR    4'd5
-`define ALU_NEG    4'd6
-`define ALU_SLL    4'd7
-`define ALU_SRL    4'd8
-`define ALU_SRA    4'd9
-`define ALU_ROL    4'd10
-`define ALU_MIN    4'd11
-`define ALU_SBCLR  4'd12
-`define ALU_CTZ    4'd13
+`define ALU_OP_WIDTH      4
+`define ALU_ADD           `ALU_OP_WIDTH'd1
+`define ALU_SUB           `ALU_OP_WIDTH'd2
+`define ALU_AND           `ALU_OP_WIDTH'd3
+`define ALU_OR            `ALU_OP_WIDTH'd4
+`define ALU_XOR           `ALU_OP_WIDTH'd5
+`define ALU_NEG           `ALU_OP_WIDTH'd6
+`define ALU_SLL           `ALU_OP_WIDTH'd7
+`define ALU_SRL           `ALU_OP_WIDTH'd8
+`define ALU_SRA           `ALU_OP_WIDTH'd9
+`define ALU_ROL           `ALU_OP_WIDTH'd10
+`define ALU_MIN           `ALU_OP_WIDTH'd11
+`define ALU_SBCLR         `ALU_OP_WIDTH'd12
+`define ALU_CTZ           `ALU_OP_WIDTH'd13
+`define ALU_SLT           `ALU_OP_WIDTH'd14
+`define ALU_SLTU          `ALU_OP_WIDTH'd15
+
+`define COMP_EQ           3'b000
+`define COMP_NE           3'b001
+`define COMP_LT           3'b100
+`define COMP_GE           3'b101
+`define COMP_LTU          3'b110
+`define COMP_GEU          3'b111
 
 `define MODE_WIDTH  2
 `define MODE_M      `MODE_WIDTH'b11
@@ -33,6 +46,8 @@ localparam ADDR_WIDTH = 32;
 
 `define MTIME_ADDR    32'h200bff8
 `define MTIMECMP_ADDR 32'h2004000
+
+`define CSR_OP_WIDTH  3
 
 typedef struct packed {
   logic [29:0] base;
@@ -43,14 +58,15 @@ typedef logic [31:0] mscratch_t;
 
 typedef logic [31:0] mepc_t;
 
-
 typedef struct packed {
   logic        interrupt;
   logic [30:0] exception;
 } mcause_t;
 
 typedef struct packed {
-  logic [18:0] wpri_1;
+  logic [12:0] wpri_0;
+  logic       sum;
+  logic [4:0] wpri_1;
   logic [1:0] mpp;
   logic [1:0] wpri_2;
   logic       spp;
@@ -96,8 +112,68 @@ typedef struct packed {
   logic        usie;
 } mie_t;
 
+typedef logic [31:0] mhartid_t;
+
+typedef logic [31:0] mideleg_t;
+
+typedef logic [31:0] medeleg_t;
+
+typedef logic [31:0] mtval_t;
+
 typedef logic [63:0] mtime_t;
 typedef logic [63:0] mtimecmp_t;
+
+typedef struct packed {
+  logic [12:0] wpri_1;
+  logic       sum;
+  logic [8:0] wpri_2;
+  logic       spp;
+  logic [1:0] wpri_3;
+  logic       spie;
+  logic [2:0] wpri_4;
+  logic       sie;
+  logic       wpri_5;
+} sstatus_t;
+
+typedef logic [31:0] sepc_t;
+
+typedef struct packed {
+  logic        interrupt;
+  logic [30:0] exception;
+} scause_t;
+
+typedef logic [31:0] stval_t;
+
+typedef struct packed {
+  logic [29:0] base;
+  logic [1:0] mode; 
+} stvec_t;
+
+typedef logic [31:0] sscratch_t;
+
+typedef struct packed {
+  logic [21:0] wpri_1;
+  logic        seip;
+  logic        ueip;
+  logic [ 1:0] wpri_2;
+  logic        stip;
+  logic        utip;
+  logic [ 1:0] wpri_3;
+  logic        ssip;
+  logic        usip;
+} sip_t;
+
+typedef struct packed {
+  logic [21:0] wpri_1;
+  logic        seie;
+  logic        ueie;
+  logic [ 1:0] wpri_2;
+  logic        stie;
+  logic        utie;
+  logic [ 1:0] wpri_3;
+  logic        ssie;
+  logic        usie;
+} sie_t;
 
 // Ref: RISC-V Privileged Architectures V20211203, 4.1.12, 4.3
 typedef struct packed {
@@ -116,7 +192,7 @@ typedef struct packed {
 
 typedef struct packed {
   logic [11:0] ppn1;
-  logic [9:0]  ppn2;
+  logic [9:0]  ppn0;
   logic [1:0]  rsw;  // [not implemented] RSW 是保留的，用于操作系统软件。
   logic        d;    // [not implemented] Dirty 位指示了虚拟页最近是否被写过。
   logic        a;    // [not implemented] Access 位指示了该页最近是否被读、写、取
@@ -151,9 +227,9 @@ typedef struct packed {
   |     12     |    10    |     12     |
  */
 
-localparam N_TLB_ENTRY = 32;
 localparam TLB_INDEX_WIDTH = 5;
 localparam TLB_TAG_WIDTH   = 32-12-TLB_INDEX_WIDTH;
+localparam N_TLB_ENTRY     = 1 << TLB_INDEX_WIDTH;
 /* virtual address:
   |    VPN (virtual page number)    | offset |
   |        TLB tag      | TLB index |        |
