@@ -998,8 +998,8 @@ module thinpad_top (
     .ebreak_i(mem1_mem2_ebreak),
     .mret_i(mem1_mem2_mret),
     .sret_i(mem1_mem2_sret),
-    // .time_interrupt_i(time_interrupt),
-    .time_interrupt_i(1'b0),      // TODO: debug
+    .time_interrupt_i(time_interrupt),
+    // .time_interrupt_i(1'b0),      // debug
     .satp_o(csr_satp),
     .sum_o(mstatus_sum),
     .mode_o(csr_mode),
