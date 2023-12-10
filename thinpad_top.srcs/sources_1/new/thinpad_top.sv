@@ -443,7 +443,40 @@ module thinpad_top (
     .probe14(mem1_mem2_pc_now),
     .probe15(rf_waddr),
     .probe16(rf_wdata),
-    .probe17(rf_regs_debug),   // all registers
+    .probe17({
+        rf_regs_debug[0],
+        rf_regs_debug[1],
+        rf_regs_debug[2],
+        rf_regs_debug[3],
+        rf_regs_debug[4],
+        rf_regs_debug[5],
+        rf_regs_debug[6],
+        rf_regs_debug[7],
+        rf_regs_debug[8],
+        rf_regs_debug[9],
+        rf_regs_debug[10],
+        rf_regs_debug[11],
+        rf_regs_debug[12],
+        rf_regs_debug[13],
+        rf_regs_debug[14],
+        rf_regs_debug[15],
+        rf_regs_debug[16],
+        rf_regs_debug[17],
+        rf_regs_debug[18],
+        rf_regs_debug[19],
+        rf_regs_debug[20],
+        rf_regs_debug[21],
+        rf_regs_debug[22],
+        rf_regs_debug[23],
+        rf_regs_debug[24],
+        rf_regs_debug[25],
+        rf_regs_debug[26],
+        rf_regs_debug[27],
+        rf_regs_debug[28],
+        rf_regs_debug[29],
+        rf_regs_debug[30],
+        rf_regs_debug[31]
+    }),   // all registers
     .probe18({wbm0_ack_i, wbm1_ack_i, wbm2_ack_i, wbm3_ack_i,    wbs0_ack_i, wbs1_ack_i, wbs2_ack_i, wbs3_ack_i}),
     .probe19(wbm1_adr_o),    // mem_mmu
     .probe20(wbm1_dat_i),    // mem_mmu
@@ -461,7 +494,7 @@ module thinpad_top (
     .probe25(mem_mmu_direct_trans),
     .probe26(mem_mmu_fault_case),
     .probe27(csr_branch),
-    .probe28(1'b0),
+    .probe28(mem_mmu_ack),
     .probe29(1'b0),
     .probe30(1'b0),
     .probe31(1'b0),
@@ -809,7 +842,7 @@ module thinpad_top (
 
   // logic [31:0] rf_rdata_x_debug;  // debug
   // logic [31:0] rf_rdata_y_debug;  // debug
-  logic [1023:0] rf_regs_debug;  // debug
+  logic [31:0] rf_regs_debug[0:31];  // debug
 
   regfile regfile (
     .clk(sys_clk),

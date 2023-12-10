@@ -132,9 +132,9 @@ assign wb_sel_o = {{DATA_WIDTH/8}{1'b1}};
 assign wb_we_o  = 1'b0;
 
 enum logic [2:0] {
-    IDLE,
-    FETCH_PTE,
-    FETCH_PTE_LV0
+    IDLE          = 0,
+    FETCH_PTE     = 1,
+    FETCH_PTE_LV0 = 2
 } state;
 
 // TLB
