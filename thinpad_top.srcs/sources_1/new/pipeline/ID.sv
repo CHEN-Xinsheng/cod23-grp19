@@ -368,9 +368,9 @@ module ID (
                     alu_op_o <= `ALU_ADD; 
                     csr_op_o <= 3'b0;
                 end
-                7'b0001111: begin
+                7'b0001111: begin       // FENCE.I
                     if (funct3 == 3'b001) begin
-                         inst_o <= 32'h0;
+                        // inst_o <= 32'h0;
                         rf_raddr_a_o <= 5'd0;
                         rf_raddr_b_o <= 5'd0;
                         imm_type_o <= `INSTR_TYPE_WIDTH'd0;
@@ -404,7 +404,7 @@ module ID (
                         alu_op_o <= `ALU_ADD;
                         csr_op_o <= funct3;
                     end else if (funct3 == 3'b0) begin
-                         inst_o <= 32'h0;
+                        // inst_o <= 32'h0;
                         rf_raddr_a_o <= 5'd0;
                         rf_raddr_b_o <= 5'd0;
                         imm_type_o <= `INSTR_TYPE_WIDTH'd0;
@@ -436,7 +436,7 @@ module ID (
                     end
                 end
                 default: begin
-                    inst_o <= 32'h0;
+                    // inst_o <= 32'h0;
                     rf_raddr_a_o <= 5'd0;
                     rf_raddr_b_o <= 5'd0;
                     imm_type_o <= `INSTR_TYPE_WIDTH'd0;
