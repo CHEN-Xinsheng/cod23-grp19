@@ -5,7 +5,7 @@ module IF (
     input wire                  rst,
 
     output reg [DATA_WIDTH-1:0] pc_o,
-    input wire                  branch_taken_i, // previous prediction is corret(1)/wrong(0)
+    input wire                  branch_taken_i, // previous prediction is correct(1)/wrong(0)
     input wire [DATA_WIDTH-1:0] pc_pred_i,      // next PC predicted by BTB 
     input wire [DATA_WIDTH-1:0] pc_true_i,      // correct next PC given by pc_mux
     input wire                  stall_i,

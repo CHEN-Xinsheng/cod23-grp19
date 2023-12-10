@@ -426,7 +426,7 @@ module thinpad_top (
 
   ila_0 ila(
     .clk(sys_clk),
-    .probe0(pc_vaddr),
+    .probe0(if1_pc_vaddr),
     .probe1(csr_satp),
     .probe2({if1_stall, if2_stall, id_stall, exe_stall, mem1_stall, mem2_stall}),
     .probe3({if1_bubble, if2_bubble, id_bubble, exe_bubble, mem1_bubble, mem2_bubble}),
@@ -435,7 +435,7 @@ module thinpad_top (
     .probe6(wbs_dat_o),
     .probe7(wbs_dat_i),
     .probe8(wbs_we_o),
-    .probe9({wbm0_stb_o, wbm1_stb_o, wbm2_stb_o, wbm3_stb_o,     wbs0_stb_o, wbs1_stb_o, wbs2_stb_o, wbs3_stb_o}),
+    .probe9({wbm0_stb_o, wbm1_stb_o, wbm2_stb_o, wbm3_stb_o,    wbs_stb_o ,wbs0_stb_o, wbs1_stb_o, wbs2_stb_o, wbs3_stb_o}),
     .probe10(if1_if2_pc_now),
     .probe11(if2_id_pc_now),
     .probe12(id_exe_pc_now),
@@ -477,7 +477,7 @@ module thinpad_top (
         rf_regs_debug[30],
         rf_regs_debug[31]
     }),   // all registers
-    .probe18({wbm0_ack_i, wbm1_ack_i, wbm2_ack_i, wbm3_ack_i,    wbs0_ack_i, wbs1_ack_i, wbs2_ack_i, wbs3_ack_i}),
+    .probe18({wbm0_ack_i, wbm1_ack_i, wbm2_ack_i, wbm3_ack_i,   wbs_ack_i ,wbs0_ack_i, wbs1_ack_i, wbs2_ack_i, wbs3_ack_i}),
     .probe19(wbm1_adr_o),    // mem_mmu
     .probe20(wbm1_dat_i),    // mem_mmu
     .probe21({ exe_mem1_mem_sel, 
@@ -568,7 +568,7 @@ module thinpad_top (
   logic [REG_ADDR_WIDTH-1:0]  id_rf_raddr_b_comb;
   logic                       exe_branch_comb;
 
-  logic                       branch_taken;   // previous prediction is corret(1)/wrong(0)
+  logic                       branch_taken;   // previous prediction is correct(1)/wrong(0)
   logic [ADDR_WIDTH-1:0]      pc_true;
 
 

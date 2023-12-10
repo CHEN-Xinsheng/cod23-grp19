@@ -9,7 +9,7 @@ module pc_mux (
     input wire [ADDR_WIDTH-1:0] if1_if2_pc_vaddr,
     input wire [ADDR_WIDTH-1:0] if1_pc_vaddr,
 
-    output reg                  branch_taken_o,   // previous prediction is corret(1)/wrong(0)
+    output reg                  branch_taken_o,   // previous prediction is correct(1)/wrong(0)
     output reg [ADDR_WIDTH-1:0] pc_true_o
 );
 
