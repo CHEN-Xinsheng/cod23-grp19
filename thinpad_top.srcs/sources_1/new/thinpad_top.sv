@@ -495,7 +495,7 @@ module thinpad_top (
     .probe26(mem_mmu_fault_case),
     .probe27(csr_branch),
     .probe28(mem_mmu_ack),
-    .probe29(1'b0),
+    .probe29(exe_mem1_alu_result),
     .probe30(1'b0),
     .probe31(1'b0),
     .probe32(1'b0),
