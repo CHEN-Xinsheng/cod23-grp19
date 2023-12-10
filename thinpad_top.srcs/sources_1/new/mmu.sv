@@ -99,19 +99,6 @@ module mmu (
     output reg [4:0]                    fault_case_o
 );
 
-reg page_fault_o;
-reg access_fault_o;
-reg misaligned_o;
-assign load_page_fault_o    = page_fault_o   & read_en_i;
-assign store_page_fault_o   = page_fault_o   & write_en_i;
-assign instr_page_fault_o   = page_fault_o   & exe_en_i;
-assign load_access_fault_o  = access_fault_o & read_en_i;
-assign store_access_fault_o = access_fault_o & write_en_i;
-assign instr_access_fault_o = access_fault_o & exe_en_i;
-assign load_misaligned_o    = misaligned_o   & read_en_i;
-assign store_misaligned_o   = misaligned_o   & write_en_i;
-assign instr_misaligned_o   = misaligned_o   & exe_en_i;
-
 
 wire direct_trans = (mode_i == `MODE_M || satp_i.mode == 1'b0);
 
@@ -354,9 +341,16 @@ always_ff @(posedge clk) begin: output_data
         output_bubble();
     end else begin
         paddr_o               <= paddr_comb;
-        page_fault_o          <= page_fault_comb;
-        access_fault_o        <= access_fault_comb;
-        misaligned_o          <= misaligned_comb;
+        load_page_fault_o    <= page_fault_comb   & read_en_i;
+        store_page_fault_o   <= page_fault_comb   & write_en_i;
+        instr_page_fault_o   <= page_fault_comb   & exe_en_i;
+        load_access_fault_o  <= access_fault_comb & read_en_i;
+        store_access_fault_o <= access_fault_comb & write_en_i;
+        instr_access_fault_o <= access_fault_comb & exe_en_i;
+        load_misaligned_o    <= misaligned_comb   & read_en_i;
+        store_misaligned_o   <= misaligned_comb   & write_en_i;
+        instr_misaligned_o   <= misaligned_comb   & exe_en_i;
+
         if1_if2_icache_enable <= ~page_fault_comb & ~access_fault_comb;
         direct_pass_data();
     end
@@ -447,9 +441,16 @@ endtask
 task output_bubble();
     // CPU interface
     paddr_o               <= {ADDR_WIDTH{1'b0}};
-    page_fault_o          <= 1'b0;
-    access_fault_o        <= 1'b0;
-    misaligned_o          <= 1'b0;
+    load_page_fault_o     <= 1'b0;
+    store_page_fault_o    <= 1'b0;
+    instr_page_fault_o    <= 1'b0;
+    load_access_fault_o   <= 1'b0;
+    store_access_fault_o  <= 1'b0;
+    instr_access_fault_o  <= 1'b0;
+    load_misaligned_o     <= 1'b0;
+    store_misaligned_o    <= 1'b0;
+    instr_misaligned_o    <= 1'b0;
+
     if1_if2_icache_enable <= 1'b0;
     // IF1/IF2
     if1_if2_pc_now                  <= 0;
