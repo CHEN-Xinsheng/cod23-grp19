@@ -19,13 +19,12 @@ module IF (
     always_ff @(posedge clk) begin
         if (rst) begin
             pc <= 32'h80000000;
+        end else if (stall_i) begin
+        end else if (~branch_taken_i) begin
+            pc <= pc_true_i;
+        end else if (bubble_i)begin
         end else begin
-            if (!branch_taken_i) begin
-                pc <= pc_true_i;
-            end else if (stall_i || bubble_i) begin
-            end else begin
-                pc <= pc_pred_i;
-            end
+            pc <= pc_pred_i;
         end
     end
 
