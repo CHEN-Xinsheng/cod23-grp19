@@ -402,7 +402,7 @@ module thinpad_top (
   );
 
   // 串口控制器模�???????
-  // NOTE: 如果修改系统时钟频率，也�???????要修改此处的时钟频率参数
+  // TODO NOTE: 如果修改系统时钟频率，也�???????要修改此处的时钟频率参数 
   uart_controller #(
       .CLK_FREQ(10_000_000),
       .BAUD    (115200)
@@ -532,8 +532,8 @@ module thinpad_top (
     .probe63(1'b0)
   );
 
-  logic time_interrupt;
-  logic [63:0] mtime;
+  logic [MTIME_WIDTH-1:0] mtime;
+  logic                   time_interrupt;
 
   mtime csr_mtime (
     .clk(sys_clk),
@@ -551,8 +551,6 @@ module thinpad_top (
     .time_interrupt_o(time_interrupt)
   );
 
-  // logic [3:0] stall;
-  // logic [3:0] bubble;
   logic if1_stall;
   logic if2_stall;
   logic id_stall;
@@ -566,13 +564,12 @@ module thinpad_top (
   logic mem1_bubble;
   logic mem2_bubble;
 
+  logic [REG_ADDR_WIDTH-1:0]  id_rf_raddr_a_comb;
+  logic [REG_ADDR_WIDTH-1:0]  id_rf_raddr_b_comb;
+  logic                       exe_branch_comb;
 
-  logic [4:0] id_rf_raddr_a_comb;
-  logic [4:0] id_rf_raddr_b_comb;
-  logic exe_branch_comb;
-
-  logic branch_taken;
-  logic [31:0] pc_true;
+  logic                       branch_taken;   // previous prediction is corret(1)/wrong(0)
+  logic [ADDR_WIDTH-1:0]      pc_true;
 
 
   /* ====================== controller ====================== */
@@ -618,42 +615,47 @@ module thinpad_top (
 
   /* ====================== IF1 ====================== */
   pc_mux pc_mux (
-    .csr_branch_i(csr_branch),
-    .exe_branch_comb_i(exe_branch_comb),
-    .csr_pc_next_i(csr_pc_next),
-    .id_exe_pc_now(id_exe_pc_now),
-    .if2_id_pc_now(if2_id_pc_now),
-    .if1_if2_pc_vaddr(if1_if2_pc_now),
-    .pc_vaddr(pc_vaddr),
-    .pc_next_comb(pc_next_comb),
-    .branch_taken(branch_taken),
-    .pc_true(pc_true)
+    .csr_branch_i       (csr_branch),
+    .csr_pc_next_i      (csr_pc_next),
+    .exe_branch_comb_i  (exe_branch_comb),
+    .exe_pc_next_comb_i (exe_pc_next_comb),
+
+    .id_exe_pc_now      (id_exe_pc_now),
+    .if2_id_pc_now      (if2_id_pc_now),
+    .if1_if2_pc_vaddr   (if1_if2_pc_now),
+    .if1_pc_vaddr       (if1_pc_vaddr),
+
+    .branch_taken_o     (branch_taken),
+    .pc_true_o          (pc_true)
   );
 
-  logic [31:0] pred_pc;
+  logic [ADDR_WIDTH-1:0] pc_pred;   // next PC predicted by BTB
 
   btb btb (
-    .clk(sys_clk),
-    .rst(sys_rst),
-    .pc_i(pc_vaddr),
-    .pred_pc_o(pred_pc),
-    .branch_from_pc_i(id_exe_pc_now),
-    .branch_to_pc_i(pc_next_comb),
-    .branch_taken_i(branch_taken),
-    .is_branch_i(id_exe_jump || id_exe_imm_type == `TYPE_B)
+    .clk              (sys_clk),
+    .rst              (sys_rst),
+
+    .pc_i             (if1_pc_vaddr),
+    .pred_pc_o        (pc_pred),
+    .branch_from_pc_i (id_exe_pc_now),
+    .branch_to_pc_i   (exe_pc_next_comb),
+    .branch_taken_i   (branch_taken),
+    .is_branch_i      (id_exe_jump || id_exe_imm_type == `TYPE_B)
   );
 
-  logic [31:0] pc_vaddr;
+  logic [ADDR_WIDTH-1:0] if1_pc_vaddr;
 
   IF IF (
-    .clk(sys_clk),
-    .rst(sys_rst),
-    .pc_o(pc_vaddr),
-    .branch_taken_i(branch_taken),
-    .pc_true_i(pc_true),
-    .pc_pred_i(pred_pc),
-    .stall_i(if1_stall),
-    .bubble_i(if1_bubble)
+    .clk            (sys_clk),
+    .rst            (sys_rst),
+
+    .pc_o           (if1_pc_vaddr),
+    .branch_taken_i (branch_taken),
+    .pc_true_i      (pc_true),
+    .pc_pred_i      (pc_pred),
+
+    .stall_i        (if1_stall),
+    .bubble_i       (if1_bubble)
   );
 
   logic if_mmu_ack;
@@ -665,7 +667,7 @@ module thinpad_top (
     .mode_i                 (csr_mode),
     .satp_i                 (csr_satp),
     .mstatus_sum_i          (mstatus_sum),
-    .vaddr_i                (pc_vaddr),
+    .vaddr_i                (if1_pc_vaddr),
     .paddr_o                (if1_if2_pc_paddr),
     .ack_o                  (if_mmu_ack),
 
@@ -682,7 +684,7 @@ module thinpad_top (
     .instr_access_fault_o   (if1_if2_instr_access_fault),
     .load_misaligned_o      (),
     .store_misaligned_o     (),
-    .instr_misaligned_o     (if1_if2_instr_misaligned),  // TODO
+    .instr_misaligned_o     (if1_if2_instr_misaligned),
 
 
     .tlb_reset_i            (if2_sfence_vma),
@@ -860,7 +862,7 @@ module thinpad_top (
     .rf_we(rf_we)
   );
 
-  wire [31:0] pc_next_comb;
+  wire [31:0] exe_pc_next_comb;
 
   EXE EXE (
     .clk(sys_clk),
@@ -895,7 +897,7 @@ module thinpad_top (
     .load_type_o            (exe_mem1_load_type),
     .jump_i                 (id_exe_jump),
     .pc_now_i               (id_exe_pc_now),
-    .pc_next_o              (pc_next_comb),
+    .pc_next_o              (exe_pc_next_comb),
     .branch_comb_o          (exe_branch_comb),
     .csr_op_i               (id_exe_csr_op),
     .csr_op_o               (exe_mem1_csr_op),
@@ -1039,6 +1041,7 @@ module thinpad_top (
     .mem1_mem2_rf_wen             (mem1_mem2_rf_wen),
     .mem1_mem2_rf_waddr           (mem1_mem2_rf_waddr),
     .mem1_mem2_rf_wdata           (mem1_mem2_rf_wdata),
+    .mem1_mem2_mem_vaddr          (mem1_mem2_mem_vaddr),
     .mem1_mem2_load_type          (mem1_mem2_load_type),
     .mem1_mem2_mem_re             (mem1_mem2_mem_re),
     .mem1_mem2_mem_we             (mem1_mem2_mem_we),
@@ -1076,6 +1079,7 @@ module thinpad_top (
   logic                       mem1_mem2_rf_wen;
   logic [REG_ADDR_WIDTH-1:0]  mem1_mem2_rf_waddr;
   logic [DATA_WIDTH-1:0]      mem1_mem2_rf_wdata;
+  logic [ADDR_WIDTH-1:0]      mem1_mem2_mem_vaddr;
   logic                       mem1_mem2_mem_re;
   logic                       mem1_mem2_mem_we;
   logic [DATA_WIDTH/8-1:0]    mem1_mem2_mem_sel;
@@ -1118,7 +1122,7 @@ module thinpad_top (
   assign csr_tval = (mem1_mem2_instr_page_fault | mem1_mem2_instr_access_fault | mem1_mem2_instr_misaligned) ? mem1_mem2_pc_now :
                       mem1_mem2_illegal_instr ? mem1_mem2_inst :
                      (mem1_mem2_load_page_fault | mem1_mem2_load_access_fault | mem1_mem2_load_misaligned 
-                     | mem1_mem2_store_page_fault | mem1_mem2_store_access_fault | mem1_mem2_store_misaligned) ? mem1_mem2_rf_wdata : 32'b0; 
+                     | mem1_mem2_store_page_fault | mem1_mem2_store_access_fault | mem1_mem2_store_misaligned) ? mem1_mem2_mem_vaddr : 32'b0; 
 
   csrfile csrfile (
     .clk(sys_clk),
@@ -1136,7 +1140,7 @@ module thinpad_top (
     .mret_i(mem1_mem2_mret),
     .sret_i(mem1_mem2_sret),
     .time_interrupt_i(time_interrupt),
-    // .time_interrupt_i(1'b0),      // debug
+    // .time_interrupt_i(1'b0),      // [debug]
     .satp_o(csr_satp),
     .sum_o(mstatus_sum),
     .mode_o(csr_mode),

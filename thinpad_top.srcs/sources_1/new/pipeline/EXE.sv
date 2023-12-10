@@ -110,10 +110,10 @@ module EXE (
             branch_comb_o = 1;
         end else if (imm_type_i == `TYPE_B) begin
             case(comp_op_i) 
-                `COMP_EQ: branch_comb_o = (rf_rdata_a_forwarded == rf_rdata_b_forwarded);
-                `COMP_NE: branch_comb_o = (rf_rdata_a_forwarded != rf_rdata_b_forwarded);
-                `COMP_LT: branch_comb_o = ($signed(rf_rdata_a_forwarded) < $signed(rf_rdata_b_forwarded));
-                `COMP_GE: branch_comb_o = ($signed(rf_rdata_a_forwarded) >= $signed(rf_rdata_b_forwarded));
+                `COMP_EQ:  branch_comb_o = (rf_rdata_a_forwarded == rf_rdata_b_forwarded);
+                `COMP_NE:  branch_comb_o = (rf_rdata_a_forwarded != rf_rdata_b_forwarded);
+                `COMP_LT:  branch_comb_o = ($signed(rf_rdata_a_forwarded) < $signed(rf_rdata_b_forwarded));
+                `COMP_GE:  branch_comb_o = ($signed(rf_rdata_a_forwarded) >= $signed(rf_rdata_b_forwarded));
                 `COMP_LTU: branch_comb_o = (rf_rdata_a_forwarded < rf_rdata_b_forwarded);
                 `COMP_GEU: branch_comb_o = (rf_rdata_a_forwarded >= rf_rdata_b_forwarded);
                 default: branch_comb_o = 0;

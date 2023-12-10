@@ -120,6 +120,7 @@ typedef logic [31:0] medeleg_t;
 
 typedef logic [31:0] mtval_t;
 
+localparam    MTIME_WIDTH = 64;
 typedef logic [63:0] mtime_t;
 typedef logic [63:0] mtimecmp_t;
 

@@ -6,16 +6,16 @@ module btb # (
     parameter OFFSET_WIDTH = 2,
     parameter TAG_WIDTH = ADDR_WIDTH - OFFSET_WIDTH - INDEX_WIDTH  // 26
 ) (
-    input wire clk,
-    input wire rst,
+    input wire                  clk,
+    input wire                  rst,
 
     input wire [ADDR_WIDTH-1:0] pc_i,
     output reg [ADDR_WIDTH-1:0] pred_pc_o,
 
     input wire [ADDR_WIDTH-1:0] branch_from_pc_i,
     input wire [ADDR_WIDTH-1:0] branch_to_pc_i,
-    input wire branch_taken_i,
-    input wire is_branch_i
+    input wire                  branch_taken_i,
+    input wire                  is_branch_i
 );
 
     // BHT (2) + TAG + TARGET_ADDR

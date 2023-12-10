@@ -76,6 +76,7 @@ module mmu (
     output reg  [REG_ADDR_WIDTH-1:0]    mem1_mem2_rf_waddr,
     output reg  [DATA_WIDTH-1:0]        mem1_mem2_rf_wdata,
     output reg                          mem1_mem2_load_type,
+    output reg  [ADDR_WIDTH-1:0]        mem1_mem2_mem_vaddr,
     output reg                          mem1_mem2_mem_re,
     output reg                          mem1_mem2_mem_we,
     output reg  [DATA_WIDTH/8-1:0]      mem1_mem2_mem_sel,
@@ -414,28 +415,29 @@ endfunction
 
 task direct_pass_data();
     // IF1/IF2
-    if1_if2_pc_now        <= vaddr_i;
+    if1_if2_pc_now                  <= vaddr_i;
     // MEM1/MEM2
-    mem1_mem2_pc_now      <= exe_mem1_pc_now;      // only for debug
-    mem1_mem2_rf_wen      <= exe_mem1_rf_wen;
-    mem1_mem2_rf_waddr    <= exe_mem1_rf_waddr;
-    mem1_mem2_rf_wdata    <= exe_mem1_alu_result;
-    mem1_mem2_mem_re      <= exe_mem1_mem_re;
-    mem1_mem2_mem_we      <= exe_mem1_mem_we;
-    mem1_mem2_mem_sel     <= exe_mem1_mem_sel;
-    mem1_mem2_mem_wdata   <= exe_mem1_mem_wdata;
-    mem1_mem2_load_type   <= exe_mem1_load_type;
-    mem1_mem2_inst        <= exe_mem1_inst;
-    mem1_mem2_csr_op      <= exe_mem1_csr_op;
-    mem1_mem2_csr_data    <= exe_mem1_csr_data;
-    mem1_mem2_instr_page_fault   <= exe_mem1_instr_page_fault;
-    mem1_mem2_instr_access_fault <= exe_mem1_instr_access_fault;
-    mem1_mem2_instr_misaligned   <= exe_mem1_instr_misaligned;
-    mem1_mem2_illegal_instr      <= exe_mem1_illegal_instr;
-    mem1_mem2_ecall       <= exe_mem1_ecall;
-    mem1_mem2_ebreak      <= exe_mem1_ebreak;
-    mem1_mem2_mret        <= exe_mem1_mret;
-    mem1_mem2_sret        <= exe_mem1_sret;
+    mem1_mem2_pc_now                <= exe_mem1_pc_now;      // only for debug
+    mem1_mem2_rf_wen                <= exe_mem1_rf_wen;
+    mem1_mem2_rf_waddr              <= exe_mem1_rf_waddr;
+    mem1_mem2_rf_wdata              <= exe_mem1_alu_result;
+    mem1_mem2_mem_vaddr             <= exe_mem1_alu_result;
+    mem1_mem2_mem_re                <= exe_mem1_mem_re;
+    mem1_mem2_mem_we                <= exe_mem1_mem_we;
+    mem1_mem2_mem_sel               <= exe_mem1_mem_sel;
+    mem1_mem2_mem_wdata             <= exe_mem1_mem_wdata;
+    mem1_mem2_load_type             <= exe_mem1_load_type;
+    mem1_mem2_inst                  <= exe_mem1_inst;
+    mem1_mem2_csr_op                <= exe_mem1_csr_op;
+    mem1_mem2_csr_data              <= exe_mem1_csr_data;
+    mem1_mem2_instr_page_fault      <= exe_mem1_instr_page_fault;
+    mem1_mem2_instr_access_fault    <= exe_mem1_instr_access_fault;
+    mem1_mem2_instr_misaligned      <= exe_mem1_instr_misaligned;
+    mem1_mem2_illegal_instr         <= exe_mem1_illegal_instr;
+    mem1_mem2_ecall                 <= exe_mem1_ecall;
+    mem1_mem2_ebreak                <= exe_mem1_ebreak;
+    mem1_mem2_mret                  <= exe_mem1_mret;
+    mem1_mem2_sret                  <= exe_mem1_sret;
 endtask
 
 task output_bubble();
@@ -460,6 +462,7 @@ task output_bubble();
     mem1_mem2_rf_waddr              <= 0;
     mem1_mem2_rf_wdata              <= 0;
     mem1_mem2_load_type             <= 0;
+    mem1_mem2_mem_vaddr             <= 0;
     mem1_mem2_mem_re                <= 0;
     mem1_mem2_mem_we                <= 0;
     mem1_mem2_mem_sel               <= 0;

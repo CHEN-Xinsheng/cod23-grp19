@@ -5,13 +5,13 @@ module IF (
     input wire                  rst,
 
     output reg [DATA_WIDTH-1:0] pc_o,
-    input wire                  branch_taken_i,
-    input wire [DATA_WIDTH-1:0] pc_pred_i,
-    input wire [DATA_WIDTH-1:0] pc_true_i,
+    input wire                  branch_taken_i, // previous prediction is corret(1)/wrong(0)
+    input wire [DATA_WIDTH-1:0] pc_pred_i,      // next PC predicted by BTB 
+    input wire [DATA_WIDTH-1:0] pc_true_i,      // correct next PC given by pc_mux
     input wire                  stall_i,
     input wire                  bubble_i
 );
-    
+
     reg [ADDR_WIDTH-1:0] pc;
 
     assign pc_o = pc;
@@ -20,7 +20,7 @@ module IF (
         if (rst) begin
             pc <= 32'h80000000;
         end else begin
-            if (~branch_taken_i) begin
+            if (!branch_taken_i) begin
                 pc <= pc_true_i;
             end else if (stall_i || bubble_i) begin
             end else begin
