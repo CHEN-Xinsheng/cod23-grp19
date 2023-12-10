@@ -90,7 +90,13 @@ module mmu (
     output reg                          mem1_mem2_ecall,
     output reg                          mem1_mem2_ebreak,
     output reg                          mem1_mem2_mret,
-    output reg                          mem1_mem2_sret
+    output reg                          mem1_mem2_sret,
+
+    // [debug]
+    output reg [2:0]                    state_o,
+    output reg                          cur_level_o,
+    output reg                          direct_trans_o,
+    output reg [4:0]                    fault_case_o
 );
 
 reg page_fault_o;
@@ -117,17 +123,6 @@ wire [33:0] pte_addr = (cur_level == 1'b1)
                         ? {satp_i.ppn,                 vaddr_i.vpn1, 2'b00}   // (satp_i.ppn << 12)                   + (vaddr_i.vpn1 << 2)
                         : {lv1_pte.ppn1, lv1_pte.ppn0, vaddr_i.vpn0, 2'b00};  // ({lv1_pte.ppn1, lv1_pte.ppn0} << 12) + (vaddr_i.vpn0 << 2)
                         // |          PPN(22)        |   VPN(10)   |  00  |
-
-                        // e.g. vaddr = 0x80001000:   offset = 0x000;
-                        // pte_addr = | 0b00, 0x80002 |  0b10, 0x00 | 0b00 |
-                        // pte_addr[31:0] = 0x80002_800
-                        // -> lv1_pte = 0x2000_10_f1,
-                        // ppn1 = 0x200, ppn0 = {0b00, 0x04}
-                        // pte_addr = 0x200, 0b00, 0x04; 0b00, 0x01; 0b00 
-                        // pte_addr[31:0] = 0x800_04_004
-                        // -> lv2_pte = 0x2000_04fb
-                        // ppn1 = 0x200, ppn0 = 0b00, 0x01
-                        // paddr[31:0] = 0x800_01_000
 
 // wishbone interface
 assign wb_stb_o = wb_cyc_o;
@@ -174,6 +169,11 @@ wire leaf_pte_access_allowed =
 
 // [debug]
 logic [4:0] fault_case;
+assign fault_case_o   = fault_case;
+assign state_o        = state;
+assign cur_level_o    = cur_level;
+assign direct_trans_o = direct_trans;
+
 
 always_comb begin: output_ack_and_output_comb
     // default

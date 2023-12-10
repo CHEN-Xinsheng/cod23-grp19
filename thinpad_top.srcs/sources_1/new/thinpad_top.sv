@@ -428,14 +428,14 @@ module thinpad_top (
     .clk(sys_clk),
     .probe0(pc_vaddr),
     .probe1(csr_satp),
-    .probe2(stall),
-    .probe3(bubble),
+    .probe2({if1_stall, if2_stall, id_stall, exe_stall, mem1_stall, mem2_stall}),
+    .probe3({if1_bubble, if2_bubble, id_bubble, exe_bubble, mem1_bubble, mem2_bubble}),
     .probe4(csr_mode),
     .probe5(wbs_adr_o),
     .probe6(wbs_dat_o),
     .probe7(wbs_dat_i),
     .probe8(wbs_we_o),
-    .probe9(wbs_stb_o),
+    .probe9({wbm0_stb_o, wbm1_stb_o, wbm2_stb_o, wbm3_stb_o,     wbs0_stb_o, wbs1_stb_o, wbs2_stb_o, wbs3_stb_o}),
     .probe10(if1_if2_pc_now),
     .probe11(if2_id_pc_now),
     .probe12(id_exe_pc_now),
@@ -443,17 +443,24 @@ module thinpad_top (
     .probe14(mem1_mem2_pc_now),
     .probe15(rf_waddr),
     .probe16(rf_wdata),
-    .probe17(rf_rdata_x_debug),
-    .probe18(rf_rdata_x_debug),
-    .probe19(1'b0),
-    .probe20(1'b0),
-    .probe21(1'b0),
-    .probe22(1'b0),
-    .probe23(1'b0),
-    .probe24(1'b0),
-    .probe25(1'b0),
-    .probe26(1'b0),
-    .probe27(1'b0),
+    .probe17(rf_regs_debug),   // all registers
+    .probe18({wbm0_ack_i, wbm1_ack_i, wbm2_ack_i, wbm3_ack_i,    wbs0_ack_i, wbs1_ack_i, wbs2_ack_i, wbs3_ack_i}),
+    .probe19(wbm1_adr_o),    // mem_mmu
+    .probe20(wbm1_dat_i),    // mem_mmu
+    .probe21({ exe_mem1_mem_sel, 
+              (exe_mem1_mem_re | exe_mem1_mem_we) & ~mem1_trap, 
+               exe_mem1_mem_re,
+               exe_mem1_mem_we
+            }),  // mem_mmu: {mem_sel_i, enable_i, read_en_i, write_en_i}
+    .probe22({mem1_mem2_load_page_fault,   mem1_mem2_store_page_fault, 
+              mem1_mem2_load_access_fault, mem1_mem2_store_access_fault,
+              mem1_mem2_load_misaligned,   mem1_mem2_store_misaligned
+            }), // mem_mmu
+    .probe23(mem_mmu_state),
+    .probe24(mem_mmu_cur_level),
+    .probe25(mem_mmu_direct_trans),
+    .probe26(mem_mmu_fault_case),
+    .probe27(csr_branch),
     .probe28(1'b0),
     .probe29(1'b0),
     .probe30(1'b0),
@@ -525,13 +532,6 @@ module thinpad_top (
   logic exe_bubble;
   logic mem1_bubble;
   logic mem2_bubble;
-
-  // debug
-  logic [5:0] stall;
-  logic [5:0] bubble;
-
-  assign stall = {if1_stall, if2_stall, id_stall, exe_stall, mem1_stall, mem2_stall};
-  assign bubble = {if1_bubble, if2_bubble, id_bubble, exe_bubble, mem1_bubble, mem2_bubble};
 
 
   logic [4:0] id_rf_raddr_a_comb;
@@ -807,14 +807,17 @@ module thinpad_top (
 
   /* ====================== EXE ====================== */
 
-  logic [31:0] rf_rdata_x_debug;  // debug
-  logic [31:0] rf_rdata_y_debug;  // debug
+  // logic [31:0] rf_rdata_x_debug;  // debug
+  // logic [31:0] rf_rdata_y_debug;  // debug
+  logic [1023:0] rf_regs_debug;  // debug
 
   regfile regfile (
     .clk(sys_clk),
     .rst(sys_rst),
-    .rf_rdata_x_debug(rf_rdata_x_debug),
-    .rf_rdata_y_debug(rf_rdata_y_debug),
+    // .rf_rdata_x_debug(rf_rdata_x_debug),
+    // .rf_rdata_y_debug(rf_rdata_y_debug),
+    .rf_regs_debug(rf_regs_debug),
+
     .rf_raddr_a(id_exe_rf_raddr_a),
     .rf_rdata_a(rf_rdata_a),
     .rf_raddr_b(id_exe_rf_raddr_b),
@@ -1018,9 +1021,19 @@ module thinpad_top (
     .mem1_mem2_ecall              (mem1_mem2_ecall),
     .mem1_mem2_ebreak             (mem1_mem2_ebreak),
     .mem1_mem2_mret               (mem1_mem2_mret),
-    .mem1_mem2_sret               (mem1_mem2_sret)
+    .mem1_mem2_sret               (mem1_mem2_sret),
 
+    // [debug]
+    .state_o        (mem_mmu_state),
+    .cur_level_o    (mem_mmu_cur_level),
+    .direct_trans_o (mem_mmu_direct_trans),
+    .fault_case_o   (mem_mmu_fault_case)
   );
+  // [debug]
+  logic [2:0] mem_mmu_state;
+  logic       mem_mmu_cur_level;
+  logic       mem_mmu_direct_trans;
+  logic [4:0] mem_mmu_fault_case;
 
   /* ====================== MEM1/MEM2 regs ====================== */
 
