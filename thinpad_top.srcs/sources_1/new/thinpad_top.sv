@@ -1113,10 +1113,10 @@ module thinpad_top (
 
 
   /* ====================== MEM2 ====================== */
-  logic [11:0] csr_raddr;
-  logic [31:0] csr_rdata;
-  logic [11:0] csr_waddr;
-  logic [31:0] csr_wdata;
+  logic [CSR_ADDR_WIDTH-1:0]  csr_raddr;
+  logic [DATA_WIDTH-1:0]      csr_rdata;
+  logic [CSR_ADDR_WIDTH-1:0]  csr_waddr;
+  logic [DATA_WIDTH-1:0]      csr_wdata;
   logic csr_we;
 
   logic [31:0] csr_pc_next;

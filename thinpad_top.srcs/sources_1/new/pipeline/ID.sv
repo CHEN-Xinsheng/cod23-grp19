@@ -22,7 +22,7 @@ module ID (
     input wire [ADDR_WIDTH-1:0]         pc_now_i,
     output reg [ADDR_WIDTH-1:0]         pc_now_o,
     output reg                          use_pc_o,
-    output reg [`CSR_OP_WIDTH-1:0]      comp_op_o,
+    output reg [2:0]                    comp_op_o,
     output reg                          load_type_o,
     output reg                          jump_o,
     output reg [`CSR_OP_WIDTH-1:0]      csr_op_o,
@@ -44,19 +44,12 @@ module ID (
     input wire                          bubble_i
 );
     
-    reg [4:0] rd;
-    reg [4:0] rs1;
-    reg [4:0] rs2;
-    reg [6:0] opcode;
-    reg [2:0] funct3;
-    reg [6:0] funct7; 
-    
-    assign rd = inst_i[11:7];
-    assign rs1 = inst_i[19:15];
-    assign rs2 = inst_i[24:20];
-    assign opcode[6:0] = inst_i[6:0];
-    assign funct3[2:0] = inst_i[14:12];
-    assign funct7[6:0] = inst_i[31:25];
+    wire [4:0] rd = inst_i[11:7];
+    wire [4:0] rs1 = inst_i[19:15];
+    wire [4:0] rs2 = inst_i[24:20];
+    wire [6:0] opcode = inst_i[6:0];
+    wire [2:0] funct3 = inst_i[14:12];
+    wire [6:0] funct7 = inst_i[31:25];
 
     assign id_rf_raddr_a_comb = rs1;
     assign id_rf_raddr_b_comb = rs2;
@@ -422,9 +415,9 @@ module ID (
                             ecall_o <= 1'b1;
                         end else if (inst_i[31:7] == 25'b0000000000010000000000000) begin    // EBREAK
                             ebreak_o <= 1'b1;
-                        end else if (inst_i[31:7] == 25'b0011000000100000000000000) begin    // MRET
+                        end else if (inst_i[31:7] == 25'b0011000_00010_00000_000_00000) begin    // MRET
                             mret_o <= 1'b1;
-                        end else if (inst_i[31:7] == 25'b0001000000100000000000000) begin    // MRET
+                        end else if (inst_i[31:7] == 25'b0001000_00010_00000_000_00000) begin    // SRET
                             sret_o <= 1'b1;
                         end else if (funct7 == 7'b0001001 && rd == 5'b0) begin    // SFENCE.VMA
                             sfence_vma_o <= 1'b1;

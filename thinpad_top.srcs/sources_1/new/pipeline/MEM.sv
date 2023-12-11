@@ -50,17 +50,17 @@ module MEM (
         //     csr_wdata_o = csr_rdata_i;
         //     csr_we_o = 1'b0;
         // end else begin
-            if (csr_op_i[1:0] == 2'b01) begin   // CSRRW
+            if (csr_op_i[1:0] == 2'b01) begin   // CSRRW (001), CSRRWI (101)
                 csr_wdata_o = csr_data_i;
             //    if (alu_y_i != 0) begin
                 csr_we_o = 1'b1;
             //    end else begin
             //        csr_we_o = 1'b0;
             //    end
-            end else if (csr_op_i[1:0] == 2'b10) begin   // CSRRS
+            end else if (csr_op_i[1:0] == 2'b10) begin   // CSRRS (010), CSRRSI (110)
                 csr_wdata_o = csr_rdata_i | csr_data_i;
                 csr_we_o = 1'b1;
-            end else if (csr_op_i[1:0] == 2'b11) begin   // CSRRC
+            end else if (csr_op_i[1:0] == 2'b11) begin   // CSRRC (011), CSRRCI (111), 
                 csr_wdata_o = csr_rdata_i & ~csr_data_i;
                 csr_we_o = 1'b1;
             end else begin
