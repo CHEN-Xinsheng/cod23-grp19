@@ -1165,7 +1165,7 @@ module thinpad_top (
     .store_access_fault_i(mem1_mem2_store_access_fault),
     .store_misaligned_i(mem1_mem2_store_misaligned),
 
-    .stall_i(mem1_stall),
+    .stall_i(mem1_stall)
   );
 
   MEM MEM (

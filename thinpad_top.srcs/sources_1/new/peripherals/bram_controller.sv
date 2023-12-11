@@ -21,7 +21,7 @@ module bram_controller (
     typedef enum logic [1:0] { 
         STATE_IDLE,
         STATE_READ,
-        STATE_WRITE,
+        STATE_WRITE
     } state_t;
     state_t state;
 
