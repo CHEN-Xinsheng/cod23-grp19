@@ -508,7 +508,9 @@ module thinpad_top (
       mem1_mem2_instr_misaligned,  mem1_mem2_illegal_instr
     }),
     .probe35(mtime),
-    .probe36(1'b0),
+    .probe36({if1_if2_instr_page_fault,
+              if1_if2_instr_access_fault,
+              if1_if2_instr_misaligned}),
     .probe37(1'b0),
     .probe38(1'b0),
     .probe39(1'b0),
