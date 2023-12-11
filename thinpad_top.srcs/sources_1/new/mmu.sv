@@ -76,6 +76,7 @@ module mmu (
     output reg  [REG_ADDR_WIDTH-1:0]    mem1_mem2_rf_waddr,
     output reg  [DATA_WIDTH-1:0]        mem1_mem2_rf_wdata,
     output reg                          mem1_mem2_load_type,
+    output reg  [ADDR_WIDTH-1:0]        mem1_mem2_mem_vaddr,
     output reg                          mem1_mem2_mem_re,
     output reg                          mem1_mem2_mem_we,
     output reg  [DATA_WIDTH/8-1:0]      mem1_mem2_mem_sel,
@@ -90,21 +91,14 @@ module mmu (
     output reg                          mem1_mem2_ecall,
     output reg                          mem1_mem2_ebreak,
     output reg                          mem1_mem2_mret,
-    output reg                          mem1_mem2_sret
-);
+    output reg                          mem1_mem2_sret,
 
-reg page_fault_o;
-reg access_fault_o;
-reg misaligned_o;
-assign load_page_fault_o    = page_fault_o   & read_en_i;
-assign store_page_fault_o   = page_fault_o   & write_en_i;
-assign instr_page_fault_o   = page_fault_o   & exe_en_i;
-assign load_access_fault_o  = access_fault_o & read_en_i;
-assign store_access_fault_o = access_fault_o & write_en_i;
-assign instr_access_fault_o = access_fault_o & exe_en_i;
-assign load_misaligned_o    = misaligned_o   & read_en_i;
-assign store_misaligned_o   = misaligned_o   & write_en_i;
-assign instr_misaligned_o   = misaligned_o   & exe_en_i;
+    // [debug]
+    output reg [2:0]                    state_o,
+    output reg                          cur_level_o,
+    output reg                          direct_trans_o,
+    output reg [4:0]                    fault_case_o
+);
 
 
 wire direct_trans = (mode_i == `MODE_M || satp_i.mode == 1'b0);
@@ -118,17 +112,6 @@ wire [33:0] pte_addr = (cur_level == 1'b1)
                         : {lv1_pte.ppn1, lv1_pte.ppn0, vaddr_i.vpn0, 2'b00};  // ({lv1_pte.ppn1, lv1_pte.ppn0} << 12) + (vaddr_i.vpn0 << 2)
                         // |          PPN(22)        |   VPN(10)   |  00  |
 
-                        // e.g. vaddr = 0x80001000:   offset = 0x000;
-                        // pte_addr = | 0b00, 0x80002 |  0b10, 0x00 | 0b00 |
-                        // pte_addr[31:0] = 0x80002_800
-                        // -> lv1_pte = 0x2000_10_f1,
-                        // ppn1 = 0x200, ppn0 = {0b00, 0x04}
-                        // pte_addr = 0x200, 0b00, 0x04; 0b00, 0x01; 0b00 
-                        // pte_addr[31:0] = 0x800_04_004
-                        // -> lv2_pte = 0x2000_04fb
-                        // ppn1 = 0x200, ppn0 = 0b00, 0x01
-                        // paddr[31:0] = 0x800_01_000
-
 // wishbone interface
 assign wb_stb_o = wb_cyc_o;
 assign wb_adr_o = pte_addr[ADDR_WIDTH-1:0];  // "拼出来的 34 位物理地址可以直接去掉最高的两位当作 32 位地址进行使用。"
@@ -137,9 +120,9 @@ assign wb_sel_o = {{DATA_WIDTH/8}{1'b1}};
 assign wb_we_o  = 1'b0;
 
 enum logic [2:0] {
-    IDLE,
-    FETCH_PTE,
-    FETCH_PTE_LV0
+    IDLE          = 0,
+    FETCH_PTE     = 1,
+    FETCH_PTE_LV0 = 2
 } state;
 
 // TLB
@@ -174,6 +157,11 @@ wire leaf_pte_access_allowed =
 
 // [debug]
 logic [4:0] fault_case;
+assign fault_case_o   = fault_case;
+assign state_o        = state;
+assign cur_level_o    = cur_level;
+assign direct_trans_o = direct_trans;
+
 
 always_comb begin: output_ack_and_output_comb
     // default
@@ -354,9 +342,16 @@ always_ff @(posedge clk) begin: output_data
         output_bubble();
     end else begin
         paddr_o               <= paddr_comb;
-        page_fault_o          <= page_fault_comb;
-        access_fault_o        <= access_fault_comb;
-        misaligned_o          <= misaligned_comb;
+        load_page_fault_o    <= page_fault_comb   & read_en_i;
+        store_page_fault_o   <= page_fault_comb   & write_en_i;
+        instr_page_fault_o   <= page_fault_comb   & exe_en_i;
+        load_access_fault_o  <= access_fault_comb & read_en_i;
+        store_access_fault_o <= access_fault_comb & write_en_i;
+        instr_access_fault_o <= access_fault_comb & exe_en_i;
+        load_misaligned_o    <= misaligned_comb   & read_en_i;
+        store_misaligned_o   <= misaligned_comb   & write_en_i;
+        instr_misaligned_o   <= misaligned_comb   & exe_en_i;
+
         if1_if2_icache_enable <= ~page_fault_comb & ~access_fault_comb;
         direct_pass_data();
     end
@@ -420,36 +415,44 @@ endfunction
 
 task direct_pass_data();
     // IF1/IF2
-    if1_if2_pc_now        <= vaddr_i;
+    if1_if2_pc_now                  <= vaddr_i;
     // MEM1/MEM2
-    mem1_mem2_pc_now      <= exe_mem1_pc_now;      // only for debug
-    mem1_mem2_rf_wen      <= exe_mem1_rf_wen;
-    mem1_mem2_rf_waddr    <= exe_mem1_rf_waddr;
-    mem1_mem2_rf_wdata    <= exe_mem1_alu_result;
-    mem1_mem2_mem_re      <= exe_mem1_mem_re;
-    mem1_mem2_mem_we      <= exe_mem1_mem_we;
-    mem1_mem2_mem_sel     <= exe_mem1_mem_sel;
-    mem1_mem2_mem_wdata   <= exe_mem1_mem_wdata;
-    mem1_mem2_load_type   <= exe_mem1_load_type;
-    mem1_mem2_inst        <= exe_mem1_inst;
-    mem1_mem2_csr_op      <= exe_mem1_csr_op;
-    mem1_mem2_csr_data    <= exe_mem1_csr_data;
-    mem1_mem2_instr_page_fault   <= exe_mem1_instr_page_fault;
-    mem1_mem2_instr_access_fault <= exe_mem1_instr_access_fault;
-    mem1_mem2_instr_misaligned   <= exe_mem1_instr_misaligned;
-    mem1_mem2_illegal_instr      <= exe_mem1_illegal_instr;
-    mem1_mem2_ecall       <= exe_mem1_ecall;
-    mem1_mem2_ebreak      <= exe_mem1_ebreak;
-    mem1_mem2_mret        <= exe_mem1_mret;
-    mem1_mem2_sret        <= exe_mem1_sret;
+    mem1_mem2_pc_now                <= exe_mem1_pc_now;      // only for debug
+    mem1_mem2_rf_wen                <= exe_mem1_rf_wen;
+    mem1_mem2_rf_waddr              <= exe_mem1_rf_waddr;
+    mem1_mem2_rf_wdata              <= exe_mem1_alu_result;
+    mem1_mem2_mem_vaddr             <= exe_mem1_alu_result;
+    mem1_mem2_mem_re                <= exe_mem1_mem_re;
+    mem1_mem2_mem_we                <= exe_mem1_mem_we;
+    mem1_mem2_mem_sel               <= exe_mem1_mem_sel;
+    mem1_mem2_mem_wdata             <= exe_mem1_mem_wdata;
+    mem1_mem2_load_type             <= exe_mem1_load_type;
+    mem1_mem2_inst                  <= exe_mem1_inst;
+    mem1_mem2_csr_op                <= exe_mem1_csr_op;
+    mem1_mem2_csr_data              <= exe_mem1_csr_data;
+    mem1_mem2_instr_page_fault      <= exe_mem1_instr_page_fault;
+    mem1_mem2_instr_access_fault    <= exe_mem1_instr_access_fault;
+    mem1_mem2_instr_misaligned      <= exe_mem1_instr_misaligned;
+    mem1_mem2_illegal_instr         <= exe_mem1_illegal_instr;
+    mem1_mem2_ecall                 <= exe_mem1_ecall;
+    mem1_mem2_ebreak                <= exe_mem1_ebreak;
+    mem1_mem2_mret                  <= exe_mem1_mret;
+    mem1_mem2_sret                  <= exe_mem1_sret;
 endtask
 
 task output_bubble();
     // CPU interface
     paddr_o               <= {ADDR_WIDTH{1'b0}};
-    page_fault_o          <= 1'b0;
-    access_fault_o        <= 1'b0;
-    misaligned_o          <= 1'b0;
+    load_page_fault_o     <= 1'b0;
+    store_page_fault_o    <= 1'b0;
+    instr_page_fault_o    <= 1'b0;
+    load_access_fault_o   <= 1'b0;
+    store_access_fault_o  <= 1'b0;
+    instr_access_fault_o  <= 1'b0;
+    load_misaligned_o     <= 1'b0;
+    store_misaligned_o    <= 1'b0;
+    instr_misaligned_o    <= 1'b0;
+
     if1_if2_icache_enable <= 1'b0;
     // IF1/IF2
     if1_if2_pc_now                  <= 0;
@@ -459,6 +462,7 @@ task output_bubble();
     mem1_mem2_rf_waddr              <= 0;
     mem1_mem2_rf_wdata              <= 0;
     mem1_mem2_load_type             <= 0;
+    mem1_mem2_mem_vaddr             <= 0;
     mem1_mem2_mem_re                <= 0;
     mem1_mem2_mem_we                <= 0;
     mem1_mem2_mem_sel               <= 0;
