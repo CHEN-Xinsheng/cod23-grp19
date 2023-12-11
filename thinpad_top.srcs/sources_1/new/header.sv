@@ -2,6 +2,12 @@
 `define __PARAM_H_
 
 
+localparam DATA_WIDTH = 32;
+localparam ADDR_WIDTH = 32;
+localparam BRAM_DATA_WIDTH = 8;
+localparam BRAM_ADDR_WIDTH = 17;
+localparam FLASH_DATA_WIDTH = 8;
+localparam FLASH_ADDR_WIDTH = 23;
 localparam DATA_WIDTH     = 32;
 localparam ADDR_WIDTH     = 32;
 localparam REG_ADDR_WIDTH = 5;
