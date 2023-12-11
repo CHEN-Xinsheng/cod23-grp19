@@ -198,7 +198,7 @@ always_ff @(posedge clk) begin
             mstatus.spp <= 1'b0;
             mstatus.spie <= 1'b1; 
             mstatus.sie <= mstatus.spie;
-        end else if (handle_type) begin
+        end else if (handle_type && pc_now_i != 32'b0) begin
             if (handle_mode) begin
                 mode <= `MODE_S;
                 sepc <= pc_now_i;
@@ -306,7 +306,7 @@ always_comb begin
         pc_next_o = mepc;
     else if (sret_i)
         pc_next_o = sepc;
-    else if (handle_type) begin
+    else if (handle_type && pc_now_i != 32'b0) begin
         if (handle_mode)
             pc_next_o = stvec.mode == 2'b0 ? {stvec.base, 2'b0} : {stvec.base, 2'b0} + (exception_code << 2);
         else
