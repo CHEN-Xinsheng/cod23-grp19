@@ -1,9 +1,9 @@
 // Copyright 1986-2019 Xilinx, Inc. All Rights Reserved.
 // --------------------------------------------------------------------------------
 // Tool Version: Vivado v.2019.2 (win64) Build 2708876 Wed Nov  6 21:40:23 MST 2019
-// Date        : Mon Dec 11 00:22:36 2023
+// Date        : Mon Dec 11 01:34:55 2023
 // Host        : LAPTOP-6QORS9Q6 running 64-bit major release  (build 9200)
-// Command     : write_verilog -force -mode synth_stub D:/cod23-grp19/thinpad_top.srcs/sources_1/ip/ila_0/ila_0_stub.v
+// Command     : write_verilog -force -mode synth_stub d:/cod23-grp19/thinpad_top.srcs/sources_1/ip/ila_0/ila_0_stub.v
 // Design      : ila_0
 // Purpose     : Stub declaration of top-level module interface
 // Device      : xc7a100tfgg676-2L
