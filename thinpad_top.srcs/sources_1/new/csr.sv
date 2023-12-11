@@ -1,12 +1,13 @@
 `include "header.sv"
 
 module csrfile (
-    input wire clk,
-    input wire rst,
-    input wire [11:0] raddr_i,
-    output reg [31:0] rdata_o,
-    input wire [11:0] waddr_i,
-    input wire [31:0] wdata_i,
+    input wire                      clk,
+    input wire                      rst,
+
+    input wire [CSR_ADDR_WIDTH-1:0] raddr_i,
+    output reg [DATA_WIDTH-1:0]     rdata_o,
+    input wire [CSR_ADDR_WIDTH-1:0] waddr_i,
+    input wire [DATA_WIDTH-1:0]     wdata_i,
     input wire we_i,
     input wire [31:0] pc_now_i,
     output reg [31:0] pc_next_o,
