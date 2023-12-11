@@ -29,6 +29,8 @@ module csrfile (
     input wire if_page_fault_i,
     input wire load_page_fault_i,
     input wire store_page_fault_i,
+
+    input wire stall_i,
     
     output satp_t satp_o,
     output reg sum_o,
@@ -186,6 +188,7 @@ always_ff @(posedge clk) begin
         sscratch <= 32'h0;
         satp <= 32'h0;
         mode <= `MODE_M;
+    end else if (stall_i) begin
     end else begin
         mip.mtip <= time_interrupt_i;
         if (mret_i) begin
