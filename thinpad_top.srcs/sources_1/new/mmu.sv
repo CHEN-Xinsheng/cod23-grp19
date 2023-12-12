@@ -262,9 +262,6 @@ end
 always_ff @(posedge clk) begin: inner_data_and_wishbone
     if (rst) begin
         reset_state_and_wb();
-        reset_tlb();
-    end else if (ack_o && tlb_reset_i) begin
-        reset_tlb();
     end else begin
         casez (state)
             IDLE: begin
@@ -310,11 +307,7 @@ always_ff @(posedge clk) begin: inner_data_and_wishbone
                             reset_state_and_wb();
                         end else begin
                             reset_state_and_wb();
-                            // update TLB
-                            tlb[tlb_index].tag   <= vaddr_i[31:31-TLB_TAG_WIDTH+1];
-                            tlb[tlb_index].ppn   <= wb_dat_i[31:10];
-                            tlb[tlb_index].asid  <= satp_i.asid;
-                            tlb[tlb_index].valid <= 1'b1;
+                            // and update TLB
                         end
                     end else begin
                         if (cur_level == 0) begin
@@ -335,6 +328,31 @@ always_ff @(posedge clk) begin: inner_data_and_wishbone
                 state <= FETCH_PTE;
             end
         endcase
+    end
+end
+
+always_ff @(posedge clk) begin: update_tlb
+    if (rst) begin
+        reset_tlb();
+    end else if (ack_o && tlb_reset_i) begin
+        reset_tlb();
+    end else begin
+        if (state == FETCH_PTE && wb_ack_i) begin
+            if (!read_pte.v || (!read_pte.r && read_pte.w)) begin
+            end else if (read_pte.r || read_pte.x) begin
+                if (leaf_pte_access_allowed) begin
+                end else if (cur_level == 1 && read_pte.ppn0 != 0) begin
+                end else if (!paddr_valid(pte_addr[ADDR_WIDTH-1:0])) begin
+                end else begin
+                    // update TLB
+                    tlb[tlb_index].tag   <= vaddr_i[31:31-TLB_TAG_WIDTH+1];
+                    tlb[tlb_index].ppn   <= wb_dat_i[31:10];
+                    tlb[tlb_index].asid  <= satp_i.asid;
+                    tlb[tlb_index].valid <= 1'b1;
+                end
+            end else begin
+            end
+        end
     end
 end
 
