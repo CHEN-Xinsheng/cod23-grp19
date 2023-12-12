@@ -130,10 +130,10 @@ tlb_entry_t  tlb[0: N_TLB_ENTRY-1];
 
 wire [TLB_INDEX_WIDTH-1:0]  tlb_index = vaddr_i[12+TLB_INDEX_WIDTH-1: 12];
 wire tlb_entry_t            tlb_entry = tlb[tlb_index];
-// wire                        tlb_hit   = tlb_entry.valid 
-//                                         && tlb_entry.asid == satp_i.asid
-//                                         && tlb_entry.tag == vaddr_i[31:31-TLB_TAG_WIDTH+1];
-wire tlb_hit = 1'b0;
+wire                        tlb_hit   = tlb_entry.valid 
+                                        && tlb_entry.asid == satp_i.asid
+                                        && tlb_entry.tag == vaddr_i[31:31-TLB_TAG_WIDTH+1];
+// wire tlb_hit = 1'b0;
 
 logic [ADDR_WIDTH-1:0] paddr_comb;
 logic                  page_fault_comb;
