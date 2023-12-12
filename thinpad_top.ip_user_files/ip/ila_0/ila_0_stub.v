@@ -1,10 +1,9 @@
 // Copyright 1986-2019 Xilinx, Inc. All Rights Reserved.
 // --------------------------------------------------------------------------------
 // Tool Version: Vivado v.2019.2 (win64) Build 2708876 Wed Nov  6 21:40:23 MST 2019
-// Date        : Mon Dec 11 10:38:53 2023
-// Host        : LAPTOP-SB9T3C46 running 64-bit major release  (build 9200)
-// Command     : write_verilog -force -mode synth_stub
-//               D:/Codes/Computer_Organization/cod23-grp19/thinpad_top.srcs/sources_1/ip/ila_0/ila_0_stub.v
+// Date        : Tue Dec 12 11:22:53 2023
+// Host        : LAPTOP-6QORS9Q6 running 64-bit major release  (build 9200)
+// Command     : write_verilog -force -mode synth_stub d:/cod23-grp19/thinpad_top.srcs/sources_1/ip/ila_0/ila_0_stub.v
 // Design      : ila_0
 // Purpose     : Stub declaration of top-level module interface
 // Device      : xc7a100tfgg676-2L
@@ -21,7 +20,7 @@ module ila_0(clk, probe0, probe1, probe2, probe3, probe4, probe5,
   probe40, probe41, probe42, probe43, probe44, probe45, probe46, probe47, probe48, probe49, probe50, 
   probe51, probe52, probe53, probe54, probe55, probe56, probe57, probe58, probe59, probe60, probe61, 
   probe62, probe63)
-/* synthesis syn_black_box black_box_pad_pin="clk,probe0[31:0],probe1[31:0],probe2[5:0],probe3[5:0],probe4[1:0],probe5[31:0],probe6[31:0],probe7[31:0],probe8[0:0],probe9[8:0],probe10[31:0],probe11[31:0],probe12[31:0],probe13[31:0],probe14[31:0],probe15[4:0],probe16[31:0],probe17[1023:0],probe18[8:0],probe19[31:0],probe20[31:0],probe21[3:0],probe22[5:0],probe23[2:0],probe24[0:0],probe25[0:0],probe26[4:0],probe27[0:0],probe28[0:0],probe29[31:0],probe30[31:0],probe31[31:0],probe32[5:0],probe33[31:0],probe34[9:0],probe35[63:0],probe36[2:0],probe37[0:0],probe38[0:0],probe39[0:0],probe40[0:0],probe41[0:0],probe42[0:0],probe43[0:0],probe44[0:0],probe45[0:0],probe46[0:0],probe47[0:0],probe48[0:0],probe49[0:0],probe50[0:0],probe51[0:0],probe52[0:0],probe53[0:0],probe54[0:0],probe55[0:0],probe56[0:0],probe57[0:0],probe58[0:0],probe59[0:0],probe60[0:0],probe61[0:0],probe62[0:0],probe63[0:0]" */;
+/* synthesis syn_black_box black_box_pad_pin="clk,probe0[31:0],probe1[31:0],probe2[5:0],probe3[5:0],probe4[1:0],probe5[31:0],probe6[31:0],probe7[31:0],probe8[0:0],probe9[8:0],probe10[31:0],probe11[31:0],probe12[31:0],probe13[31:0],probe14[31:0],probe15[4:0],probe16[31:0],probe17[1023:0],probe18[8:0],probe19[31:0],probe20[31:0],probe21[3:0],probe22[5:0],probe23[2:0],probe24[0:0],probe25[0:0],probe26[4:0],probe27[0:0],probe28[0:0],probe29[31:0],probe30[31:0],probe31[31:0],probe32[5:0],probe33[31:0],probe34[9:0],probe35[63:0],probe36[2:0],probe37[31:0],probe38[31:0],probe39[31:0],probe40[31:0],probe41[0:0],probe42[0:0],probe43[0:0],probe44[0:0],probe45[0:0],probe46[0:0],probe47[0:0],probe48[0:0],probe49[0:0],probe50[0:0],probe51[0:0],probe52[0:0],probe53[0:0],probe54[0:0],probe55[0:0],probe56[0:0],probe57[0:0],probe58[0:0],probe59[0:0],probe60[0:0],probe61[0:0],probe62[0:0],probe63[0:0]" */;
   input clk;
   input [31:0]probe0;
   input [31:0]probe1;
@@ -60,10 +59,10 @@ module ila_0(clk, probe0, probe1, probe2, probe3, probe4, probe5,
   input [9:0]probe34;
   input [63:0]probe35;
   input [2:0]probe36;
-  input [0:0]probe37;
-  input [0:0]probe38;
-  input [0:0]probe39;
-  input [0:0]probe40;
+  input [31:0]probe37;
+  input [31:0]probe38;
+  input [31:0]probe39;
+  input [31:0]probe40;
   input [0:0]probe41;
   input [0:0]probe42;
   input [0:0]probe43;
