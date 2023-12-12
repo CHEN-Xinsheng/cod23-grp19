@@ -265,7 +265,52 @@ module thinpad_top (
   logic [3:0] wbs3_sel_o;
   logic wbs3_we_o;
 
-  wb_mux_4 wb_mux (
+  logic wbs4_cyc_o;
+  logic wbs4_stb_o;
+  logic wbs4_ack_i;
+  logic [31:0] wbs4_adr_o;
+  logic [31:0] wbs4_dat_o;
+  logic [31:0] wbs4_dat_i;
+  logic [3:0] wbs4_sel_o;
+  logic wbs4_we_o;
+
+  logic wbs5_cyc_o;
+  logic wbs5_stb_o;
+  logic wbs5_ack_i;
+  logic [31:0] wbs5_adr_o;
+  logic [31:0] wbs5_dat_o;
+  logic [31:0] wbs5_dat_i;
+  logic [3:0] wbs5_sel_o;
+  logic wbs5_we_o;
+
+  logic wbs6_cyc_o;
+  logic wbs6_stb_o;
+  logic wbs6_ack_i;
+  logic [31:0] wbs6_adr_o;
+  logic [31:0] wbs6_dat_o;
+  logic [31:0] wbs6_dat_i;
+  logic [3:0] wbs6_sel_o;
+  logic wbs6_we_o;
+
+  logic wbs7_cyc_o;
+  logic wbs7_stb_o;
+  logic wbs7_ack_i;
+  logic [31:0] wbs7_adr_o;
+  logic [31:0] wbs7_dat_o;
+  logic [31:0] wbs7_dat_i;
+  logic [3:0] wbs7_sel_o;
+  logic wbs7_we_o;
+
+  logic wbs8_cyc_o;
+  logic wbs8_stb_o;
+  logic wbs8_ack_i;
+  logic [31:0] wbs8_adr_o;
+  logic [31:0] wbs8_dat_o;
+  logic [31:0] wbs8_dat_i;
+  logic [3:0] wbs8_sel_o;
+  logic wbs8_we_o;
+
+  wb_mux_9 wb_mux (
       .clk(sys_clk),
       .rst(sys_rst),
 
@@ -343,7 +388,87 @@ module thinpad_top (
       .wbs3_ack_i(wbs3_ack_i),
       .wbs3_err_i('0),
       .wbs3_rty_i('0),
-      .wbs3_cyc_o(wbs3_cyc_o)
+      .wbs3_cyc_o(wbs3_cyc_o),
+
+      // Slave interface 4 (to flash)
+      // Address range: 0x8300_0000 ~ 0x83FF_FFFF
+      .wbs4_addr    (32'h8300_0000),
+      .wbs4_addr_msk(32'hFF00_0000),
+
+      .wbs4_adr_o(wbs4_adr_o),
+      .wbs4_dat_i(wbs4_dat_i),
+      .wbs4_dat_o(wbs4_dat_o),
+      .wbs4_we_o (wbs4_we_o),
+      .wbs4_sel_o(wbs4_sel_o),
+      .wbs4_stb_o(wbs4_stb_o),
+      .wbs4_ack_i(wbs4_ack_i),
+      .wbs4_err_i('0),
+      .wbs4_rty_i('0),
+      .wbs4_cyc_o(wbs4_cyc_o),
+
+      // Slave interface 5 (to block ram 0)
+      // Address range: 0x8400_0000 ~ 0x84FF_FFFF
+      .wbs5_addr    (32'h8400_0000),
+      .wbs5_addr_msk(32'hFF00_0000),
+
+      .wbs5_adr_o(wbs5_adr_o),
+      .wbs5_dat_i(wbs5_dat_i),
+      .wbs5_dat_o(wbs5_dat_o),
+      .wbs5_we_o (wbs5_we_o),
+      .wbs5_sel_o(wbs5_sel_o),
+      .wbs5_stb_o(wbs5_stb_o),
+      .wbs5_ack_i(wbs5_ack_i),
+      .wbs5_err_i('0),
+      .wbs5_rty_i('0),
+      .wbs5_cyc_o(wbs5_cyc_o), 
+  
+      // Slave interface 6 (to block ram 1)
+      // Address range: 0x8500_0000 ~ 0x85FF_FFFF
+      .wbs6_addr    (32'h8500_0000),
+      .wbs6_addr_msk(32'hFF00_0000),
+
+      .wbs6_adr_o(wbs6_adr_o),
+      .wbs6_dat_i(wbs6_dat_i),
+      .wbs6_dat_o(wbs6_dat_o),
+      .wbs6_we_o (wbs6_we_o),
+      .wbs6_sel_o(wbs6_sel_o),
+      .wbs6_stb_o(wbs6_stb_o),
+      .wbs6_ack_i(wbs6_ack_i),
+      .wbs6_err_i('0),
+      .wbs6_rty_i('0),
+      .wbs6_cyc_o(wbs6_cyc_o), 
+  
+      // Slave interface 7 (to vga register)
+      // Address range: 0x8600_0000 ~ 0x8600_00FF
+      .wbs7_addr    (32'h8600_0000),
+      .wbs7_addr_msk(32'hFFFF_FF00),
+
+      .wbs7_adr_o(wbs7_adr_o),
+      .wbs7_dat_i(wbs7_dat_i),
+      .wbs7_dat_o(wbs7_dat_o),
+      .wbs7_we_o (wbs7_we_o),
+      .wbs7_sel_o(wbs7_sel_o),
+      .wbs7_stb_o(wbs7_stb_o),
+      .wbs7_ack_i(wbs7_ack_i),
+      .wbs7_err_i('0),
+      .wbs7_rty_i('0),
+      .wbs7_cyc_o(wbs7_cyc_o),
+
+      // Slave interface 3 (to gpio)
+      // Address range: 0x8700_0000 ~ 0x8700_00FF
+      .wbs8_addr    (32'h8700_0000),
+      .wbs8_addr_msk(32'hFFFF_FF00),
+
+      .wbs8_adr_o(wbs8_adr_o),
+      .wbs8_dat_i(wbs8_dat_i),
+      .wbs8_dat_o(wbs8_dat_o),
+      .wbs8_we_o (wbs8_we_o),
+      .wbs8_sel_o(wbs8_sel_o),
+      .wbs8_stb_o(wbs8_stb_o),
+      .wbs8_ack_i(wbs8_ack_i),
+      .wbs8_err_i('0),
+      .wbs8_rty_i('0),
+      .wbs8_cyc_o(wbs8_cyc_o)
   );
 
   /* =========== Lab5 MUX end =========== */
@@ -1208,6 +1333,151 @@ module thinpad_top (
   /* ====================== MEM2/WB regs ====================== */
   // logic [31:0] mem2_wb_pc_now;  // [debug]
 
+  /* ====================== Flash & Block RAM ====================== */
+  assign flash_vpen = 1'b1;
+  assign flash_we_n = 1'b1;
+  assign flash_byte_n = 1'b0;
+  
+  flash_controller flash_controller (
+      .clk(sys_clk),
+      .rst(sys_rst),
+
+      .wb_cyc_i(wbs4_cyc_o),
+      .wb_stb_i(wbs4_stb_o),
+      .wb_ack_o(wbs4_ack_i),
+      .wb_adr_i(wbs4_adr_o),
+      .wb_dat_i(wbs4_dat_o),
+      .wb_dat_o(wbs4_dat_i),
+      .wb_sel_i(wbs4_sel_o),
+      .wb_we_i (wbs4_we_o),
+
+      .flash_a_o(flash_a),
+      .flash_d(flash_d),
+      .flash_rp_o(flash_rp_n),
+      .flash_ce_o(flash_ce_n),
+      .flash_oe_o(flash_oe_n)
+  );
+
+  logic [BRAM_DATA_WIDTH-1:0] bram_0_rdata;
+  logic [BRAM_DATA_WIDTH-1:0] bram_0_wdata;
+  logic [BRAM_ADDR_WIDTH-1:0] bram_0_raddr;
+  logic [BRAM_ADDR_WIDTH-1:0] bram_0_waddr;
+  logic bram_0_wea;
+  logic bram_0_ena;
+
+  logic [BRAM_DATA_WIDTH-1:0] bram_1_rdata;
+  logic [BRAM_DATA_WIDTH-1:0] bram_1_wdata;
+  logic [BRAM_ADDR_WIDTH-1:0] bram_1_raddr;
+  logic [BRAM_ADDR_WIDTH-1:0] bram_1_waddr;
+  logic bram_1_wea;
+  logic bram_1_ena;
+  logic [BRAM_ADDR_WIDTH-1:0] bram_addrb;
+
+  bram_controller bram_controller_0 (
+      .clk(sys_clk),
+      .rst(sys_rst),
+
+      .wb_cyc_i(wbs5_cyc_o),
+      .wb_stb_i(wbs5_stb_o),
+      .wb_ack_o(wbs5_ack_i),
+      .wb_adr_i(wbs5_adr_o),
+      .wb_dat_i(wbs5_dat_o),
+      .wb_dat_o(wbs5_dat_i),
+      .wb_sel_i(wbs5_sel_o),
+      .wb_we_i (wbs5_we_o),
+
+      .bram_data_i(bram_0_rdata),
+      .bram_data_o(bram_0_wdata),
+      .bram_addr_a_o(bram_0_waddr),
+      .bram_addr_b_o(bram_0_raddr),
+      .bram_wea_o(bram_0_wea)
+  );
+
+  // block RAM 控制器模
+  bram_controller bram_controller_1 (
+      .clk(sys_clk),
+      .rst(sys_rst),
+
+      .wb_cyc_i(wbs6_cyc_o),
+      .wb_stb_i(wbs6_stb_o),
+      .wb_ack_o(wbs6_ack_i),
+      .wb_adr_i(wbs6_adr_o),
+      .wb_dat_i(wbs6_dat_o),
+      .wb_dat_o(wbs6_dat_i),
+      .wb_sel_i(wbs6_sel_o),
+      .wb_we_i (wbs6_we_o),
+
+      .bram_data_i(bram_1_rdata),
+      .bram_data_o(bram_1_wdata),
+      .bram_addr_a_o(bram_1_waddr),
+      .bram_addr_b_o(bram_1_raddr),
+      .bram_wea_o(bram_1_wea)
+  );
+
+  logic [BRAM_DATA_WIDTH-1:0] bram_0_data;
+  logic [BRAM_DATA_WIDTH-1:0] bram_1_data;
+  logic [BRAM_DATA_WIDTH-1:0] real_bram_data;
+  logic [BRAM_ADDR_WIDTH-1:0] bram_addr_st = 17'b0;
+  logic vga_ack;
+  logic [2:0] vga_scale;
+  
+  vga_controller vga_controller (
+    .clk(sys_clk),
+    .rst(sys_rst),
+
+    .wb_cyc_i(wbs7_cyc_o),
+    .wb_stb_i(wbs7_stb_o),
+    .wb_ack_o(wbs7_ack_i),
+    .wb_adr_i(wbs7_adr_o),
+    .wb_dat_i(wbs7_dat_o),
+    .wb_dat_o(wbs7_dat_i),
+    .wb_sel_i(wbs7_sel_o),
+    .wb_we_i (wbs7_we_o),
+  
+    .bram_0_dat_i(bram_0_data),
+    .bram_1_dat_i(bram_1_data),
+    .bram_dat_o(real_bram_data),
+
+    .vga_ack_i(vga_ack),
+    .vga_scale_o(vga_scale),
+  );
+
+  gpio_controller gpio_controller (
+      .clk(sys_clk),
+      .rst(sys_rst),
+
+      .wb_cyc_i(wbs8_cyc_o),
+      .wb_stb_i(wbs8_stb_o),
+      .wb_ack_o(wbs8_ack_i),
+      .wb_adr_i(wbs8_adr_o),
+      .wb_dat_i(wbs8_dat_o),
+      .wb_dat_o(wbs8_dat_i),
+      .wb_sel_i(wbs8_sel_o),
+      .wb_we_i (wbs8_we_o),
+
+      .dip_sw(dip_sw),
+      .touch_btn(touch_btn),
+      .push_btn(push_btn)
+  );
+
+  assign video_clk = clk_50M;
+
+  vga #(12, 800, 856, 976, 1040, 600, 637, 643, 666, 1, 1) vga800x600at75 (
+    .vga_clk(clk_50M),
+    .vga_rst(sys_rst),
+    .vga_scale_i(vga_scale),
+    .bram_addr_st_i(bram_addr_st),
+    .bram_addr_o(bram_addrb),
+    .bram_data_i(real_bram_data),
+    .vga_ack_o(vga_ack),
+    .video_red_o(video_red),
+    .video_green_o(video_green),
+    .video_blue_o(video_blue),
+    .video_hsync_o(video_hsync),
+    .video_vsync_o(video_vsync),
+    .video_de_o(video_de)
+  );
+
 
   // // 不使用内存�?�串口时，禁用其使能信号
   // assign base_ram_ce_n = 1'b1;
@@ -1304,20 +1574,6 @@ module thinpad_top (
   //     .TxD_data (ext_uart_tx)      // 待发送的数据
   // );
 
-  // // ĺžĺčžĺşćźç¤şďźĺčž¨ç 800x600@75Hzďźĺç´ ćśéä¸ş 50MHz
-  // logic [11:0] hdata;
-  // assign video_red   = hdata < 266 ? 3'b111 : 0;  // çş˘č˛çŤćĄ
-  // assign video_green = hdata < 532 && hdata >= 266 ? 3'b111 : 0;  // çťżč˛çŤćĄ
-  // assign video_blue  = hdata >= 532 ? 2'b11 : 0;  // čč˛çŤćĄ
-  // assign video_clk   = clk_50M;
-  // vga #(12, 800, 856, 976, 1040, 600, 637, 643, 666, 1, 1) vga800x600at75 (
-  //     .clk        (clk_50M),
-  //     .hdata      (hdata),        // 横坐�???????
-  //     .vdata      (),             // 纵坐�???????
-  //     .hsync      (video_hsync),
-  //     .vsync      (video_vsync),
-  //     .data_enable(video_de)
-  // );
   /* =========== Demo code end =========== */
 
 
