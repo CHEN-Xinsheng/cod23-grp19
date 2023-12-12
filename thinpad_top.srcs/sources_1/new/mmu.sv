@@ -120,9 +120,9 @@ assign wb_sel_o = {{DATA_WIDTH/8}{1'b1}};
 assign wb_we_o  = 1'b0;
 
 enum logic [2:0] {
-    IDLE          = 0,
-    FETCH_PTE     = 1,
-    FETCH_PTE_LV0 = 2
+    IDLE          = 1,
+    FETCH_PTE     = 2,
+    FETCH_PTE_LV0 = 3
 } state;
 
 // TLB
@@ -263,12 +263,20 @@ always_ff @(posedge clk) begin: inner_data_and_wishbone
     if (rst) begin
         reset_state_and_wb();
         reset_tlb();
+    end else if (ack_o && tlb_reset_i) begin
+        reset_tlb();
     end else begin
         casez (state)
             IDLE: begin
                 if (enable_i) begin
+                    if (!(
+                           (mem_sel_i == 4'b1111 && vaddr_i[1:0] == 2'b00)
+                        || (mem_sel_i == 4'b0011 && vaddr_i[0]   == 1'b0)
+                        || (mem_sel_i == 4'b0001)
+                    )) begin
+                        reset_state_and_wb();
                     // do not translate (i.e., direct translatation)
-                    if (direct_trans) begin
+                    end else if (direct_trans) begin
                         reset_state_and_wb();
                     // need translation (vaddr -> paddr)
                     end else begin
@@ -286,9 +294,6 @@ always_ff @(posedge clk) begin: inner_data_and_wishbone
                         end
                     end
                 end else begin
-                    if (tlb_reset_i) begin
-                        reset_tlb();
-                    end
                     reset_state_and_wb();
                 end 
             end
