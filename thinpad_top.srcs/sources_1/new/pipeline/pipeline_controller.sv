@@ -79,6 +79,9 @@ module pipeline_controller (
         end else if (~if2_ack_i) begin
             {if1_stall_o, if2_stall_o, id_stall_o, exe_stall_o, mem1_stall_o, mem2_stall_o}       = 6'b100000;
             {if1_bubble_o, if2_bubble_o, id_bubble_o, exe_bubble_o, mem1_bubble_o, mem2_bubble_o} = 6'b010000;
+        end else if (sfence_vma_i & ~if1_ack_i) begin
+            {if1_stall_o, if2_stall_o, id_stall_o, exe_stall_o, mem1_stall_o, mem2_stall_o}       = 6'b100000;
+            {if1_bubble_o, if2_bubble_o, id_bubble_o, exe_bubble_o, mem1_bubble_o, mem2_bubble_o} = 6'b010000;
         end else if (sfence_vma_i) begin
             {if1_stall_o, if2_stall_o, id_stall_o, exe_stall_o, mem1_stall_o, mem2_stall_o}       = 6'b000000;
             {if1_bubble_o, if2_bubble_o, id_bubble_o, exe_bubble_o, mem1_bubble_o, mem2_bubble_o} = 6'b100000;
