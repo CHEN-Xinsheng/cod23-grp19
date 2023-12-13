@@ -91,13 +91,13 @@ module mmu (
     output reg                          mem1_mem2_ecall,
     output reg                          mem1_mem2_ebreak,
     output reg                          mem1_mem2_mret,
-    output reg                          mem1_mem2_sret,
+    output reg                          mem1_mem2_sret
 
-    // [debug]
-    output reg [2:0]                    state_o,
-    output reg                          cur_level_o,
-    output reg                          direct_trans_o,
-    output reg [4:0]                    fault_case_o
+    // // [debug]
+    // output reg [2:0]                    state_o,
+    // output reg                          cur_level_o,
+    // output reg                          direct_trans_o,
+    // output reg [4:0]                    fault_case_o
 );
 
 
@@ -155,12 +155,12 @@ wire leaf_pte_access_allowed =
         || (mode_i == `MODE_S && read_pte.u && !mstatus_sum_i);
         /* (Ref: page 23) When SUM=0, S-mode memory accesses to pages that are accessible by U-mode (U=1 in Figure 4.18) will fault. */
 
-// [debug]
-logic [4:0] fault_case;
-assign fault_case_o   = fault_case;
-assign state_o        = state;
-assign cur_level_o    = cur_level;
-assign direct_trans_o = direct_trans;
+// // [debug]
+// logic [4:0] fault_case;
+// assign fault_case_o   = fault_case;
+// assign state_o        = state;
+// assign cur_level_o    = cur_level;
+// assign direct_trans_o = direct_trans;
 
 
 always_comb begin: output_ack_and_output_comb
@@ -170,7 +170,7 @@ always_comb begin: output_ack_and_output_comb
     page_fault_comb   = 1'b0;
     access_fault_comb = 1'b0;
     misaligned_comb   = 1'b0;
-    fault_case   = 0;  // [debug]
+    // fault_case   = 0;  // [debug]
     // cases
     casez (state)
         IDLE: begin
@@ -181,11 +181,11 @@ always_comb begin: output_ack_and_output_comb
                     || (mem_sel_i == 4'b0001)
                 )) begin
                     raise_misaligned_comb();
-                    fault_case = 9;
+                    // fault_case = 9;
                 end else if (direct_trans) begin
                     if (!paddr_valid(vaddr_i)) begin
                         raise_access_fault_comb();
-                        fault_case = 1;
+                        // fault_case = 1;
                     end else begin
                         ack_paddr_comb(vaddr_i);
                     end
@@ -193,7 +193,7 @@ always_comb begin: output_ack_and_output_comb
                     /* need translation (vaddr -> paddr) */
                     if (!paddr_valid(pte_addr[ADDR_WIDTH-1:0])) begin
                         raise_access_fault_comb();
-                        fault_case = 2;
+                        // fault_case = 2;
                     end else if (tlb_hit) begin
                         ack_paddr_comb({tlb_entry.ppn[19:0], vaddr_i[11:0]});
                     end else begin
@@ -212,7 +212,7 @@ always_comb begin: output_ack_and_output_comb
                         future standard use are set within pte, stop and raise a page-fault exception corresponding
                         to the original access type.*/
                     raise_page_fault_comb();
-                    fault_case = 3;
+                    // fault_case = 3;
                 // Otherwise, the PTE is valid
                 // If it is leaf PTE
                 end else if (read_pte.r || read_pte.x) begin
@@ -222,15 +222,15 @@ always_comb begin: output_ack_and_output_comb
                     // TODO (DONE?): "the value of the SUM and MXR fields of the mstatus register"?
                     if (leaf_pte_access_allowed) begin
                         raise_page_fault_comb();
-                        fault_case = 4;
+                        // fault_case = 4;
                     end else if (cur_level == 1 && read_pte.ppn0 != 0) begin
                         /* 6. If i > 0 and pte.ppn[i-1 : 0] != 0, this is a misaligned superpage; 
                             stop and raise a page-fault exception corresponding to the original access type */
                         raise_page_fault_comb();
-                        fault_case = 5;
+                        // fault_case = 5;
                     end else if (!paddr_valid(pte_addr[ADDR_WIDTH-1:0])) begin
                         raise_access_fault_comb();
-                        fault_case = 6;
+                        // fault_case = 6;
                     end else begin
                         ack_paddr_comb({wb_dat_i[29:10], vaddr_i[11:0]});
                     end
@@ -241,10 +241,10 @@ always_comb begin: output_ack_and_output_comb
                         Otherwise, let a = pte.ppn × PAGESIZE and go to step 2. */
                     if (cur_level == 0) begin
                         raise_page_fault_comb();
-                        fault_case = 7;
+                        // fault_case = 7;
                     end else if (!paddr_valid(pte_addr[ADDR_WIDTH-1:0])) begin
                         raise_access_fault_comb();
-                        fault_case = 8;
+                        // fault_case = 8;
                     end else begin
                         ack_o = 1'b0;
                     end
@@ -390,17 +390,17 @@ function automatic logic paddr_valid(
         || (paddr == `MTIMECMP_ADDR) || (paddr == `MTIMECMP_ADDR+4)   // CSR - mtimecmp
         || (paddr == `MTIME_ADDR)    || (paddr == `MTIME_ADDR+4)      // CSR - mtime
         || ( ~|((paddr ^ 32'h8000_0000) & 32'hFF80_0000) );           // codes and data [equivalent to (32'h8000_0000 <= paddr && paddr <= 32'h807F_FFFF)]
-    // TODO: 如果增加更多外设，需覝在这里补上相应的物睆地�??区间
+    // TODO: 如果增加更多外设，需要在这里补上相应的物理地址区间
     /* 
-        0x10000000-0x10000007	串坣数杮坊状�??
+        0x10000000-0x10000007	串口数据及状态
         0x80000000-0x807FFFFF:
-            0x80000000-0x800FFFFF	监控程庝代砝
-            0x80100000-0x803FFFFF	用户程庝代砝
-            0x80400000-0x807EFFFF	用户程庝数杮
-            0x807F0000-0x807FFFFF	监控程庝数杮
+            0x80000000-0x800FFFFF	监控程序代码
+            0x80100000-0x803FFFFF	用户程序代码
+            0x80400000-0x807EFFFF	用户程序数据
+            0x807F0000-0x807FFFFF	监控程序数据
      */
 endfunction
-
+    
 function raise_misaligned_comb();
     ack_o             = 1'b1;
     // paddr_comb        = {ADDR_WIDTH{1'b0}};  // omitted, because it is default value
