@@ -29,6 +29,8 @@ module csrfile (
     input wire if_page_fault_i,
     input wire load_page_fault_i,
     input wire store_page_fault_i,
+
+    input wire stall_i,
     
     output satp_t satp_o,
     output reg sum_o,
@@ -139,31 +141,54 @@ always_comb begin
 end
 
 always_comb begin
-    case(raddr_i)
-        12'h305: rdata_o = mtvec;
-        12'h340: rdata_o = mscratch;
-        12'h341: rdata_o = mepc;
-        12'h342: rdata_o = mcause;
-        12'h300: rdata_o = mstatus;
-        12'h304: rdata_o = mie;
-        12'h344: rdata_o = mip;
-        12'hf14: rdata_o = mhartid;
-        12'h303: rdata_o = mideleg;
-        12'h302: rdata_o = medeleg;
-        12'h343: rdata_o = mtval;
-        12'h100: rdata_o = mstatus;
-        12'h141: rdata_o = sepc;
-        12'h142: rdata_o = scause;
-        12'h143: rdata_o = stval;
-        12'h105: rdata_o = stvec;
-        12'h140: rdata_o = sscratch;
-        12'h144: rdata_o = mip;
-        12'h104: rdata_o = mie;
-        12'h180: rdata_o = satp;
-        12'hc01: rdata_o = mtime_i[31:0];
-        12'hc81: rdata_o = mtime_i[63:32];
-        default: rdata_o = 32'h0;
-    endcase
+    if (mode == `MODE_M) begin
+        case(raddr_i)
+            12'h305: rdata_o = mtvec;
+            12'h340: rdata_o = mscratch;
+            12'h341: rdata_o = mepc;
+            12'h342: rdata_o = mcause;
+            12'h300: rdata_o = mstatus & 32'b0000_0000_0000_0100_0001_1001_1010_1010;
+            12'h304: rdata_o = mie & 32'b0000_0000_0000_0000_0000_0000_1010_0000;
+            12'h344: rdata_o = mip & 32'b0000_0000_0000_0000_0000_0000_1010_0000;
+            12'hf14: rdata_o = mhartid;
+            12'h303: rdata_o = mideleg;
+            12'h302: rdata_o = medeleg;
+            12'h343: rdata_o = mtval;
+            12'h100: rdata_o = mstatus & 32'b0000_0000_0000_0100_0000_0001_0010_0010;
+            12'h141: rdata_o = sepc;
+            12'h142: rdata_o = scause;
+            12'h143: rdata_o = stval;
+            12'h105: rdata_o = stvec;
+            12'h140: rdata_o = sscratch;
+            12'h144: rdata_o = mip & 32'b0000_0000_0000_0000_0000_0000_0010_0000;
+            12'h104: rdata_o = mie & 32'b0000_0000_0000_0000_0000_0000_0010_0000;
+            12'h180: rdata_o = satp;
+            12'hc01: rdata_o = mtime_i[31:0];
+            12'hc81: rdata_o = mtime_i[63:32];
+            default: rdata_o = 32'h0;
+        endcase
+    end else if (mode == `MODE_S) begin
+        case(raddr_i)
+            12'h100: rdata_o = mstatus & 32'b0000_0000_0000_0100_0000_0001_0010_0010;
+            12'h141: rdata_o = sepc;
+            12'h142: rdata_o = scause;
+            12'h143: rdata_o = stval;
+            12'h105: rdata_o = stvec;
+            12'h140: rdata_o = sscratch;
+            12'h144: rdata_o = mip & 32'b0000_0000_0000_0000_0000_0000_0010_0000;
+            12'h104: rdata_o = mie & 32'b0000_0000_0000_0000_0000_0000_0010_0000;
+            12'h180: rdata_o = satp;
+            12'hc01: rdata_o = mtime_i[31:0];
+            12'hc81: rdata_o = mtime_i[63:32];
+            default: rdata_o = 32'h0;
+        endcase
+    end else begin
+        case(raddr_i)
+            12'hc01: rdata_o = mtime_i[31:0];
+            12'hc81: rdata_o = mtime_i[63:32];
+            default: rdata_o = 32'h0;
+        endcase
+    end
 end
 
 always_ff @(posedge clk) begin
@@ -186,6 +211,7 @@ always_ff @(posedge clk) begin
         sscratch <= 32'h0;
         satp <= 32'h0;
         mode <= `MODE_M;
+    end else if (stall_i) begin
     end else begin
         mip.mtip <= time_interrupt_i;
         if (mret_i) begin

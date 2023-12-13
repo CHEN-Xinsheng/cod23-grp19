@@ -36,11 +36,11 @@ module MEM (
     input wire  [DATA_WIDTH-1:0]        csr_rdata_i,
     output reg  [CSR_ADDR_WIDTH-1:0]    csr_waddr_o,
     output reg  [DATA_WIDTH-1:0]        csr_wdata_o,
-    output reg                          csr_we_o,
+    output reg                          csr_we_o
 
-    // debug
-    input wire [ADDR_WIDTH-1: 0] pc_now_i,
-    output reg [ADDR_WIDTH-1: 0] pc_now_o
+    // // debug
+    // input wire [ADDR_WIDTH-1: 0] pc_now_i,
+    // output reg [ADDR_WIDTH-1: 0] pc_now_o
 );
 
     always_comb begin
@@ -95,14 +95,14 @@ module MEM (
             rf_wdata_o <= 32'b0;
             rf_wen_o <= 1'b0;
             rf_waddr_o <= 5'b0;
-            pc_now_o <= {ADDR_WIDTH{1'b0}};
+            // pc_now_o <= {ADDR_WIDTH{1'b0}};  // [debug]
         end else begin
             if (stall_i) begin
             end else if (bubble_i) begin
                 rf_wdata_o <= 32'b0;
                 rf_wen_o <= 0;
                 rf_waddr_o <= 5'b0;
-                pc_now_o <= {ADDR_WIDTH{1'b0}};
+                // pc_now_o <= {ADDR_WIDTH{1'b0}};  // [debug]
             end else begin
                 if (mem_re_i) begin
                     if (mem_sel_i == 4'b1111) begin
@@ -127,7 +127,7 @@ module MEM (
                 end
                 rf_wen_o <= rf_wen_i;
                 rf_waddr_o <= rf_waddr_i;
-                pc_now_o <= pc_now_i;
+                // pc_now_o <= pc_now_i;;  // [debug]
             end
         end
     end

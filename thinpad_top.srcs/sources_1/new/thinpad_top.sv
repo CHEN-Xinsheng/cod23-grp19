@@ -424,121 +424,121 @@ module thinpad_top (
       .uart_rxd_i(rxd)
   );
 
-  ila_0 ila(
-    .clk(sys_clk),
-    .probe0(if1_pc_vaddr),
-    .probe1(csr_satp),
-    .probe2({if1_stall, if2_stall, id_stall, exe_stall, mem1_stall, mem2_stall}),
-    .probe3({if1_bubble, if2_bubble, id_bubble, exe_bubble, mem1_bubble, mem2_bubble}),
-    .probe4(csr_mode),
-    .probe5(wbs_adr_o),
-    .probe6(wbs_dat_o),
-    .probe7(wbs_dat_i),
-    .probe8(wbs_we_o),
-    .probe9({wbm0_stb_o, wbm1_stb_o, wbm2_stb_o, wbm3_stb_o,    wbs_stb_o ,wbs0_stb_o, wbs1_stb_o, wbs2_stb_o, wbs3_stb_o}),
-    .probe10(if1_if2_pc_now),
-    .probe11(if2_id_pc_now),
-    .probe12(id_exe_pc_now),
-    .probe13(exe_mem1_pc_now),
-    .probe14(mem1_mem2_pc_now),
-    .probe15(rf_waddr),
-    .probe16(rf_wdata),
-    .probe17({
-        rf_regs_debug[0],
-        rf_regs_debug[1],
-        rf_regs_debug[2],
-        rf_regs_debug[3],
-        rf_regs_debug[4],
-        rf_regs_debug[5],
-        rf_regs_debug[6],
-        rf_regs_debug[7],
-        rf_regs_debug[8],
-        rf_regs_debug[9],
-        rf_regs_debug[10],
-        rf_regs_debug[11],
-        rf_regs_debug[12],
-        rf_regs_debug[13],
-        rf_regs_debug[14],
-        rf_regs_debug[15],
-        rf_regs_debug[16],
-        rf_regs_debug[17],
-        rf_regs_debug[18],
-        rf_regs_debug[19],
-        rf_regs_debug[20],
-        rf_regs_debug[21],
-        rf_regs_debug[22],
-        rf_regs_debug[23],
-        rf_regs_debug[24],
-        rf_regs_debug[25],
-        rf_regs_debug[26],
-        rf_regs_debug[27],
-        rf_regs_debug[28],
-        rf_regs_debug[29],
-        rf_regs_debug[30],
-        rf_regs_debug[31]
-    }),   // all registers
-    .probe18({wbm0_ack_i, wbm1_ack_i, wbm2_ack_i, wbm3_ack_i,   wbs_ack_i ,wbs0_ack_i, wbs1_ack_i, wbs2_ack_i, wbs3_ack_i}),
-    .probe19(wbm1_adr_o),    // mem_mmu
-    .probe20(wbm1_dat_i),    // mem_mmu
-    .probe21({ exe_mem1_mem_sel, 
-              (exe_mem1_mem_re | exe_mem1_mem_we) & ~mem1_trap, 
-               exe_mem1_mem_re,
-               exe_mem1_mem_we
-            }),  // mem_mmu: {mem_sel_i, enable_i, read_en_i, write_en_i}
-    .probe22({mem1_mem2_load_page_fault,   mem1_mem2_store_page_fault, 
-              mem1_mem2_load_access_fault, mem1_mem2_store_access_fault,
-              mem1_mem2_load_misaligned,   mem1_mem2_store_misaligned
-            }), // mem_mmu
-    .probe23(mem_mmu_state),
-    .probe24(mem_mmu_cur_level),
-    .probe25(mem_mmu_direct_trans),
-    .probe26(mem_mmu_fault_case),
-    .probe27(csr_branch),
-    .probe28(mem_mmu_ack),
-    .probe29(exe_mem1_alu_result),
-    .probe30(mem1_mem2_paddr),
-    .probe31(mem1_mem2_mem_vaddr),
-    .probe32({mem1_mem2_mem_re, mem1_mem2_mem_we, mem1_mem2_mem_sel}),
-    .probe33(mem1_mem2_mem_wdata),
-    .probe34({
-      mem1_mem2_load_page_fault,   mem1_mem2_store_page_fault,
-      mem1_mem2_load_access_fault, mem1_mem2_store_access_fault,
-      mem1_mem2_load_misaligned,   mem1_mem2_store_misaligned,
-      mem1_mem2_instr_page_fault,  mem1_mem2_instr_access_fault,
-      mem1_mem2_instr_misaligned,  mem1_mem2_illegal_instr
-    }),
-    .probe35(mtime),
-    .probe36({if1_if2_instr_page_fault,
-              if1_if2_instr_access_fault,
-              if1_if2_instr_misaligned}),
-    .probe37(1'b0),
-    .probe38(1'b0),
-    .probe39(1'b0),
-    .probe40(1'b0),
-    .probe41(1'b0),
-    .probe42(1'b0),
-    .probe43(1'b0),
-    .probe44(1'b0),
-    .probe45(1'b0),
-    .probe46(1'b0),
-    .probe47(1'b0),
-    .probe48(1'b0),
-    .probe49(1'b0),
-    .probe50(1'b0),
-    .probe51(1'b0),
-    .probe52(1'b0),
-    .probe53(1'b0),
-    .probe54(1'b0),
-    .probe55(1'b0),
-    .probe56(1'b0),
-    .probe57(1'b0),
-    .probe58(1'b0),
-    .probe59(1'b0),
-    .probe60(1'b0),
-    .probe61(1'b0),
-    .probe62(1'b0),
-    .probe63(1'b0)
-  );
+  // ila_0 ila(
+  //   .clk(sys_clk),
+  //   .probe0(if1_pc_vaddr),
+  //   .probe1(csr_satp),
+  //   .probe2({if1_stall, if2_stall, id_stall, exe_stall, mem1_stall, mem2_stall}),
+  //   .probe3({if1_bubble, if2_bubble, id_bubble, exe_bubble, mem1_bubble, mem2_bubble}),
+  //   .probe4(csr_mode),
+  //   .probe5(wbs_adr_o),
+  //   .probe6(wbs_dat_o),
+  //   .probe7(wbs_dat_i),
+  //   .probe8(wbs_we_o),
+  //   .probe9({wbm0_stb_o, wbm1_stb_o, wbm2_stb_o, wbm3_stb_o,    wbs_stb_o ,wbs0_stb_o, wbs1_stb_o, wbs2_stb_o, wbs3_stb_o}),
+  //   .probe10(if1_if2_pc_now),
+  //   .probe11(if2_id_pc_now),
+  //   .probe12(id_exe_pc_now),
+  //   .probe13(exe_mem1_pc_now),
+  //   .probe14(mem1_mem2_pc_now),
+  //   .probe15(rf_waddr),
+  //   .probe16(rf_wdata),
+  //   .probe17({
+  //       rf_regs_debug[0],
+  //       rf_regs_debug[1],
+  //       rf_regs_debug[2],
+  //       rf_regs_debug[3],
+  //       rf_regs_debug[4],
+  //       rf_regs_debug[5],
+  //       rf_regs_debug[6],
+  //       rf_regs_debug[7],
+  //       rf_regs_debug[8],
+  //       rf_regs_debug[9],
+  //       rf_regs_debug[10],
+  //       rf_regs_debug[11],
+  //       rf_regs_debug[12],
+  //       rf_regs_debug[13],
+  //       rf_regs_debug[14],
+  //       rf_regs_debug[15],
+  //       rf_regs_debug[16],
+  //       rf_regs_debug[17],
+  //       rf_regs_debug[18],
+  //       rf_regs_debug[19],
+  //       rf_regs_debug[20],
+  //       rf_regs_debug[21],
+  //       rf_regs_debug[22],
+  //       rf_regs_debug[23],
+  //       rf_regs_debug[24],
+  //       rf_regs_debug[25],
+  //       rf_regs_debug[26],
+  //       rf_regs_debug[27],
+  //       rf_regs_debug[28],
+  //       rf_regs_debug[29],
+  //       rf_regs_debug[30],
+  //       rf_regs_debug[31]
+  //   }),   // all registers
+  //   .probe18({wbm0_ack_i, wbm1_ack_i, wbm2_ack_i, wbm3_ack_i,   wbs_ack_i ,wbs0_ack_i, wbs1_ack_i, wbs2_ack_i, wbs3_ack_i}),
+  //   .probe19(wbm1_adr_o),    // mem_mmu
+  //   .probe20(wbm1_dat_i),    // mem_mmu
+  //   .probe21({ exe_mem1_mem_sel, 
+  //             (exe_mem1_mem_re | exe_mem1_mem_we) & ~mem1_trap, 
+  //              exe_mem1_mem_re,
+  //              exe_mem1_mem_we
+  //           }),  // mem_mmu: {mem_sel_i, enable_i, read_en_i, write_en_i}
+  //   .probe22({mem1_mem2_load_page_fault,   mem1_mem2_store_page_fault, 
+  //             mem1_mem2_load_access_fault, mem1_mem2_store_access_fault,
+  //             mem1_mem2_load_misaligned,   mem1_mem2_store_misaligned
+  //           }), // mem_mmu
+  //   .probe23(mem_mmu_state),
+  //   .probe24(mem_mmu_cur_level),
+  //   .probe25(mem_mmu_direct_trans),
+  //   .probe26(mem_mmu_fault_case),
+  //   .probe27(csr_branch),
+  //   .probe28(mem_mmu_ack),
+  //   .probe29(exe_mem1_alu_result),
+  //   .probe30(mem1_mem2_paddr),
+  //   .probe31(mem1_mem2_mem_vaddr),
+  //   .probe32({mem1_mem2_mem_re, mem1_mem2_mem_we, mem1_mem2_mem_sel}),
+  //   .probe33(mem1_mem2_mem_wdata),
+  //   .probe34({
+  //     mem1_mem2_load_page_fault,   mem1_mem2_store_page_fault,
+  //     mem1_mem2_load_access_fault, mem1_mem2_store_access_fault,
+  //     mem1_mem2_load_misaligned,   mem1_mem2_store_misaligned,
+  //     mem1_mem2_instr_page_fault,  mem1_mem2_instr_access_fault,
+  //     mem1_mem2_instr_misaligned,  mem1_mem2_illegal_instr
+  //   }),
+  //   .probe35(mtime),
+  //   .probe36({if1_if2_instr_page_fault,
+  //             if1_if2_instr_access_fault,
+  //             if1_if2_instr_misaligned}),
+  //   .probe37(if2_id_inst),
+  //   .probe38(id_exe_inst),
+  //   .probe39(exe_mem1_inst),
+  //   .probe40(mem1_mem2_inst),
+  //   .probe41(1'b0),
+  //   .probe42(1'b0),
+  //   .probe43(1'b0),
+  //   .probe44(1'b0),
+  //   .probe45(1'b0),
+  //   .probe46(1'b0),
+  //   .probe47(1'b0),
+  //   .probe48(1'b0),
+  //   .probe49(1'b0),
+  //   .probe50(1'b0),
+  //   .probe51(1'b0),
+  //   .probe52(1'b0),
+  //   .probe53(1'b0),
+  //   .probe54(1'b0),
+  //   .probe55(1'b0),
+  //   .probe56(1'b0),
+  //   .probe57(1'b0),
+  //   .probe58(1'b0),
+  //   .probe59(1'b0),
+  //   .probe60(1'b0),
+  //   .probe61(1'b0),
+  //   .probe62(1'b0),
+  //   .probe63(1'b0)
+  // );
 
   logic [MTIME_WIDTH-1:0] mtime;
   logic                   time_interrupt;
@@ -850,16 +850,12 @@ module thinpad_top (
 
   /* ====================== EXE ====================== */
 
-  // logic [31:0] rf_rdata_x_debug;  // debug
-  // logic [31:0] rf_rdata_y_debug;  // debug
-  logic [31:0] rf_regs_debug[0:31];  // debug
+  // logic [31:0] rf_regs_debug[0:31];  // [debug]
 
   regfile regfile (
     .clk(sys_clk),
     .rst(sys_rst),
-    // .rf_rdata_x_debug(rf_rdata_x_debug),
-    // .rf_rdata_y_debug(rf_rdata_y_debug),
-    .rf_regs_debug(rf_regs_debug),
+    // .rf_regs_debug(rf_regs_debug),
 
     .rf_raddr_a(id_exe_rf_raddr_a),
     .rf_rdata_a(rf_rdata_a),
@@ -928,6 +924,7 @@ module thinpad_top (
     .sret_o                 (exe_mem1_sret),
     .sfence_vma_i           (id_exe_sfence_vma),
     .sfence_vma_o           (exe_mem1_sfence_vma),
+    .pc_now_o               (exe_mem1_pc_now),
     
     // data forwarding
     .exe_mem1_rf_waddr_i    (exe_mem1_rf_waddr),
@@ -937,10 +934,7 @@ module thinpad_top (
 
     // stall & bubble
     .stall_i                (exe_stall),
-    .bubble_i               (exe_bubble),
-
-    // debug
-    .pc_now_o               (exe_mem1_pc_now)
+    .bubble_i               (exe_bubble)
   );
 
   logic [DATA_WIDTH-1:0] alu_a;
@@ -1065,19 +1059,19 @@ module thinpad_top (
     .mem1_mem2_ecall              (mem1_mem2_ecall),
     .mem1_mem2_ebreak             (mem1_mem2_ebreak),
     .mem1_mem2_mret               (mem1_mem2_mret),
-    .mem1_mem2_sret               (mem1_mem2_sret),
+    .mem1_mem2_sret               (mem1_mem2_sret)
 
-    // [debug]
-    .state_o        (mem_mmu_state),
-    .cur_level_o    (mem_mmu_cur_level),
-    .direct_trans_o (mem_mmu_direct_trans),
-    .fault_case_o   (mem_mmu_fault_case)
+    // // [debug]
+    // .state_o        (mem_mmu_state),
+    // .cur_level_o    (mem_mmu_cur_level),
+    // .direct_trans_o (mem_mmu_direct_trans),
+    // .fault_case_o   (mem_mmu_fault_case)
   );
-  // [debug]
-  logic [2:0] mem_mmu_state;
-  logic       mem_mmu_cur_level;
-  logic       mem_mmu_direct_trans;
-  logic [4:0] mem_mmu_fault_case;
+  // // [debug]
+  // logic [2:0] mem_mmu_state;
+  // logic       mem_mmu_cur_level;
+  // logic       mem_mmu_direct_trans;
+  // logic [4:0] mem_mmu_fault_case;
 
   /* ====================== MEM1/MEM2 regs ====================== */
 
@@ -1163,7 +1157,9 @@ module thinpad_top (
     .load_misaligned_i(mem1_mem2_load_misaligned),
     .store_page_fault_i(mem1_mem2_store_page_fault),
     .store_access_fault_i(mem1_mem2_store_access_fault),
-    .store_misaligned_i(mem1_mem2_store_misaligned)
+    .store_misaligned_i(mem1_mem2_store_misaligned),
+
+    .stall_i(mem1_stall)
   );
 
   MEM MEM (
@@ -1202,15 +1198,15 @@ module thinpad_top (
     .csr_rdata_i(csr_rdata),
     .csr_waddr_o(csr_waddr),
     .csr_wdata_o(csr_wdata),
-    .csr_we_o(csr_we),
+    .csr_we_o(csr_we)
 
-    // debug
-    .pc_now_i(mem1_mem2_pc_now),
-    .pc_now_o(mem2_wb_pc_now)
+    // // [debug]
+    // .pc_now_i(mem1_mem2_pc_now),
+    // .pc_now_o(mem2_wb_pc_now)
   );
 
   /* ====================== MEM2/WB regs ====================== */
-  logic [31:0] mem2_wb_pc_now;  // only for debug
+  // logic [31:0] mem2_wb_pc_now;  // [debug]
 
 
   // // 不使用内存�?�串口时，禁用其使能信号

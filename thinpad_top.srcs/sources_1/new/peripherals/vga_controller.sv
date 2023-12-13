@@ -13,10 +13,10 @@ module vga_controller (
     
     input wire [BRAM_DATA_WIDTH-1:0] bram_0_dat_i,
     input wire [BRAM_DATA_WIDTH-1:0] bram_1_dat_i,
-    output reg [BRAM_DATA_WIDTH-1:0] bram_dat_o
+    output reg [BRAM_DATA_WIDTH-1:0] bram_dat_o,
 
-    input wire vga_ack_i
-    output reg [2:0] vga_scale_o,
+    input wire vga_ack_i,
+    output reg [2:0] vga_scale_o
 );
 
     typedef enum logic [1:0] { 
