@@ -59,8 +59,8 @@ module icache # (
     assign cacheline_hit_valid = cacheline_hit[TAG_WIDTH + DATA_WIDTH];
     assign cacheline_hit_tag = cacheline_hit[TAG_WIDTH + DATA_WIDTH - 1:DATA_WIDTH];
     assign cacheline_hit_data = cacheline_hit[DATA_WIDTH - 1:0];
-    // assign cache_hit = (~fence_i) && (cacheline_hit_valid) && (pc_tag == cacheline_hit_tag);
-    assign cache_hit = 1'b0;
+    assign cache_hit = (~fence_i) && (cacheline_hit_valid) && (pc_tag == cacheline_hit_tag);
+    // assign cache_hit = 1'b0;   [debug] disable i-cache, only for debug
 
     always_ff @(posedge clk) begin
         if (rst | fence_i) begin
@@ -111,7 +111,6 @@ module icache # (
                         icache_ack_o = 1'b0;
                     end
                 end else begin
-                    // wb_stb_o = 1'b0;
                     inst = 32'h0;
                     icache_ack_o = 1'b1;
                 end
