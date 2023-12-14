@@ -1,9 +1,10 @@
 // Copyright 1986-2019 Xilinx, Inc. All Rights Reserved.
 // --------------------------------------------------------------------------------
 // Tool Version: Vivado v.2019.2 (win64) Build 2708876 Wed Nov  6 21:40:23 MST 2019
-// Date        : Thu Dec 14 11:23:47 2023
-// Host        : LAPTOP-6QORS9Q6 running 64-bit major release  (build 9200)
-// Command     : write_verilog -force -mode synth_stub d:/cod23-grp19/thinpad_top.srcs/sources_1/ip/bram0/bram0_stub.v
+// Date        : Thu Dec 14 16:35:02 2023
+// Host        : LAPTOP-SB9T3C46 running 64-bit major release  (build 9200)
+// Command     : write_verilog -force -mode synth_stub
+//               D:/Codes/Computer_Organization/cod23-grp19/thinpad_top.srcs/sources_1/ip/bram0/bram0_stub.v
 // Design      : bram0
 // Purpose     : Stub declaration of top-level module interface
 // Device      : xc7a100tfgg676-2L

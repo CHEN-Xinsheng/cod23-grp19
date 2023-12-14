@@ -41,8 +41,16 @@ module vga #(
     output reg [1:0] video_blue_o,
     output reg video_hsync_o,
     output reg video_vsync_o,
-    output reg video_de_o
+    output reg video_de_o,
+
+    // [debug]
+    output reg [WIDTH-1:0] hdata_o,
+    output reg [WIDTH-1:0] vdata_o
 );
+
+  // [debug]
+  assign hdata_o = hdata;
+  assign vdata_o = vdata;
 
   reg [WIDTH-1:0] hdata;
   reg [WIDTH-1:0] vdata;
