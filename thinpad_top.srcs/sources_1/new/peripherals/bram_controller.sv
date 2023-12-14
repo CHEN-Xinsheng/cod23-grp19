@@ -14,11 +14,13 @@ module bram_controller (
     input wire [DATA_WIDTH/8-1:0] wb_sel_i,
     input wire wb_we_i,
     
-    input wire [BRAM_DATA_WIDTH-1:0] bram_data_i,
-    output reg  [BRAM_DATA_WIDTH-1:0] bram_data_o,
-    output reg  [BRAM_ADDR_WIDTH-1:0] bram_addr_a_o,
-    output reg  [BRAM_ADDR_WIDTH-1:0] bram_addr_b_o,
-    output reg  [BRAM_DATA_WIDTH/8-1:0] bram_wea_o
+    // read BRAM
+    input wire [BRAM_DATA_WIDTH-1:0]   bram_data_i,
+    output reg [BRAM_DATA_WIDTH-1:0]   bram_data_o,
+    // write BRAM
+    output reg [BRAM_ADDR_WIDTH-1:0]   bram_addr_a_o,
+    output reg [BRAM_ADDR_WIDTH-1:0]   bram_addr_b_o,
+    output reg [BRAM_DATA_WIDTH/8-1:0] bram_wea_o
 );
 
     typedef enum logic [1:0] { 

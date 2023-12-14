@@ -1358,20 +1358,16 @@ module thinpad_top (
       .flash_oe_o(flash_oe_n)
   );
 
-  logic [BRAM_DATA_WIDTH-1:0] bram_0_rdata;
   logic [BRAM_DATA_WIDTH-1:0] bram_0_wdata;
-  logic [BRAM_ADDR_WIDTH-1:0] bram_0_raddr;
   logic [BRAM_ADDR_WIDTH-1:0] bram_0_waddr;
   logic bram_0_wea;
   logic bram_0_ena;
 
-  logic [BRAM_DATA_WIDTH-1:0] bram_1_rdata;
   logic [BRAM_DATA_WIDTH-1:0] bram_1_wdata;
-  logic [BRAM_ADDR_WIDTH-1:0] bram_1_raddr;
   logic [BRAM_ADDR_WIDTH-1:0] bram_1_waddr;
   logic bram_1_wea;
   logic bram_1_ena;
-  logic [BRAM_ADDR_WIDTH-1:0] bram_addrb;
+  logic [BRAM_ADDR_WIDTH-1:0] bram_raddr;
 
   bram_controller bram_controller_0 (
       .clk(sys_clk),
@@ -1386,14 +1382,16 @@ module thinpad_top (
       .wb_sel_i(wbs5_sel_o),
       .wb_we_i (wbs5_we_o),
 
-      .bram_data_i(bram_0_rdata),
-      .bram_data_o(bram_0_wdata),
+      // BRAM read (not supported, always read 0)
+      .bram_addr_b_o(),
+      .bram_data_i({BRAM_DATA_WIDTH{1'b0}}),
+
+      // BRAM write
       .bram_addr_a_o(bram_0_waddr),
-      .bram_addr_b_o(bram_0_raddr),
+      .bram_data_o(bram_0_wdata),
       .bram_wea_o(bram_0_wea)
   );
 
-  // block RAM 控制器模
   bram_controller bram_controller_1 (
       .clk(sys_clk),
       .rst(sys_rst),
@@ -1407,16 +1405,19 @@ module thinpad_top (
       .wb_sel_i(wbs6_sel_o),
       .wb_we_i (wbs6_we_o),
 
-      .bram_data_i(bram_1_rdata),
-      .bram_data_o(bram_1_wdata),
+      // BRAM read (not supported, always read 0)
+      .bram_addr_b_o(),
+      .bram_data_i({BRAM_DATA_WIDTH{1'b0}}),
+
+      // BRAM write
       .bram_addr_a_o(bram_1_waddr),
-      .bram_addr_b_o(bram_1_raddr),
+      .bram_data_o(bram_1_wdata),
       .bram_wea_o(bram_1_wea)
   );
 
-  logic [BRAM_DATA_WIDTH-1:0] bram_0_data;
-  logic [BRAM_DATA_WIDTH-1:0] bram_1_data;
-  logic [BRAM_DATA_WIDTH-1:0] real_bram_data;
+  logic [BRAM_DATA_WIDTH-1:0] bram_0_rdata;
+  logic [BRAM_DATA_WIDTH-1:0] bram_1_rdata;
+  logic [BRAM_DATA_WIDTH-1:0] real_bram_rdata;
   logic vga_ack;
   logic [2:0] vga_scale;
   
@@ -1433,9 +1434,9 @@ module thinpad_top (
     .wb_sel_i(wbs7_sel_o),
     .wb_we_i (wbs7_we_o),
   
-    .bram_0_dat_i(bram_0_data),
-    .bram_1_dat_i(bram_1_data),
-    .bram_dat_o(real_bram_data),
+    .bram_0_rdata_i(bram_0_rdata),
+    .bram_1_rdata_i(bram_1_rdata),
+    .bram_rdata_o(real_bram_rdata),
 
     .vga_ack_i(vga_ack),
     .vga_scale_o(vga_scale)
@@ -1465,8 +1466,8 @@ module thinpad_top (
     .vga_clk(clk_50M),
     .sys_rst(sys_rst),
     .vga_scale_i(vga_scale),
-    .bram_addr_o(bram_addrb),
-    .bram_data_i(real_bram_data),
+    .bram_raddr_o(bram_raddr),
+    .bram_data_i(real_bram_rdata),
     .vga_ack_o(vga_ack),
     .video_red_o(video_red),
     .video_green_o(video_green),
@@ -1484,8 +1485,8 @@ module thinpad_top (
     .dina (bram_0_wdata),
     .clkb (clk_50M),
     .enb  (1'b1),
-    .addrb(bram_addrb),
-    .doutb(bram_0_data)
+    .addrb(bram_raddr),
+    .doutb(bram_0_rdata)
   );
 
   bram1 bram_1 (
@@ -1496,8 +1497,8 @@ module thinpad_top (
     .dina (bram_1_wdata),
     .clkb (clk_50M),
     .enb  (1'b1),
-    .addrb(bram_addrb),
-    .doutb(bram_1_data)
+    .addrb(bram_raddr),
+    .doutb(bram_1_rdata)
   );
 
   // // 不使用内存�?�串口时，禁用其使能信号

@@ -32,7 +32,7 @@ module vga #(
     input wire sys_rst,
     input wire [2:0] vga_scale_i,
 
-    output reg [BRAM_ADDR_WIDTH-1:0]  bram_addr_o,
+    output reg [BRAM_ADDR_WIDTH-1:0]  bram_raddr_o,
     input wire [BRAM_DATA_WIDTH-1:0]  bram_data_i,
     output reg vga_ack_o,
 
@@ -54,7 +54,7 @@ module vga #(
   assign pixel_width = HSIZE >> vga_scale_i;
   assign bram_addr_x = hdata >> vga_scale_i;
   assign bram_addr_y = vdata >> vga_scale_i;
-  assign bram_addr_o = `BRAM_ADDR_START + (bram_addr_y * pixel_width) + bram_addr_x;
+  assign bram_raddr_o = `BRAM_ADDR_START + (bram_addr_y * pixel_width) + bram_addr_x;
 
   always @ (posedge vga_clk) begin
     if (sys_rst) begin
