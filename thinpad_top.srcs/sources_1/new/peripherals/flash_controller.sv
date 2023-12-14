@@ -37,7 +37,8 @@ module flash_controller (
     assign wb_dat_tmp = (wb_adr_sel[1:0] == 2'b00) ? {24'b0, flash_data}:
                         (wb_adr_sel[1:0] == 2'b01) ? {16'b0, flash_data, 8'b0}:
                         (wb_adr_sel[1:0] == 2'b10) ? {8'b0,  flash_data, 16'b0}:
-                        (wb_adr_sel[1:0] == 2'b11) ? {flash_data, 24'b0}:
+                        (wb_adr_sel[1:0] == 2'b11) ? {flash_data, 24'b0}: {32'b0};
+                                                     
 
     always_comb begin
         flash_rp_o = 1'b1;
