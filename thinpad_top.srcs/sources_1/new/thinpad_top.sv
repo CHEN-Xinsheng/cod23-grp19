@@ -1377,12 +1377,12 @@ module thinpad_top (
 
       // BRAM read (not supported, always read 0)
       .bram_addr_b_o(),
-      .bram_data_i({BRAM_DATA_WIDTH{1'b0}}),
+      .bram_rdata_b_i({BRAM_DATA_WIDTH{1'b0}}),
 
       // BRAM write
       .bram_addr_a_o(bram_0_waddr),
-      .bram_data_o(bram_0_wdata),
-      .bram_wea_o(bram_0_wea)
+      .bram_wdata_a_o(bram_0_wdata),
+      .bram_we_a_o(bram_0_wea)
   );
 
   bram_controller bram_controller_1 (
@@ -1400,12 +1400,12 @@ module thinpad_top (
 
       // BRAM read (not supported, always read 0)
       .bram_addr_b_o(),
-      .bram_data_i({BRAM_DATA_WIDTH{1'b0}}),
+      .bram_rdata_b_i({BRAM_DATA_WIDTH{1'b0}}),
 
       // BRAM write
       .bram_addr_a_o(bram_1_waddr),
-      .bram_data_o(bram_1_wdata),
-      .bram_wea_o(bram_1_wea)
+      .bram_wdata_a_o(bram_1_wdata),
+      .bram_we_a_o(bram_1_wea)
   );
 
   logic [BRAM_DATA_WIDTH-1:0] bram_0_rdata;
@@ -1490,7 +1490,7 @@ module thinpad_top (
     .doutb(bram_0_rdata)
   );
 
-  bram1 bram_1 (
+  bram0 bram_1 (
     .clka (sys_clk),
     .ena  (1'b1),
     .wea  (bram_1_wea),
