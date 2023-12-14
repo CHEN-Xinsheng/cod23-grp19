@@ -1,3 +1,6 @@
+`include "../header.sv"
+
+
 module flash_controller (
     input wire clk,
     input wire rst,

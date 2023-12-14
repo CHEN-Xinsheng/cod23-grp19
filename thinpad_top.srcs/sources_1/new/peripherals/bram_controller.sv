@@ -1,3 +1,6 @@
+`include "../header.sv"
+
+
 module bram_controller (
     input wire clk,
     input wire rst,
