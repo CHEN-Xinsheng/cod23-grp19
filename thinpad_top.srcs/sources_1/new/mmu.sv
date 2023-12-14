@@ -389,7 +389,12 @@ function automatic logic paddr_valid(
     return ( ~|((paddr ^ 32'h1000_0000) & 32'hFFFF_0000) )            // UART [equivalent to (32'h1000_0000 <= paddr && paddr <= 32'h1000_FFFF) ]   
         || (paddr == `MTIMECMP_ADDR) || (paddr == `MTIMECMP_ADDR+4)   // CSR - mtimecmp
         || (paddr == `MTIME_ADDR)    || (paddr == `MTIME_ADDR+4)      // CSR - mtime
-        || ( ~|((paddr ^ 32'h8000_0000) & 32'hFF80_0000) );           // codes and data [equivalent to (32'h8000_0000 <= paddr && paddr <= 32'h807F_FFFF)]
+        || ( ~|((paddr ^ 32'h8000_0000) & 32'hFF80_0000) )            // codes and data [equivalent to (32'h8000_0000 <= paddr && paddr <= 32'h807F_FFFF)]
+        || ( ~|((paddr ^ 32'h8300_0000) & 32'hFF00_0000) )
+        || ( ~|((paddr ^ 32'h8400_0000) & 32'hFF00_0000) )
+        || ( ~|((paddr ^ 32'h8500_0000) & 32'hFF00_0000) )
+        || ( ~|((paddr ^ 32'h8600_0000) & 32'hFFFF_FF00) )
+        || ( ~|((paddr ^ 32'h8700_0000) & 32'hFFFF_FF00) );
     // TODO: 如果增加更多外设，需要在这里补上相应的物理地址区间
     /* 
         0x10000000-0x10000007	串口数据及状态
