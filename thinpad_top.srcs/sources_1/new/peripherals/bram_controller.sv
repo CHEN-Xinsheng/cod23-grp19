@@ -30,10 +30,9 @@ module bram_controller (
     } state_t;
     state_t state;
 
-    // wire [DATA_WIDTH-1:0] w_data     = wb_dat_i >> ((wb_adr_i << 3) & 32'b00011000);
-    wire [1:0]            wb_adr_sel = wb_adr_i[1:0];
 
     // wishbone output
+    wire [1:0] wb_adr_sel = wb_adr_i[1:0];
     assign wb_dat_o       = bram_rdata_b_i << (wb_adr_sel << 3);
 
     // BRAM write
@@ -41,8 +40,7 @@ module bram_controller (
     assign bram_wdata_a_o = (wb_adr_i[1:0] == 2'b00) ? wb_dat_i[ 7: 0] :
                             (wb_adr_i[1:0] == 2'b01) ? wb_dat_i[15: 8] :
                             (wb_adr_i[1:0] == 2'b10) ? wb_dat_i[23:16] :
-                            (wb_adr_i[1:0] == 2'b11) ? wb_dat_i[31:24];
-    // assign bram_wdata_a_o = w_data  [BRAM_DATA_WIDTH-1:0];
+                            (wb_adr_i[1:0] == 2'b11) ? wb_dat_i[31:24] : {BRAM_DATA_WIDTH{1'b0}};
     // BRAM read
     assign bram_addr_b_o  = wb_adr_i[BRAM_ADDR_WIDTH-1:0];
 
