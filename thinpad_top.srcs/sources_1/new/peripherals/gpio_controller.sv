@@ -1,3 +1,6 @@
+`include "../header.sv"
+
+
 module gpio_controller (
     input wire clk,
     input wire rst,
