@@ -36,7 +36,7 @@ module flash_controller (
     assign flash_addr = wb_adr_i[FLASH_ADDR_WIDTH-1:0];
     assign wb_adr_sel = wb_adr_i[1:0];
     assign flash_data = flash_d[FLASH_DATA_WIDTH-1:0];
-    assign wb_dat_tmp = $signed(wb_dat_i) << (wb_adr_sel << 3);
+    assign wb_dat_tmp = $signed(flash_data) << (wb_adr_sel << 3);
 
     always_comb begin
         flash_rp_o = 1'b1;
