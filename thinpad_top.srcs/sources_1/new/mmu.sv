@@ -101,7 +101,12 @@ module mmu (
 );
 
 
-wire direct_trans = (mode_i == `MODE_M || satp_i.mode == 1'b0);
+wire direct_trans = (mode_i == `MODE_M || satp_i.mode == 1'b0)
+                    || ( ~|((vaddr_i ^ 32'h8300_0000) & 32'hFF00_0000) )
+                    || ( ~|((vaddr_i ^ 32'h8400_0000) & 32'hFF00_0000) )
+                    || ( ~|((vaddr_i ^ 32'h8500_0000) & 32'hFF00_0000) )
+                    || ( ~|((vaddr_i ^ 32'h8600_0000) & 32'hFFFF_FF00) )
+                    || ( ~|((vaddr_i ^ 32'h8700_0000) & 32'hFFFF_FF00) );
 
 wire pte_t  read_pte = pte_t'(wb_dat_i);
 // Ref: 4.3.2 Virtual Address Translation Process
