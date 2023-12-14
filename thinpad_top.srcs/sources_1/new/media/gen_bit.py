@@ -1,7 +1,6 @@
-
-# 定义VGA的宽度和高度
-width = 400
-height = 300
+# 定义图片的宽度和高度
+width = 200
+height = 150
 
 # 定义每个像素的字节长度
 byte_length = 1

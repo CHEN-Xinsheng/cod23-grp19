@@ -556,121 +556,109 @@ module thinpad_top (
       .uart_rxd_i(rxd)
   );
 
-  // ila_0 ila(
-  //   .clk(sys_clk),
-  //   .probe0(if1_pc_vaddr),
-  //   .probe1(csr_satp),
-  //   .probe2({if1_stall, if2_stall, id_stall, exe_stall, mem1_stall, mem2_stall}),
-  //   .probe3({if1_bubble, if2_bubble, id_bubble, exe_bubble, mem1_bubble, mem2_bubble}),
-  //   .probe4(csr_mode),
-  //   .probe5(wbs_adr_o),
-  //   .probe6(wbs_dat_o),
-  //   .probe7(wbs_dat_i),
-  //   .probe8(wbs_we_o),
-  //   .probe9({wbm0_stb_o, wbm1_stb_o, wbm2_stb_o, wbm3_stb_o,    wbs_stb_o ,wbs0_stb_o, wbs1_stb_o, wbs2_stb_o, wbs3_stb_o}),
-  //   .probe10(if1_if2_pc_now),
-  //   .probe11(if2_id_pc_now),
-  //   .probe12(id_exe_pc_now),
-  //   .probe13(exe_mem1_pc_now),
-  //   .probe14(mem1_mem2_pc_now),
-  //   .probe15(rf_waddr),
-  //   .probe16(rf_wdata),
-  //   .probe17({
-  //       rf_regs_debug[0],
-  //       rf_regs_debug[1],
-  //       rf_regs_debug[2],
-  //       rf_regs_debug[3],
-  //       rf_regs_debug[4],
-  //       rf_regs_debug[5],
-  //       rf_regs_debug[6],
-  //       rf_regs_debug[7],
-  //       rf_regs_debug[8],
-  //       rf_regs_debug[9],
-  //       rf_regs_debug[10],
-  //       rf_regs_debug[11],
-  //       rf_regs_debug[12],
-  //       rf_regs_debug[13],
-  //       rf_regs_debug[14],
-  //       rf_regs_debug[15],
-  //       rf_regs_debug[16],
-  //       rf_regs_debug[17],
-  //       rf_regs_debug[18],
-  //       rf_regs_debug[19],
-  //       rf_regs_debug[20],
-  //       rf_regs_debug[21],
-  //       rf_regs_debug[22],
-  //       rf_regs_debug[23],
-  //       rf_regs_debug[24],
-  //       rf_regs_debug[25],
-  //       rf_regs_debug[26],
-  //       rf_regs_debug[27],
-  //       rf_regs_debug[28],
-  //       rf_regs_debug[29],
-  //       rf_regs_debug[30],
-  //       rf_regs_debug[31]
-  //   }),   // all registers
-  //   .probe18({wbm0_ack_i, wbm1_ack_i, wbm2_ack_i, wbm3_ack_i,   wbs_ack_i ,wbs0_ack_i, wbs1_ack_i, wbs2_ack_i, wbs3_ack_i}),
-  //   .probe19(wbm1_adr_o),    // mem_mmu
-  //   .probe20(wbm1_dat_i),    // mem_mmu
-  //   .probe21({ exe_mem1_mem_sel, 
-  //             (exe_mem1_mem_re | exe_mem1_mem_we) & ~mem1_trap, 
-  //              exe_mem1_mem_re,
-  //              exe_mem1_mem_we
-  //           }),  // mem_mmu: {mem_sel_i, enable_i, read_en_i, write_en_i}
-  //   .probe22({mem1_mem2_load_page_fault,   mem1_mem2_store_page_fault, 
-  //             mem1_mem2_load_access_fault, mem1_mem2_store_access_fault,
-  //             mem1_mem2_load_misaligned,   mem1_mem2_store_misaligned
-  //           }), // mem_mmu
-  //   .probe23(mem_mmu_state),
-  //   .probe24(mem_mmu_cur_level),
-  //   .probe25(mem_mmu_direct_trans),
-  //   .probe26(mem_mmu_fault_case),
-  //   .probe27(csr_branch),
-  //   .probe28(mem_mmu_ack),
-  //   .probe29(exe_mem1_alu_result),
-  //   .probe30(mem1_mem2_paddr),
-  //   .probe31(mem1_mem2_mem_vaddr),
-  //   .probe32({mem1_mem2_mem_re, mem1_mem2_mem_we, mem1_mem2_mem_sel}),
-  //   .probe33(mem1_mem2_mem_wdata),
-  //   .probe34({
-  //     mem1_mem2_load_page_fault,   mem1_mem2_store_page_fault,
-  //     mem1_mem2_load_access_fault, mem1_mem2_store_access_fault,
-  //     mem1_mem2_load_misaligned,   mem1_mem2_store_misaligned,
-  //     mem1_mem2_instr_page_fault,  mem1_mem2_instr_access_fault,
-  //     mem1_mem2_instr_misaligned,  mem1_mem2_illegal_instr
-  //   }),
-  //   .probe35(mtime),
-  //   .probe36({if1_if2_instr_page_fault,
-  //             if1_if2_instr_access_fault,
-  //             if1_if2_instr_misaligned}),
-  //   .probe37(if2_id_inst),
-  //   .probe38(id_exe_inst),
-  //   .probe39(exe_mem1_inst),
-  //   .probe40(mem1_mem2_inst),
-  //   .probe41(1'b0),
-  //   .probe42(1'b0),
-  //   .probe43(1'b0),
-  //   .probe44(1'b0),
-  //   .probe45(1'b0),
-  //   .probe46(1'b0),
-  //   .probe47(1'b0),
-  //   .probe48(1'b0),
-  //   .probe49(1'b0),
-  //   .probe50(1'b0),
-  //   .probe51(1'b0),
-  //   .probe52(1'b0),
-  //   .probe53(1'b0),
-  //   .probe54(1'b0),
-  //   .probe55(1'b0),
-  //   .probe56(1'b0),
-  //   .probe57(1'b0),
-  //   .probe58(1'b0),
-  //   .probe59(1'b0),
-  //   .probe60(1'b0),
-  //   .probe61(1'b0),
-  //   .probe62(1'b0),
-  //   .probe63(1'b0)
-  // );
+  ila_0 ila(
+    .clk(sys_clk),
+    .probe0({ wbs0_sel_o, 
+              wbs1_sel_o, 
+              wbs2_sel_o, 
+              wbs3_sel_o, 
+              wbs4_sel_o, 
+              wbs5_sel_o, 
+              wbs6_sel_o, 
+              wbs7_sel_o, 
+              wbs8_sel_o}),
+    .probe1({ wbs0_we_o, 
+              wbs1_we_o, 
+              wbs2_we_o, 
+              wbs3_we_o, 
+              wbs4_we_o, 
+              wbs5_we_o, 
+              wbs6_we_o, 
+              wbs7_we_o, 
+              wbs8_we_o}),
+    .probe2(1'b0),
+    .probe3(1'b0),
+    .probe4(1'b0),
+    .probe5(wbs_adr_o),
+    .probe6(wbs_dat_o),
+    .probe7(wbs_dat_i),
+    .probe8(wbs_we_o),
+    .probe9(1'b0),
+    .probe10(if1_if2_pc_now),
+    .probe11(if2_id_pc_now),
+    .probe12(id_exe_pc_now),
+    .probe13(exe_mem1_pc_now),
+    .probe14(mem1_mem2_pc_now),
+    .probe15(rf_waddr),
+    .probe16(rf_wdata),
+    .probe17({wbs0_cyc_o, 
+              wbs1_cyc_o, 
+              wbs2_cyc_o, 
+              wbs3_cyc_o, 
+              wbs4_cyc_o, 
+              wbs5_cyc_o, 
+              wbs6_cyc_o, 
+              wbs7_cyc_o, 
+              wbs8_cyc_o}),
+    .probe18({wbm0_ack_i, wbm1_ack_i, wbm2_ack_i, wbm3_ack_i,  
+              wbs_ack_i ,wbs0_ack_i, wbs1_ack_i, wbs2_ack_i, wbs3_ack_i, wbs4_ack_i, wbs5_ack_i, wbs6_ack_i, wbs7_ack_i, wbs8_ack_i}),
+    .probe19(wbm1_adr_o),    // mem_mmu
+    .probe20(wbm1_dat_i),    // mem_mmu
+    .probe21({ exe_mem1_mem_sel, 
+              (exe_mem1_mem_re | exe_mem1_mem_we) & ~mem1_trap, 
+               exe_mem1_mem_re,
+               exe_mem1_mem_we
+            }),  // mem_mmu: {mem_sel_i, enable_i, read_en_i, write_en_i}
+    .probe22({mem1_mem2_load_page_fault,   mem1_mem2_store_page_fault, 
+              mem1_mem2_load_access_fault, mem1_mem2_store_access_fault,
+              mem1_mem2_load_misaligned,   mem1_mem2_store_misaligned
+            }), // mem_mmu
+    .probe23({flash_a, // 23 bits
+              flash_d, // 16
+              flash_rp_n, 
+              flash_ce_n, 
+              flash_oe_n}),
+    .probe24(1'b0),
+    .probe25(1'b0),
+    .probe26(1'b0),
+    .probe27(1'b0),
+    .probe28(1'b0),
+    .probe29(1'b0),
+    .probe30(1'b0),
+    .probe31(1'b0),
+    .probe32(1'b0),
+    .probe33(1'b0),
+    .probe34(1'b0),
+    .probe35(1'b0),
+    .probe36(1'b0),
+    .probe37(if2_id_inst),
+    .probe38(id_exe_inst),
+    .probe39(exe_mem1_inst),
+    .probe40(mem1_mem2_inst),
+    .probe41(bram_0_wea),
+    .probe42(bram_0_waddr),  // 17 bits
+    .probe43(bram_0_wdata),  // 8 bits
+    .probe44(bram_raddr),
+    .probe45(bram_0_rdata),
+    .probe46(bram_1_wea),
+    .probe47(bram_1_waddr),
+    .probe48(bram_1_wdata),
+    .probe49(bram_1_rdata),
+    .probe50(real_bram_rdata),
+    .probe51(vga_ack),
+    .probe52(vga_scale),
+    .probe53(hdata_o),
+    .probe54(vdata_o),
+    .probe55(1'b0),
+    .probe56(1'b0),
+    .probe57(1'b0),
+    .probe58(1'b0),
+    .probe59(1'b0),
+    .probe60(1'b0),
+    .probe61(1'b0),
+    .probe62(1'b0),
+    .probe63(1'b0)
+  );
 
   logic [MTIME_WIDTH-1:0] mtime;
   logic                   time_interrupt;
@@ -1467,6 +1455,10 @@ module thinpad_top (
 
   assign video_clk = clk_50M;
 
+  // [debug]
+  wire [12-1:0] hdata_o;
+  wire [12-1:0] vdata_o;
+
   vga #(12, 800, 856, 976, 1040, 600, 637, 643, 666, 1, 1) vga800x600at75 (
     .vga_clk(clk_50M),
     .sys_rst(sys_rst),
@@ -1479,7 +1471,11 @@ module thinpad_top (
     .video_blue_o(video_blue),
     .video_hsync_o(video_hsync),
     .video_vsync_o(video_vsync),
-    .video_de_o(video_de)
+    .video_de_o(video_de),
+
+    // [debug]
+    .hdata_o(hdata_o),
+    .vdata_o(vdata_o) 
   );
 
   bram0 bram_0 (
