@@ -37,7 +37,10 @@ module bram_controller (
 
     // BRAM write
     assign bram_addr_a_o  = wb_adr_i[BRAM_ADDR_WIDTH-1:0];
-    assign bram_wdata_a_o = wb_dat_i[BRAM_DATA_WIDTH-1:0];
+    assign bram_wdata_a_o = (wb_adr_i[1:0] == 2'b00) ? wb_dat_i[ 7: 0] :
+                            (wb_adr_i[1:0] == 2'b01) ? wb_dat_i[15: 8] :
+                            (wb_adr_i[1:0] == 2'b10) ? wb_dat_i[23:16] :
+                            (wb_adr_i[1:0] == 2'b11) ? wb_dat_i[31:24] : {BRAM_DATA_WIDTH{1'b0}};
     // BRAM read
     assign bram_addr_b_o  = wb_adr_i[BRAM_ADDR_WIDTH-1:0];
 
