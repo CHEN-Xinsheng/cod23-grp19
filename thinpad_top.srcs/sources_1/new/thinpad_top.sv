@@ -1417,7 +1417,6 @@ module thinpad_top (
   logic [BRAM_DATA_WIDTH-1:0] bram_0_data;
   logic [BRAM_DATA_WIDTH-1:0] bram_1_data;
   logic [BRAM_DATA_WIDTH-1:0] real_bram_data;
-  logic [BRAM_ADDR_WIDTH-1:0] bram_addr_st = 17'b0;
   logic vga_ack;
   logic [2:0] vga_scale;
   
@@ -1464,9 +1463,8 @@ module thinpad_top (
 
   vga #(12, 800, 856, 976, 1040, 600, 637, 643, 666, 1, 1) vga800x600at75 (
     .vga_clk(clk_50M),
-    .vga_rst(sys_rst),
+    .sys_rst(sys_rst),
     .vga_scale_i(vga_scale),
-    .bram_addr_st_i(bram_addr_st),
     .bram_addr_o(bram_addrb),
     .bram_data_i(real_bram_data),
     .vga_ack_o(vga_ack),
