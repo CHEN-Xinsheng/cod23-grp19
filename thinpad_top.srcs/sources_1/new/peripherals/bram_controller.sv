@@ -32,14 +32,14 @@ module bram_controller (
 
     logic [BRAM_ADDR_WIDTH-1:0] addr_a;
     logic [BRAM_ADDR_WIDTH-1:0] addr_b;
-    logic [BRAM_DATA_WIDTH-1:0] w_data;
+    logic [DATA_WIDTH-1:0] w_data;
     logic [BRAM_DATA_WIDTH-1:0] r_data;
     logic [1:0] wb_adr_sel;
     logic [DATA_WIDTH-1:0] wb_dat_tmp;
 
     assign addr_a = wb_adr_i[BRAM_ADDR_WIDTH-1:0];
     assign addr_b = wb_adr_i[BRAM_ADDR_WIDTH-1:0];
-    assign w_data = wb_dat_i[BRAM_DATA_WIDTH-1:0];
+    assign w_data = wb_dat_i >> ((wb_adr_i << 3) & 32'b00011000);
     assign wb_adr_sel = wb_adr_i[1:0];
     assign wb_dat_tmp = $signed(r_data) << (wb_adr_sel << 3);
 
@@ -80,7 +80,7 @@ module bram_controller (
                 STATE_IDLE: begin
                     if (wb_cyc_i && wb_stb_i) begin
                         if (wb_we_i) begin
-                            bram_data_o <= w_data;
+                            bram_data_o <= w_data[BRAM_DATA_WIDTH-1:0];
                             state <= STATE_WRITE;
                         end else begin
                             wb_dat_o <= wb_dat_tmp;
