@@ -31,12 +31,9 @@ _start:
         addi    a6,a6,1
 .L2:
         li      a5,128
-        beq     a6,a5,.L8
+        beq     a6,a5,.L7
         bne     a0,zero,.L9
         li      a1,-2063597568
 .L3:
         li      a5,0
         j       .L4
-.L8:
-        li      a0,0
-        ret
