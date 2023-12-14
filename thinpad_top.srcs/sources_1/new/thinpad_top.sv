@@ -1478,6 +1478,29 @@ module thinpad_top (
     .video_de_o(video_de)
   );
 
+  bram0 bram_0 (
+    .clka (sys_clk),
+    .ena  (1'b1),
+    .wea  (bram_0_wea),
+    .addra(bram_0_waddr),
+    .dina (bram_0_wdata),
+    .clkb (clk_50M),
+    .enb  (1'b1),
+    .addrb(bram_addrb),
+    .doutb(bram_0_data)
+  );
+
+  bram1 bram_1 (
+    .clka (sys_clk),
+    .ena  (1'b1),
+    .wea  (bram_1_wea),
+    .addra(bram_1_waddr),
+    .dina (bram_1_wdata),
+    .clkb (clk_50M),
+    .enb  (1'b1),
+    .addrb(bram_addrb),
+    .doutb(bram_1_data)
+  );
 
   // // 不使用内存�?�串口时，禁用其使能信号
   // assign base_ram_ce_n = 1'b1;
