@@ -54,7 +54,7 @@ module vga #(
   assign pixel_width = HSIZE >> vga_scale_i;
   assign bram_addr_x = hdata >> vga_scale_i;
   assign bram_addr_y = vdata >> vga_scale_i;
-  assign bram_addr_o = BRAM_ADDR_START + (bram_addr_y * pixel_width) + bram_addr_x;
+  assign bram_addr_o = `BRAM_ADDR_START + (bram_addr_y * pixel_width) + bram_addr_x;
 
   always @ (posedge vga_clk) begin
     if (sys_rst) begin
