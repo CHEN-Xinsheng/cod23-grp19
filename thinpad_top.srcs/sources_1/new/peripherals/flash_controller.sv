@@ -34,10 +34,10 @@ module flash_controller (
     assign flash_d = 8'bz;   // 只读
     assign flash_addr = wb_adr_i[FLASH_ADDR_WIDTH-1:0];
     assign flash_data = flash_d[FLASH_DATA_WIDTH-1:0];
-    assign wb_dat_tmp = (wb_adr_i[1:0] == 2'b00) ? {24'b0, flash_data}:
-                        (wb_adr_i[1:0] == 2'b01) ? {16'b0, flash_data, 8'b0}:
-                        (wb_adr_i[1:0] == 2'b10) ? {8'b0,  flash_data, 16'b0}:
-                        (wb_adr_i[1:0] == 2'b11) ? {flash_data, 24'b0}: {32'b0};
+    assign wb_dat_tmp = (wb_adr_i[1:0] == 2'b00) ? {24'b0, flash_data       }:
+                        (wb_adr_i[1:0] == 2'b01) ? {16'b0, flash_data,  8'b0}:
+                        (wb_adr_i[1:0] == 2'b10) ? { 8'b0, flash_data, 16'b0}:
+                        (wb_adr_i[1:0] == 2'b11) ? {       flash_data, 24'b0}: {DATA_WIDTH{1'b0}};
                                                      
 
     always_comb begin
