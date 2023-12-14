@@ -51,10 +51,11 @@ module tb;
 //  parameter BASE_RAM_INIT_FILE = "D:\\Codes\\Computer_Organization\\rv-2023\\supervisor-rv\\kernel\\kernel.bin";
   // parameter BASE_RAM_INIT_FILE = "D:\\Codes\\Computer_Organization\\rv-2023\\asmcode\\rvtests_simple\\test19.bin";
   // parameter BASE_RAM_INIT_FILE = "E:\\2023\\2023 fall\\Computer Organization\\cod23-grp19\\kernel.bin"; // BaseRAM 初始化文件，请修改为实际的绝对路�???
-  parameter BASE_RAM_INIT_FILE = "D:\\organization\\rbl.img";
-
+//  parameter BASE_RAM_INIT_FILE = "D:\\organization\\rbl.img";
+  parameter BASE_RAM_INIT_FILE = "D:\\organization\\test.bin";
   parameter EXT_RAM_INIT_FILE = "D:\\organization\\ucore.img";  // ExtRAM 初始化文件，请修改为实际的绝对路�???
-  parameter FLASH_INIT_FILE = "/tmp/kernel.elf";  // Flash 初始化文件，请修改为实际的绝对路�???
+  parameter FLASH_INIT_FILE = "D:\\organization\\image.bin";
+//  parameter FLASH_INIT_FILE = "/tmp/kernel.elf";  // Flash 初始化文件，请修改为实际的绝对路�???
 
   initial begin
     // 在这里可以自定义测试输入序列，例如：
