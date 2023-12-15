@@ -449,7 +449,7 @@ module ID (
                         illegal_instr_o <= 1'b1;
                     end
                 end
-                7'b1110011: begin
+                7'b1110111: begin
                     if (funct7 == 7'b0100010) begin
                         rf_raddr_a_o <= rs1;
                         rf_raddr_b_o <= rs2;
