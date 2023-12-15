@@ -58,6 +58,12 @@ module alu_32 (
                     default: y = 32'd32;
                 endcase
             end
+            `ALU_CRAS16: begin
+                y = {
+                    a[31:16] + b[15:0],
+                    a[15:0]  - b[31:16]
+                };
+            end
             default: y = 32'b0;
         endcase
     end
