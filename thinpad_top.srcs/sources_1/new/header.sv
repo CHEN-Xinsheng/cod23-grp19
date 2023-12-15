@@ -19,7 +19,7 @@ localparam FLASH_ADDR_WIDTH = 23;
 `define TYPE_U            `INSTR_TYPE_WIDTH'd5
 `define TYPE_J            `INSTR_TYPE_WIDTH'd6
 
-`define ALU_OP_WIDTH      4
+`define ALU_OP_WIDTH      5
 `define ALU_ADD           `ALU_OP_WIDTH'd1
 `define ALU_SUB           `ALU_OP_WIDTH'd2
 `define ALU_AND           `ALU_OP_WIDTH'd3
@@ -35,6 +35,8 @@ localparam FLASH_ADDR_WIDTH = 23;
 `define ALU_CTZ           `ALU_OP_WIDTH'd13
 `define ALU_SLT           `ALU_OP_WIDTH'd14
 `define ALU_SLTU          `ALU_OP_WIDTH'd15
+`define ALU_CRAS16        `ALU_OP_WIDTH'd16
+
 
 `define COMP_EQ           3'b000
 `define COMP_NE           3'b001

@@ -825,7 +825,7 @@ module thinpad_top (
 
   logic [31:0] id_exe_inst;
   logic [2:0] id_exe_imm_type;
-  logic [3:0] id_exe_alu_op;
+  logic [`ALU_OP_WIDTH-1:0] id_exe_alu_op;
   logic id_exe_use_rs2;
   logic id_exe_mem_re;
   logic id_exe_mem_we;

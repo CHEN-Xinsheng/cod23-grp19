@@ -428,6 +428,24 @@ module ID (
                         illegal_instr_o <= 1'b1;
                     end
                 end
+                7'b1110111: begin
+                    if (funct7 == 7'b0100010) begin
+                        rf_raddr_a_o <= rs1;
+                        rf_raddr_b_o <= rs2;
+                        imm_type_o <= `TYPE_R;
+                        use_rs2_o <= 1;
+                        use_pc_o <= 0;
+                        mem_re_o <= 1'b0;
+                        mem_we_o <= 1'b0;
+                        rf_wen_o <= 1;
+                        jump_o <= 1'b0;
+                        rf_waddr_o <= rd;
+                        csr_op_o <= 3'b0;
+                        alu_op_o <= `ALU_CRAS16;
+                    end else begin
+                        illegal_instr_o <= 1'b1;
+                    end
+                end
                 default: begin
                     // inst_o <= 32'h0;
                     rf_raddr_a_o <= 5'd0;

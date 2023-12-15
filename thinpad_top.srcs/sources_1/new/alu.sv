@@ -2,9 +2,13 @@
 module alu_32 (
     input wire  [31:0] a,
     input wire  [31:0] b,
-    input wire  [ 3:0] op,
+    input wire  [`ALU_OP_WIDTH-1:0] op,
     output reg  [31:0] y
 );
+
+    wire [15:0] cras16_h = a[31:16] + b[15:0];
+    wire [15:0] cras16_l = a[15:0]  - b[31:16];
+
     always_comb begin
         case(op)
             `ALU_ADD   : y = a + b;
@@ -57,6 +61,12 @@ module alu_32 (
                     32'b1000_0000_0000_0000_0000_0000_0000_0000: y = 32'd31;
                     default: y = 32'd32;
                 endcase
+            end
+            `ALU_CRAS16: begin
+                y = {
+                    cras16_h,
+                    cras16_l                    
+                };
             end
             default: y = 32'b0;
         endcase
