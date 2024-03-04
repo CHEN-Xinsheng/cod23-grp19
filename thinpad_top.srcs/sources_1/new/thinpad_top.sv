@@ -1,58 +1,60 @@
 `default_nettype none
+`include "header.sv"
+
 
 module thinpad_top (
-    input wire clk_50M,     // 50MHz Ê±ÖÓÊäÈë
-    input wire clk_11M0592, // 11.0592MHz Ê±ÖÓÊäÈë£¨±¸ÓÃ£¬¿É²»ÓÃ£©
+    input wire clk_50M,     // 50MHz Ä‡Â—Å›Ã©Â’ÂŸÄÅ¾Â“ÄºÂ…Ä½
+    input wire clk_11M0592, // 11.0592MHz Ä‡Â—Å›Ã©Â’ÂŸÄÅ¾Â“ÄºÂ…Ä½ÄÅºÂˆÄºÂ¤Â‡Ã§Â”Â¨ÄÅºÂŒÄºÂÅ»Ã¤Â¸ÂÃ§Â”Â¨ÄÅºÂ‰
 
-    input wire push_btn,  // BTN5 °´Å¥¿ª¹Ø£¬´øÏû¶¶µçÂ·£¬°´ÏÂÊ±Îª 1
-    input wire reset_btn, // BTN6 ¸´Î»°´Å¥£¬´øÏû¶¶µçÂ·£¬°´ÏÂÊ±Îª 1
+    input wire push_btn,  // BTN5 æŒ‰é’®ï¿½?????????å…³ï¼Œå¸¦æ¶ˆæŠ–ç”µè·¯ï¼ŒæŒ‰ä¸‹æ—¶ä¸º 1
+    input wire reset_btn, // BTN6 å¤ä½æŒ‰é’®ï¼Œå¸¦æ¶ˆæŠ–ç”µè·¯ï¼ŒæŒ‰ä¸‹æ—¶ï¿½????????? 1
 
-    input  wire [ 3:0] touch_btn,  // BTN1~BTN4£¬°´Å¥¿ª¹Ø£¬°´ÏÂÊ±Îª 1
-    input  wire [31:0] dip_sw,     // 32 Î»²¦Âë¿ª¹Ø£¬²¦µ½¡°ON¡±Ê±Îª 1
-    output wire [15:0] leds,       // 16 Î» LED£¬Êä³öÊ± 1 µãÁÁ
-    output wire [ 7:0] dpy0,       // ÊıÂë¹ÜµÍÎ»ĞÅºÅ£¬°üÀ¨Ğ¡Êıµã£¬Êä³ö 1 µãÁÁ
-    output wire [ 7:0] dpy1,       // ÊıÂë¹Ü¸ßÎ»ĞÅºÅ£¬°üÀ¨Ğ¡Êıµã£¬Êä³ö 1 µãÁÁ
+    input  wire [ 3:0] touch_btn,  // BTN1~BTN4ï¼ŒæŒ‰é’®å¼€å…³ï¼ŒæŒ‰ä¸‹æ—¶ä¸º 1
+    input  wire [31:0] dip_sw,     // 32 ä½æ‹¨ç å¼€å…³ï¼Œæ‹¨åˆ°â€œONâ€æ—¶ï¿½????????? 1
+    output wire [15:0] leds,       // 16 ï¿½????????? LEDï¼Œè¾“å‡ºæ—¶ 1 ç‚¹äº®
+    output wire [ 7:0] dpy0,       // æ•°ç ç®¡ä½ä½ä¿¡å·ï¼ŒåŒ…æ‹¬å°æ•°ç‚¹ï¼Œè¾“å‡º 1 ç‚¹äº®
+    output wire [ 7:0] dpy1,       // æ•°ç ç®¡é«˜ä½ä¿¡å·ï¼ŒåŒ…æ‹¬å°æ•°ç‚¹ï¼Œè¾“å‡º 1 ç‚¹äº®
 
-    // CPLD ´®¿Ú¿ØÖÆÆ÷ĞÅºÅ
-    output wire uart_rdn,        // ¶Á´®¿ÚĞÅºÅ£¬µÍÓĞĞ§
-    output wire uart_wrn,        // Ğ´´®¿ÚĞÅºÅ£¬µÍÓĞĞ§
-    input  wire uart_dataready,  // ´®¿ÚÊı¾İ×¼±¸ºÃ
-    input  wire uart_tbre,       // ·¢ËÍÊı¾İ±êÖ¾
-    input  wire uart_tsre,       // Êı¾İ·¢ËÍÍê±Ï±êÖ¾
+    // CPLD ä¸²å£æ§åˆ¶å™¨ä¿¡ï¿½?????????
+    output wire uart_rdn,        // è¯»ä¸²å£ä¿¡å·ï¼Œä½æœ‰ï¿½?????????
+    output wire uart_wrn,        // å†™ä¸²å£ä¿¡å·ï¼Œä½æœ‰ï¿½?????????
+    input  wire uart_dataready,  // ä¸²å£æ•°æ®å‡†å¤‡ï¿½?????????
+    input  wire uart_tbre,       // å‘ï¿½?ï¿½æ•°æ®æ ‡ï¿½?????????
+    input  wire uart_tsre,       // æ•°æ®å‘ï¿½?ï¿½å®Œæ¯•æ ‡ï¿½?????????
 
-    // BaseRAM ĞÅºÅ
-    inout wire [31:0] base_ram_data,  // BaseRAM Êı¾İ£¬µÍ 8 Î»Óë CPLD ´®¿Ú¿ØÖÆÆ÷¹²Ïí
-    output wire [19:0] base_ram_addr,  // BaseRAM µØÖ·
-    output wire [3:0] base_ram_be_n,  // BaseRAM ×Ö½ÚÊ¹ÄÜ£¬µÍÓĞĞ§¡£Èç¹û²»Ê¹ÓÃ×Ö½ÚÊ¹ÄÜ£¬Çë±£³ÖÎª 0
-    output wire base_ram_ce_n,  // BaseRAM Æ¬Ñ¡£¬µÍÓĞĞ§
-    output wire base_ram_oe_n,  // BaseRAM ¶ÁÊ¹ÄÜ£¬µÍÓĞĞ§
-    output wire base_ram_we_n,  // BaseRAM Ğ´Ê¹ÄÜ£¬µÍÓĞĞ§
+    // BaseRAM ä¿¡å·
+    inout wire [31:0] base_ram_data,  // BaseRAM æ•°æ®ï¼Œä½ 8 ä½ä¸ CPLD ä¸²å£æ§åˆ¶å™¨å…±ï¿½?????????
+    output wire [19:0] base_ram_addr,  // BaseRAM åœ°å€
+    output wire [3:0] base_ram_be_n,  // BaseRAM å­—èŠ‚ä½¿èƒ½ï¼Œä½æœ‰æ•ˆã€‚å¦‚æœä¸ä½¿ç”¨å­—èŠ‚ä½¿èƒ½ï¼Œè¯·ä¿æŒï¿½????????? 0
+    output wire base_ram_ce_n,  // BaseRAM ç‰‡ï¿½?ï¿½ï¼Œä½æœ‰ï¿½?????????
+    output wire base_ram_oe_n,  // BaseRAM è¯»ä½¿èƒ½ï¼Œä½æœ‰ï¿½?????????
+    output wire base_ram_we_n,  // BaseRAM å†™ä½¿èƒ½ï¼Œä½æœ‰ï¿½?????????
 
-    // ExtRAM ĞÅºÅ
-    inout wire [31:0] ext_ram_data,  // ExtRAM Êı¾İ
-    output wire [19:0] ext_ram_addr,  // ExtRAM µØÖ·
-    output wire [3:0] ext_ram_be_n,  // ExtRAM ×Ö½ÚÊ¹ÄÜ£¬µÍÓĞĞ§¡£Èç¹û²»Ê¹ÓÃ×Ö½ÚÊ¹ÄÜ£¬Çë±£³ÖÎª 0
-    output wire ext_ram_ce_n,  // ExtRAM Æ¬Ñ¡£¬µÍÓĞĞ§
-    output wire ext_ram_oe_n,  // ExtRAM ¶ÁÊ¹ÄÜ£¬µÍÓĞĞ§
-    output wire ext_ram_we_n,  // ExtRAM Ğ´Ê¹ÄÜ£¬µÍÓĞĞ§
+    // ExtRAM ä¿¡å·
+    inout wire [31:0] ext_ram_data,  // ExtRAM æ•°æ®
+    output wire [19:0] ext_ram_addr,  // ExtRAM åœ°å€
+    output wire [3:0] ext_ram_be_n,  // ExtRAM å­—èŠ‚ä½¿èƒ½ï¼Œä½æœ‰æ•ˆã€‚å¦‚æœä¸ä½¿ç”¨å­—èŠ‚ä½¿èƒ½ï¼Œè¯·ä¿æŒï¿½????????? 0
+    output wire ext_ram_ce_n,  // ExtRAM ç‰‡ï¿½?ï¿½ï¼Œä½æœ‰ï¿½?????????
+    output wire ext_ram_oe_n,  // ExtRAM è¯»ä½¿èƒ½ï¼Œä½æœ‰ï¿½?????????
+    output wire ext_ram_we_n,  // ExtRAM å†™ä½¿èƒ½ï¼Œä½æœ‰ï¿½?????????
 
-    // Ö±Á¬´®¿ÚĞÅºÅ
-    output wire txd,  // Ö±Á¬´®¿Ú·¢ËÍ¶Ë
-    input  wire rxd,  // Ö±Á¬´®¿Ú½ÓÊÕ¶Ë
+    // ç›´è¿ä¸²å£ä¿¡å·
+    output wire txd,  // ç›´è¿ä¸²å£å‘ï¿½?ï¿½ç«¯
+    input  wire rxd,  // ç›´è¿ä¸²å£æ¥æ”¶ï¿½?????????
 
-    // Flash ´æ´¢Æ÷ĞÅºÅ£¬²Î¿¼ JS28F640 Ğ¾Æ¬ÊÖ²á
-    output wire [22:0] flash_a,  // Flash µØÖ·£¬a0 ½öÔÚ 8bit Ä£Ê½ÓĞĞ§£¬16bit Ä£Ê½ÎŞÒâÒå
-    inout wire [15:0] flash_d,  // Flash Êı¾İ
-    output wire flash_rp_n,  // Flash ¸´Î»ĞÅºÅ£¬µÍÓĞĞ§
-    output wire flash_vpen,  // Flash Ğ´±£»¤ĞÅºÅ£¬µÍµçÆ½Ê±²»ÄÜ²Á³ı¡¢ÉÕĞ´
-    output wire flash_ce_n,  // Flash Æ¬Ñ¡ĞÅºÅ£¬µÍÓĞĞ§
-    output wire flash_oe_n,  // Flash ¶ÁÊ¹ÄÜĞÅºÅ£¬µÍÓĞĞ§
-    output wire flash_we_n,  // Flash Ğ´Ê¹ÄÜĞÅºÅ£¬µÍÓĞĞ§
-    output wire flash_byte_n, // Flash 8bit Ä£Ê½Ñ¡Ôñ£¬µÍÓĞĞ§¡£ÔÚÊ¹ÓÃ flash µÄ 16 Î»Ä£Ê½Ê±ÇëÉèÎª 1
+    // Flash å­˜å‚¨å™¨ä¿¡å·ï¼Œå‚ï¿½?? JS28F640 èŠ¯ç‰‡æ‰‹å†Œ
+    output wire [22:0] flash_a,  // Flash åœ°å€ï¼Œa0 ä»…åœ¨ 8bit æ¨¡å¼æœ‰æ•ˆï¿½?????????16bit æ¨¡å¼æ— æ„ï¿½?????????
+    inout wire [15:0] flash_d,  // Flash æ•°æ®
+    output wire flash_rp_n,  // Flash å¤ä½ä¿¡å·ï¼Œä½æœ‰æ•ˆ
+    output wire flash_vpen,  // Flash å†™ä¿æŠ¤ä¿¡å·ï¼Œä½ç”µå¹³æ—¶ä¸èƒ½æ“¦é™¤ã€çƒ§ï¿½?????????
+    output wire flash_ce_n,  // Flash ç‰‡ï¿½?ï¿½ä¿¡å·ï¼Œä½æœ‰ï¿½?????????
+    output wire flash_oe_n,  // Flash è¯»ä½¿èƒ½ä¿¡å·ï¼Œä½æœ‰ï¿½?????????
+    output wire flash_we_n,  // Flash å†™ä½¿èƒ½ä¿¡å·ï¼Œä½æœ‰ï¿½?????????
+    output wire flash_byte_n, // Flash 8bit æ¨¡å¼é€‰æ‹©ï¼Œä½æœ‰æ•ˆã€‚åœ¨ä½¿ç”¨ flash ï¿½????????? 16 ä½æ¨¡å¼æ—¶è¯·è®¾ï¿½????????? 1
 
-    // USB ¿ØÖÆÆ÷ĞÅºÅ£¬²Î¿¼ SL811 Ğ¾Æ¬ÊÖ²á
+    // USB æ§åˆ¶å™¨ä¿¡å·ï¼Œå‚ï¿½?? SL811 èŠ¯ç‰‡æ‰‹å†Œ
     output wire sl811_a0,
-    // inout  wire [7:0] sl811_d,     // USB Êı¾İÏßÓëÍøÂç¿ØÖÆÆ÷µÄ dm9k_sd[7:0] ¹²Ïí
+    // inout  wire [7:0] sl811_d,     // USB Ä‡Â•Â°Ä‡ÂÅ½Ã§ÅŸÅ¼Ã¤Â¸ÂÃ§ËÂ‘Ã§Å¥ÂœÄ‡ÂÂ§ÄºÂˆÅ›ÄºÂ™Â¨Ã§ÂšÂ„ dm9k_sd[7:0] ÄºÂ…Ä…Ã¤ÅŸÅ¤
     output wire sl811_wr_n,
     output wire sl811_rd_n,
     output wire sl811_cs_n,
@@ -61,7 +63,7 @@ module thinpad_top (
     input  wire sl811_intrq,
     input  wire sl811_drq_n,
 
-    // ÍøÂç¿ØÖÆÆ÷ĞÅºÅ£¬²Î¿¼ DM9000A Ğ¾Æ¬ÊÖ²á
+    // ç½‘ç»œæ§åˆ¶å™¨ä¿¡å·ï¼Œå‚ï¿½?? DM9000A èŠ¯ç‰‡æ‰‹å†Œ
     output wire dm9k_cmd,
     inout wire [15:0] dm9k_sd,
     output wire dm9k_iow_n,
@@ -70,37 +72,44 @@ module thinpad_top (
     output wire dm9k_pwrst_n,
     input wire dm9k_int,
 
-    // Í¼ÏñÊä³öĞÅºÅ
-    output wire [2:0] video_red,    // ºìÉ«ÏñËØ£¬3 Î»
-    output wire [2:0] video_green,  // ÂÌÉ«ÏñËØ£¬3 Î»
-    output wire [1:0] video_blue,   // À¶É«ÏñËØ£¬2 Î»
-    output wire       video_hsync,  // ĞĞÍ¬²½£¨Ë®Æ½Í¬²½£©ĞÅºÅ
-    output wire       video_vsync,  // ³¡Í¬²½£¨´¹Ö±Í¬²½£©ĞÅºÅ
-    output wire       video_clk,    // ÏñËØÊ±ÖÓÊä³ö
-    output wire       video_de      // ĞĞÊı¾İÓĞĞ§ĞÅºÅ£¬ÓÃÓÚÇø·ÖÏûÒşÇø
+    // å›¾åƒè¾“å‡ºä¿¡å·
+    output wire [2:0] video_red,    // çº¢è‰²åƒç´ ï¿½?????????3 ï¿½?????????
+    output wire [2:0] video_green,  // ç»¿è‰²åƒç´ ï¿½?????????3 ï¿½?????????
+    output wire [1:0] video_blue,   // è“è‰²åƒç´ ï¿½?????????2 ï¿½?????????
+    output wire       video_hsync,  // è¡ŒåŒæ­¥ï¼ˆæ°´å¹³åŒæ­¥ï¼‰ä¿¡ï¿½?????????
+    output wire       video_vsync,  // åœºåŒæ­¥ï¼ˆå‚ç›´åŒæ­¥ï¼‰ä¿¡ï¿½?????????
+    output wire       video_clk,    // åƒç´ æ—¶é’Ÿè¾“å‡º
+    output wire       video_de      // è¡Œæ•°æ®æœ‰æ•ˆä¿¡å·ï¼Œç”¨äºåŒºåˆ†æ¶ˆéšï¿½?????????
 );
 
   /* =========== Demo code begin =========== */
 
-  // PLL ·ÖÆµÊ¾Àı
+  // PLL ÄºÂˆÂ†Ã©Ë˜Â‘Ã§Â¤ÅŸÃ¤Å¾Â‹
   logic locked, clk_10M, clk_20M;
   pll_example clock_gen (
       // Clock in ports
-      .clk_in1(clk_50M),  // Íâ²¿Ê±ÖÓÊäÈë
+      .clk_in1(clk_50M),  // ÄºÂ¤Â–Ã©ÂƒÂ¨Ä‡Â—Å›Ã©Â’ÂŸÄÅ¾Â“ÄºÂ…Ä½
       // Clock out ports
-      .clk_out1(clk_10M),  // Ê±ÖÓÊä³ö 1£¬ÆµÂÊÔÚ IP ÅäÖÃ½çÃæÖĞÉèÖÃ
-      .clk_out2(clk_20M),  // Ê±ÖÓÊä³ö 2£¬ÆµÂÊÔÚ IP ÅäÖÃ½çÃæÖĞÉèÖÃ
+      .clk_out1(clk_10M),  // æ—¶é’Ÿè¾“å‡º 1ï¼Œé¢‘ç‡åœ¨ IP é…ç½®ç•Œé¢ä¸­è®¾ï¿½?????????
+      .clk_out2(clk_20M),  // æ—¶é’Ÿè¾“å‡º 2ï¼Œé¢‘ç‡åœ¨ IP é…ç½®ç•Œé¢ä¸­è®¾ï¿½?????????
       // Status and control signals
-      .reset(reset_btn),  // PLL ¸´Î»ÊäÈë
-      .locked(locked)  // PLL Ëø¶¨Ö¸Ê¾Êä³ö£¬"1"±íÊ¾Ê±ÖÓÎÈ¶¨£¬
-                       // ºó¼¶µçÂ·¸´Î»ĞÅºÅÓ¦µ±ÓÉËüÉú³É£¨¼ûÏÂ£©
+      .reset(reset_btn),  // PLL å¤ä½è¾“å…¥
+      .locked(locked)  // PLL é”å®šæŒ‡ç¤ºè¾“å‡ºï¿½?????????"1"è¡¨ç¤ºæ—¶é’Ÿç¨³å®šï¿½?????????
+                       // åçº§ç”µè·¯å¤ä½ä¿¡å·åº”å½“ç”±å®ƒç”Ÿæˆï¼ˆè§ä¸‹ï¼‰
   );
 
   logic reset_of_clk10M;
-  // Òì²½¸´Î»£¬Í¬²½ÊÍ·Å£¬½« locked ĞÅºÅ×ªÎªºó¼¶µçÂ·µÄ¸´Î» reset_of_clk10M
+  // å¼‚æ­¥å¤ä½ï¼ŒåŒæ­¥é‡Šæ”¾ï¼Œï¿½????????? locked ä¿¡å·è½¬ä¸ºåçº§ç”µè·¯çš„å¤ï¿½????????? reset_of_clk10M
   always_ff @(posedge clk_10M or negedge locked) begin
     if (~locked) reset_of_clk10M <= 1'b1;
     else reset_of_clk10M <= 1'b0;
+  end
+
+  logic reset_of_clk50M;
+  // å¼‚æ­¥å¤ä½ï¼ŒåŒæ­¥é‡Šæ”¾ï¼Œï¿½????????? locked ä¿¡å·è½¬ä¸ºåçº§ç”µè·¯çš„å¤ï¿½????????? reset_of_clk10M
+  always_ff @(posedge clk_50M or negedge locked) begin
+    if (~locked) reset_of_clk50M <= 1'b1;
+    else reset_of_clk50M <= 1'b0;
   end
 
   // always_ff @(posedge clk_10M or posedge reset_of_clk10M) begin
@@ -114,10 +123,14 @@ module thinpad_top (
   logic sys_clk;
   logic sys_rst;
 
-  assign sys_clk = clk_10M;
-  assign sys_rst = reset_of_clk10M;
+  assign sys_clk = clk_50M;
+  assign sys_rst = reset_of_clk50M;
 
-  // ±¾ÊµÑé²»Ê¹ÓÃ CPLD ´®¿Ú£¬½ûÓÃ·ÀÖ¹×ÜÏß³åÍ»
+  // assign sys_clk = clk_10M;
+  // assign sys_rst = reset_of_clk10M;
+  
+
+  // æœ¬å®éªŒä¸ä½¿ç”¨ CPLD ä¸²å£ï¼Œç¦ç”¨é˜²æ­¢ï¿½?ï¿½çº¿å†²çª
   assign uart_rdn = 1'b1;
   assign uart_wrn = 1'b1;
 
@@ -139,6 +152,24 @@ module thinpad_top (
   logic [ 3:0] wbm1_sel_o;
   logic        wbm1_we_o;
 
+  logic        wbm2_cyc_o;
+  logic        wbm2_stb_o;
+  logic        wbm2_ack_i;
+  logic [31:0] wbm2_adr_o;
+  logic [31:0] wbm2_dat_o;
+  logic [31:0] wbm2_dat_i;
+  logic [ 3:0] wbm2_sel_o;
+  logic        wbm2_we_o;
+
+  logic        wbm3_cyc_o;
+  logic        wbm3_stb_o;
+  logic        wbm3_ack_i;
+  logic [31:0] wbm3_adr_o;
+  logic [31:0] wbm3_dat_o;
+  logic [31:0] wbm3_dat_i;
+  logic [ 3:0] wbm3_sel_o;
+  logic        wbm3_we_o;
+
   logic        wbs_cyc_o;
   logic        wbs_stb_o;
   logic        wbs_ack_i;
@@ -148,7 +179,7 @@ module thinpad_top (
   logic [ 3:0] wbs_sel_o;
   logic        wbs_we_o;
 
-  wb_arbiter_2 wb_arbiter (
+  wb_arbiter_4 wb_arbiter (
     .clk(sys_clk),
     .rst(sys_rst),
 
@@ -173,6 +204,28 @@ module thinpad_top (
     .wbm1_err_o(),    
     .wbm1_rty_o(),    
     .wbm1_cyc_i(wbm1_cyc_o),   
+
+    .wbm2_adr_i(wbm2_adr_o),    
+    .wbm2_dat_i(wbm2_dat_o),    
+    .wbm2_dat_o(wbm2_dat_i),    
+    .wbm2_we_i (wbm2_we_o ),    
+    .wbm2_sel_i(wbm2_sel_o),    
+    .wbm2_stb_i(wbm2_stb_o),    
+    .wbm2_ack_o(wbm2_ack_i),    
+    .wbm2_err_o(),    
+    .wbm2_rty_o(),    
+    .wbm2_cyc_i(wbm2_cyc_o),   
+
+    .wbm3_adr_i(wbm3_adr_o),    
+    .wbm3_dat_i(wbm3_dat_o),    
+    .wbm3_dat_o(wbm3_dat_i),    
+    .wbm3_we_i (wbm3_we_o ),    
+    .wbm3_sel_i(wbm3_sel_o),    
+    .wbm3_stb_i(wbm3_stb_o),    
+    .wbm3_ack_o(wbm3_ack_i),    
+    .wbm3_err_o(),    
+    .wbm3_rty_o(),    
+    .wbm3_cyc_i(wbm3_cyc_o),   
 
     .wbs_adr_o(wbs_adr_o),
     .wbs_dat_i(wbs_dat_i),
@@ -222,7 +275,52 @@ module thinpad_top (
   logic [3:0] wbs3_sel_o;
   logic wbs3_we_o;
 
-  wb_mux_4 wb_mux (
+  logic wbs4_cyc_o;
+  logic wbs4_stb_o;
+  logic wbs4_ack_i;
+  logic [31:0] wbs4_adr_o;
+  logic [31:0] wbs4_dat_o;
+  logic [31:0] wbs4_dat_i;
+  logic [3:0] wbs4_sel_o;
+  logic wbs4_we_o;
+
+  logic wbs5_cyc_o;
+  logic wbs5_stb_o;
+  logic wbs5_ack_i;
+  logic [31:0] wbs5_adr_o;
+  logic [31:0] wbs5_dat_o;
+  logic [31:0] wbs5_dat_i;
+  logic [3:0] wbs5_sel_o;
+  logic wbs5_we_o;
+
+  logic wbs6_cyc_o;
+  logic wbs6_stb_o;
+  logic wbs6_ack_i;
+  logic [31:0] wbs6_adr_o;
+  logic [31:0] wbs6_dat_o;
+  logic [31:0] wbs6_dat_i;
+  logic [3:0] wbs6_sel_o;
+  logic wbs6_we_o;
+
+  logic wbs7_cyc_o;
+  logic wbs7_stb_o;
+  logic wbs7_ack_i;
+  logic [31:0] wbs7_adr_o;
+  logic [31:0] wbs7_dat_o;
+  logic [31:0] wbs7_dat_i;
+  logic [3:0] wbs7_sel_o;
+  logic wbs7_we_o;
+
+  logic wbs8_cyc_o;
+  logic wbs8_stb_o;
+  logic wbs8_ack_i;
+  logic [31:0] wbs8_adr_o;
+  logic [31:0] wbs8_dat_o;
+  logic [31:0] wbs8_dat_i;
+  logic [3:0] wbs8_sel_o;
+  logic wbs8_we_o;
+
+  wb_mux_9 wb_mux (
       .clk(sys_clk),
       .rst(sys_rst),
 
@@ -300,7 +398,87 @@ module thinpad_top (
       .wbs3_ack_i(wbs3_ack_i),
       .wbs3_err_i('0),
       .wbs3_rty_i('0),
-      .wbs3_cyc_o(wbs3_cyc_o)
+      .wbs3_cyc_o(wbs3_cyc_o),
+
+      // Slave interface 4 (to flash)
+      // Address range: 0x8300_0000 ~ 0x83FF_FFFF
+      .wbs4_addr    (32'h8300_0000),
+      .wbs4_addr_msk(32'hFF00_0000),
+
+      .wbs4_adr_o(wbs4_adr_o),
+      .wbs4_dat_i(wbs4_dat_i),
+      .wbs4_dat_o(wbs4_dat_o),
+      .wbs4_we_o (wbs4_we_o),
+      .wbs4_sel_o(wbs4_sel_o),
+      .wbs4_stb_o(wbs4_stb_o),
+      .wbs4_ack_i(wbs4_ack_i),
+      .wbs4_err_i('0),
+      .wbs4_rty_i('0),
+      .wbs4_cyc_o(wbs4_cyc_o),
+
+      // Slave interface 5 (to block ram 0)
+      // Address range: 0x8400_0000 ~ 0x84FF_FFFF
+      .wbs5_addr    (32'h8400_0000),
+      .wbs5_addr_msk(32'hFF00_0000),
+
+      .wbs5_adr_o(wbs5_adr_o),
+      .wbs5_dat_i(wbs5_dat_i),
+      .wbs5_dat_o(wbs5_dat_o),
+      .wbs5_we_o (wbs5_we_o),
+      .wbs5_sel_o(wbs5_sel_o),
+      .wbs5_stb_o(wbs5_stb_o),
+      .wbs5_ack_i(wbs5_ack_i),
+      .wbs5_err_i('0),
+      .wbs5_rty_i('0),
+      .wbs5_cyc_o(wbs5_cyc_o), 
+  
+      // Slave interface 6 (to block ram 1)
+      // Address range: 0x8500_0000 ~ 0x85FF_FFFF
+      .wbs6_addr    (32'h8500_0000),
+      .wbs6_addr_msk(32'hFF00_0000),
+
+      .wbs6_adr_o(wbs6_adr_o),
+      .wbs6_dat_i(wbs6_dat_i),
+      .wbs6_dat_o(wbs6_dat_o),
+      .wbs6_we_o (wbs6_we_o),
+      .wbs6_sel_o(wbs6_sel_o),
+      .wbs6_stb_o(wbs6_stb_o),
+      .wbs6_ack_i(wbs6_ack_i),
+      .wbs6_err_i('0),
+      .wbs6_rty_i('0),
+      .wbs6_cyc_o(wbs6_cyc_o), 
+  
+      // Slave interface 7 (to vga register)
+      // Address range: 0x8600_0000 ~ 0x8600_00FF
+      .wbs7_addr    (32'h8600_0000),
+      .wbs7_addr_msk(32'hFFFF_FF00),
+
+      .wbs7_adr_o(wbs7_adr_o),
+      .wbs7_dat_i(wbs7_dat_i),
+      .wbs7_dat_o(wbs7_dat_o),
+      .wbs7_we_o (wbs7_we_o),
+      .wbs7_sel_o(wbs7_sel_o),
+      .wbs7_stb_o(wbs7_stb_o),
+      .wbs7_ack_i(wbs7_ack_i),
+      .wbs7_err_i('0),
+      .wbs7_rty_i('0),
+      .wbs7_cyc_o(wbs7_cyc_o),
+
+      // Slave interface 3 (to gpio)
+      // Address range: 0x8700_0000 ~ 0x8700_00FF
+      .wbs8_addr    (32'h8700_0000),
+      .wbs8_addr_msk(32'hFFFF_FF00),
+
+      .wbs8_adr_o(wbs8_adr_o),
+      .wbs8_dat_i(wbs8_dat_i),
+      .wbs8_dat_o(wbs8_dat_o),
+      .wbs8_we_o (wbs8_we_o),
+      .wbs8_sel_o(wbs8_sel_o),
+      .wbs8_stb_o(wbs8_stb_o),
+      .wbs8_ack_i(wbs8_ack_i),
+      .wbs8_err_i('0),
+      .wbs8_rty_i('0),
+      .wbs8_cyc_o(wbs8_cyc_o)
   );
 
   /* =========== Lab5 MUX end =========== */
@@ -358,10 +536,10 @@ module thinpad_top (
       .sram_be_n(ext_ram_be_n)
   );
 
-  // ´®¿Ú¿ØÖÆÆ÷Ä£¿é
-  // NOTE: Èç¹ûĞŞ¸ÄÏµÍ³Ê±ÖÓÆµÂÊ£¬Ò²ĞèÒªĞŞ¸Ä´Ë´¦µÄÊ±ÖÓÆµÂÊ²ÎÊı
+  // ä¸²å£æ§åˆ¶å™¨æ¨¡ï¿½?????????
+  // TODO NOTE: å¦‚æœä¿®æ”¹ç³»ç»Ÿæ—¶é’Ÿé¢‘ç‡ï¼Œä¹Ÿï¿½?????????è¦ä¿®æ”¹æ­¤å¤„çš„æ—¶é’Ÿé¢‘ç‡å‚æ•° 
   uart_controller #(
-      .CLK_FREQ(10_000_000),
+      .CLK_FREQ(50_000_000),
       .BAUD    (115200)
   ) uart_controller (
       .clk_i(sys_clk),
@@ -381,6 +559,113 @@ module thinpad_top (
       .uart_rxd_i(rxd)
   );
 
+//  ila_0 ila(
+//    .clk(sys_clk),
+//    .probe0({ wbs0_sel_o, 
+//              wbs1_sel_o, 
+//              wbs2_sel_o, 
+//              wbs3_sel_o, 
+//              wbs4_sel_o, 
+//              wbs5_sel_o, 
+//              wbs6_sel_o, 
+//              wbs7_sel_o, 
+//              wbs8_sel_o}),
+//    .probe1({ wbs0_we_o, 
+//              wbs1_we_o, 
+//              wbs2_we_o, 
+//              wbs3_we_o, 
+//              wbs4_we_o, 
+//              wbs5_we_o, 
+//              wbs6_we_o, 
+//              wbs7_we_o, 
+//              wbs8_we_o}),
+//    .probe2(1'b0),
+//    .probe3(1'b0),
+//    .probe4(1'b0),
+//    .probe5(wbs_adr_o),
+//    .probe6(wbs_dat_o),
+//    .probe7(wbs_dat_i),
+//    .probe8(wbs_we_o),
+//    .probe9(1'b0),
+//    .probe10(if1_if2_pc_now),
+//    .probe11(if2_id_pc_now),
+//    .probe12(id_exe_pc_now),
+//    .probe13(exe_mem1_pc_now),
+//    .probe14(mem1_mem2_pc_now),
+//    .probe15(rf_waddr),
+//    .probe16(rf_wdata),
+//    .probe17({wbs0_cyc_o, 
+//              wbs1_cyc_o, 
+//              wbs2_cyc_o, 
+//              wbs3_cyc_o, 
+//              wbs4_cyc_o, 
+//              wbs5_cyc_o, 
+//              wbs6_cyc_o, 
+//              wbs7_cyc_o, 
+//              wbs8_cyc_o}),
+//    .probe18({wbm0_ack_i, wbm1_ack_i, wbm2_ack_i, wbm3_ack_i,  
+//              wbs_ack_i ,wbs0_ack_i, wbs1_ack_i, wbs2_ack_i, wbs3_ack_i, wbs4_ack_i, wbs5_ack_i, wbs6_ack_i, wbs7_ack_i, wbs8_ack_i}),
+//    .probe19(wbm1_adr_o),    // mem_mmu
+//    .probe20(wbm1_dat_i),    // mem_mmu
+//    .probe21({ exe_mem1_mem_sel, 
+//              (exe_mem1_mem_re | exe_mem1_mem_we) & ~mem1_trap, 
+//               exe_mem1_mem_re,
+//               exe_mem1_mem_we
+//            }),  // mem_mmu: {mem_sel_i, enable_i, read_en_i, write_en_i}
+//    .probe22({mem1_mem2_load_page_fault,   mem1_mem2_store_page_fault, 
+//              mem1_mem2_load_access_fault, mem1_mem2_store_access_fault,
+//              mem1_mem2_load_misaligned,   mem1_mem2_store_misaligned
+//            }), // mem_mmu
+//    .probe23({flash_a, // 23 bits
+//              flash_d, // 16
+//              flash_rp_n, 
+//              flash_ce_n, 
+//              flash_oe_n}),
+//    .probe24(1'b0),
+//    .probe25(1'b0),
+//    .probe26(1'b0),
+//    .probe27(1'b0),
+//    .probe28(1'b0),
+//    .probe29(1'b0),
+//    .probe30(1'b0),
+//    .probe31(1'b0),
+//    .probe32(1'b0),
+//    .probe33(1'b0),
+//    .probe34(1'b0),
+//    .probe35(1'b0),
+//    .probe36(1'b0),
+//    .probe37(if2_id_inst),
+//    .probe38(id_exe_inst),
+//    .probe39(exe_mem1_inst),
+//    .probe40(mem1_mem2_inst),
+//    .probe41(bram_0_wea),
+//    .probe42(bram_0_waddr),  // 17 bits
+//    .probe43(bram_0_wdata),  // 8 bits
+//    .probe44(bram_raddr),
+//    .probe45(bram_0_rdata),
+//    .probe46(bram_1_wea),
+//    .probe47(bram_1_waddr),
+//    .probe48(bram_1_wdata),
+//    .probe49(bram_1_rdata),
+//    .probe50(real_bram_rdata),
+//    .probe51(vga_ack),
+//    .probe52(vga_scale),
+//    .probe53(hdata_o),
+//    .probe54(vdata_o),
+//    .probe55(1'b0),
+//    .probe56(1'b0),
+//    .probe57(1'b0),
+//    .probe58(1'b0),
+//    .probe59(1'b0),
+//    .probe60(1'b0),
+//    .probe61(1'b0),
+//    .probe62(1'b0),
+//    .probe63(1'b0)
+//  );
+
+  logic [MTIME_WIDTH-1:0] mtime;
+  logic                   time_interrupt;
+
   mtime csr_mtime (
     .clk(sys_clk),
     .rst(sys_rst),
@@ -392,177 +677,392 @@ module thinpad_top (
     .wb_dat_i(wbs3_dat_o),
     .wb_dat_o(wbs3_dat_i),
     .wb_sel_i(wbs3_sel_o),
-    .wb_we_i (wbs3_we_o)
+    .wb_we_i (wbs3_we_o),
+    .mtime_o(mtime),
+    .time_interrupt_o(time_interrupt)
   );
 
-  logic [3:0] stall;
-  logic [3:0] bubble;
+  logic if1_stall;
+  logic if2_stall;
+  logic id_stall;
+  logic exe_stall;
+  logic mem1_stall;
+  logic mem2_stall;
+  logic if1_bubble;
+  logic if2_bubble;
+  logic id_bubble;
+  logic exe_bubble;
+  logic mem1_bubble;
+  logic mem2_bubble;
 
-  reg [4:0] rf_raddr_a_comb;
-  reg [4:0] rf_raddr_b_comb;
-  reg branch_comb;
+  logic [REG_ADDR_WIDTH-1:0]  id_rf_raddr_a_comb;
+  logic [REG_ADDR_WIDTH-1:0]  id_rf_raddr_b_comb;
+  logic                       exe_branch_comb;
 
+  logic                       branch_taken;   // previous prediction is correct(1)/wrong(0)
+  logic [ADDR_WIDTH-1:0]      pc_true;
+
+
+  /* ====================== controller ====================== */
   pipeline_controller pipeline_controller (
-    .stall_o(stall),
-    .bubble_o(bubble),
-    .if_ack_i(wbm1_ack_i),
-    .mem_ack_i(wbm0_ack_i),
-    .mem_en_i(exe_mem_mem_en),
-    .rf_raddr_a_i(rf_raddr_a_comb),
-    .rf_raddr_b_i(rf_raddr_b_comb),
+    .if1_ack_i(if_mmu_ack),
+    .if2_ack_i(icache_ack),
+    .mem1_ack_i(mem_mmu_ack),
+    .mem2_ack_i(wbm0_ack_i),
+    .branch_taken_i(branch_taken),
+    .csr_branch_i(csr_branch),
+
+    .exe_mem1_mem_re_i(exe_mem1_mem_re),
+    .exe_mem1_rf_wen_i(exe_mem1_rf_wen),
+    .exe_mem1_rf_waddr_i(exe_mem1_rf_waddr),
+
+    .id_rf_raddr_a_comb_i(id_rf_raddr_a_comb),
+    .id_rf_raddr_b_comb_i(id_rf_raddr_b_comb),
+    .id_exe_mem_re_i(id_exe_mem_re),
+    .id_exe_rf_wen_i(id_exe_rf_wen),
     .id_exe_rf_waddr_i(id_exe_rf_waddr),
-    .exe_mem_rf_waddr_i(exe_mem_rf_waddr),
-    .rf_waddr_i(rf_waddr),
-    .branch_i(branch_comb),
-    .csr_branch_i(csr_branch)
-  ); 
 
-  reg [31:0] if_pc_next;
-  reg if_branch;
+    .mem1_mem2_mem_re_i(mem1_mem2_mem_re & ~csr_branch),
+    .mem1_mem2_mem_we_i(mem1_mem2_mem_we & ~csr_branch),
 
-  pc_mux pc_mux (
-    .branch_a_i(csr_branch),
-    .branch_b_i(branch_comb),
-    .pc_next_a_i(csr_pc_next),
-    .pc_next_b_i(pc_next_comb),
-    .branch_o(if_branch),
-    .pc_next_o(if_pc_next)
+    .fencei_i(fencei),
+    .sfence_vma_i(if2_sfence_vma),
+
+    .csr_inst_i(id_csr_op_comb || id_exe_csr_op || exe_mem1_csr_op || mem1_mem2_csr_op),
+
+    .if1_stall_o(if1_stall),
+    .if2_stall_o(if2_stall),
+    .id_stall_o(id_stall),
+    .exe_stall_o(exe_stall),
+    .mem1_stall_o(mem1_stall),
+    .mem2_stall_o(mem2_stall),
+    .if1_bubble_o(if1_bubble),
+    .if2_bubble_o(if2_bubble),
+    .id_bubble_o(id_bubble),
+    .exe_bubble_o(exe_bubble),
+    .mem1_bubble_o(mem1_bubble),
+    .mem2_bubble_o(mem2_bubble)
   );
+
+  /* ====================== IF1 ====================== */
+  pc_mux pc_mux (
+    .csr_branch_i       (csr_branch),
+    .csr_pc_next_i      (csr_pc_next),
+    .exe_branch_comb_i  (exe_branch_comb),
+    .exe_pc_next_comb_i (exe_pc_next_comb),
+
+    .id_exe_pc_now      (id_exe_pc_now),
+    .if2_id_pc_now      (if2_id_pc_now),
+    .if1_if2_pc_vaddr   (if1_if2_pc_now),
+    .if1_pc_vaddr       (if1_pc_vaddr),
+
+    .branch_taken_o     (branch_taken),
+    .pc_true_o          (pc_true)
+  );
+
+  logic [ADDR_WIDTH-1:0] pc_pred;   // next PC predicted by BTB
+
+  btb btb (
+    .clk              (sys_clk),
+    .rst              (sys_rst),
+
+    .pc_i             (if1_pc_vaddr),
+    .pred_pc_o        (pc_pred),
+    .branch_from_pc_i (id_exe_pc_now),
+    .branch_to_pc_i   (exe_pc_next_comb),
+    .branch_taken_i   (branch_taken),
+    .is_branch_i      (id_exe_jump || id_exe_imm_type == `TYPE_B)
+  );
+
+  logic [ADDR_WIDTH-1:0] if1_pc_vaddr;
 
   IF IF (
-    .clk(sys_clk),
-    .rst(sys_rst),
-    .wb_cyc_o(wbm1_cyc_o),
-    .wb_stb_o(wbm1_stb_o),
-    .wb_ack_i(wbm1_ack_i),
-    .wb_adr_o(wbm1_adr_o),
-    .wb_dat_o(wbm1_dat_o),
-    .wb_dat_i(wbm1_dat_i),
-    .wb_sel_o(wbm1_sel_o),
-    .wb_we_o(wbm1_we_o),
-    .inst_o(if_id_inst),
-    .pc_now_o(if_id_pc_now),
-    .branch_i(if_branch),
-    .pc_next_i(if_pc_next),
-    .stall_i(stall[3]),
-    .bubble_i(bubble[3])
+    .clk            (sys_clk),
+    .rst            (sys_rst),
+
+    .pc_o           (if1_pc_vaddr),
+    .branch_taken_i (branch_taken),
+    .pc_true_i      (pc_true),
+    .pc_pred_i      (pc_pred),
+
+    .stall_i        (if1_stall),
+    .bubble_i       (if1_bubble)
   );
 
-  logic [31:0] if_id_inst;
-  logic [31:0] if_id_pc_now;
+  logic if_mmu_ack;
+
+  mmu if_mmu (
+    .clk(sys_clk),
+    .rst(sys_rst),
+
+    .mode_i                 (csr_mode),
+    .satp_i                 (csr_satp),
+    .mstatus_sum_i          (mstatus_sum),
+    .vaddr_i                (if1_pc_vaddr),
+    .paddr_o                (if1_if2_pc_paddr),
+    .ack_o                  (if_mmu_ack),
+
+    .mem_sel_i              (4'b1111),
+    .enable_i               (1'b1),
+    .read_en_i              (1'b0),
+    .write_en_i             (1'b0),
+    .exe_en_i               (1'b1),
+    .load_page_fault_o      (),
+    .store_page_fault_o     (),
+    .instr_page_fault_o     (if1_if2_instr_page_fault),
+    .load_access_fault_o    (),
+    .store_access_fault_o   (),
+    .instr_access_fault_o   (if1_if2_instr_access_fault),
+    .load_misaligned_o      (),
+    .store_misaligned_o     (),
+    .instr_misaligned_o     (if1_if2_instr_misaligned),
+
+
+    .tlb_reset_i            (if2_sfence_vma),
+    .stall_i                (if1_stall),
+    .bubble_i               (if1_bubble),
+
+    .wb_cyc_o(wbm3_cyc_o),
+    .wb_stb_o(wbm3_stb_o),
+    .wb_ack_i(wbm3_ack_i),
+    .wb_adr_o(wbm3_adr_o),
+    .wb_dat_o(wbm3_dat_o),
+    .wb_dat_i(wbm3_dat_i),
+    .wb_sel_o(wbm3_sel_o),
+    .wb_we_o(wbm3_we_o),
+
+    .if1_if2_icache_enable(if1_if2_icache_enable),
+    // data direct pass
+    .if1_if2_pc_now         (if1_if2_pc_now)
+  );
+
+  /* ====================== IF1/IF2 regs ====================== */
+  logic if1_if2_instr_page_fault;
+  logic if1_if2_instr_access_fault;
+  logic if1_if2_instr_misaligned;
+  logic if1_if2_icache_enable;
+  logic [31:0] if1_if2_pc_paddr;
+  logic [31:0] if1_if2_pc_now;
+
+  /* ====================== IF2 ====================== */
+  logic icache_ack;
+  logic if2_sfence_vma;
+
+  icache icache (
+    .clk(sys_clk),
+    .rst(sys_rst),
+
+    .fence_i(fencei),
+    .pc_i(if1_if2_pc_paddr),
+    .enable_i(if1_if2_icache_enable),
+    .icache_ack_o(icache_ack),
+    .inst_o(if2_id_inst),
+    .pc_now_i(if1_if2_pc_now),
+    .pc_now_o(if2_id_pc_now),
+    .page_fault_i(if1_if2_instr_page_fault),
+    .access_fault_i(if1_if2_instr_access_fault),
+    .page_fault_o(if2_id_instr_page_fault),
+    .access_fault_o(if2_id_instr_access_fault),
+    .instr_misaligned_i(if1_if2_instr_misaligned),
+    .instr_misaligned_o(if2_id_instr_misaligned),
+    .sfence_vma_o(if2_sfence_vma),
+
+    .stall_i(if2_stall),
+    .bubble_i(if2_bubble),
+
+    .wb_cyc_o(wbm2_cyc_o),
+    .wb_stb_o(wbm2_stb_o),
+    .wb_ack_i(wbm2_ack_i),
+    .wb_adr_o(wbm2_adr_o),
+    .wb_dat_o(wbm2_dat_o),
+    .wb_dat_i(wbm2_dat_i),
+    .wb_sel_o(wbm2_sel_o),
+    .wb_we_o(wbm2_we_o)
+  );
+
+  /* ====================== IF2/ID regs ====================== */
+  logic [31:0] if2_id_inst;
+  logic [31:0] if2_id_pc_now;
+  logic if2_id_instr_page_fault;
+  logic if2_id_instr_access_fault;
+  logic if2_id_instr_misaligned;
+
+  /* ====================== ID ====================== */
+  logic [2:0] id_csr_op_comb;
+  logic fencei;
 
   ID ID (
     .clk(sys_clk),
     .rst(sys_rst),
-    .inst_i(if_id_inst),
-    .inst_o(id_exe_inst),
-    .rf_raddr_a_o(rf_raddr_a),
-    .rf_raddr_b_o(rf_raddr_b),
-    .rf_raddr_a_comb(rf_raddr_a_comb),
-    .rf_raddr_b_comb(rf_raddr_b_comb),
-    .imm_type_o(id_exe_imm_type),
-    .alu_op_o(id_exe_alu_op),
-    .use_rs2_o(id_exe_use_rs2),
-    .mem_en_o(id_exe_mem_en),
-    .rf_wen_o(id_exe_rf_wen),
-    .rf_waddr_o(id_exe_rf_waddr),
-    .mem_we_o(id_exe_mem_we),
-    .mem_sel_o(id_exe_mem_sel),
-    .pc_now_i(if_id_pc_now),
-    .pc_now_o(id_exe_pc_now),
-    .use_pc_o(id_exe_use_pc),
-    .jump_o(id_exe_jump),
-    .comp_op_o(id_exe_comp_op),
-    .csr_op_o(id_exe_csr_op),
-    .ecall_o(id_exe_ecall),
-    .ebreak_o(id_exe_ebreak),
-    .mret_o(id_exe_mret),
-    .stall_i(stall[2]),
-    .bubble_i(bubble[2])
+
+    .inst_i                 (if2_id_inst),
+    .inst_o                 (id_exe_inst),
+    .rf_raddr_a_o           (id_exe_rf_raddr_a),
+    .rf_raddr_b_o           (id_exe_rf_raddr_b),
+    .id_rf_raddr_a_comb     (id_rf_raddr_a_comb),
+    .id_rf_raddr_b_comb     (id_rf_raddr_b_comb),
+    .imm_type_o             (id_exe_imm_type),
+    .alu_op_o               (id_exe_alu_op),
+    .use_rs2_o              (id_exe_use_rs2),
+    .rf_wen_o               (id_exe_rf_wen),
+    .rf_waddr_o             (id_exe_rf_waddr),
+    .mem_re_o               (id_exe_mem_re),
+    .mem_we_o               (id_exe_mem_we),
+    .mem_sel_o              (id_exe_mem_sel),
+    .pc_now_i               (if2_id_pc_now),
+    .pc_now_o               (id_exe_pc_now),
+    .use_pc_o               (id_exe_use_pc),
+    .jump_o                 (id_exe_jump),
+    .comp_op_o              (id_exe_comp_op),
+    .load_type_o            (id_exe_load_type),
+    .csr_op_o               (id_exe_csr_op),
+    .ecall_o                (id_exe_ecall),
+    .ebreak_o               (id_exe_ebreak),
+    .mret_o                 (id_exe_mret),
+    .sret_o                 (id_exe_sret),
+    .fencei_o               (fencei),
+    .instr_page_fault_i     (if2_id_instr_page_fault),
+    .instr_access_fault_i   (if2_id_instr_access_fault),
+    .instr_page_fault_o     (id_exe_instr_page_fault),
+    .instr_access_fault_o   (id_exe_instr_access_fault),
+    .instr_misaligned_i     (if2_id_instr_misaligned),
+    .instr_misaligned_o     (id_exe_instr_misaligned),
+    .illegal_instr_o        (id_exe_illegal_instr),
+    .csr_op_comb            (id_csr_op_comb),
+    .sfence_vma_o            (id_exe_sfence_vma),
+
+
+    .stall_i                (id_stall),
+    .bubble_i               (id_bubble)
   );
 
-  logic [4:0]  rf_raddr_a;
-  logic [31:0] rf_rdata_a;
-  logic [4:0]  rf_raddr_b;
-  logic [31:0] rf_rdata_b;
+  /* ====================== ID/EXE regs ====================== */
   logic [4:0]  rf_waddr;
   logic [31:0] rf_wdata;
   logic rf_we;
 
+  logic [4:0]  id_exe_rf_raddr_a;
+  logic [31:0] rf_rdata_a;
+  logic [4:0]  id_exe_rf_raddr_b;
+  logic [31:0] rf_rdata_b;
+
+  logic [31:0] id_exe_inst;
+  logic [2:0] id_exe_imm_type;
+  logic [3:0] id_exe_alu_op;
+  logic id_exe_use_rs2;
+  logic id_exe_mem_re;
+  logic id_exe_mem_we;
+  logic id_exe_rf_wen;
+  logic [4:0] id_exe_rf_waddr;
+  logic [3:0] id_exe_mem_sel;
+  logic [31:0] id_exe_pc_now;
+  logic id_exe_use_pc;
+  logic [2:0] id_exe_comp_op;
+  logic id_exe_load_type;
+  logic id_exe_jump;
+  logic [2:0] id_exe_csr_op;
+  logic id_exe_ecall;
+  logic id_exe_ebreak;
+  logic id_exe_mret;
+  logic id_exe_sret;
+  logic id_exe_instr_page_fault;
+  logic id_exe_instr_access_fault;
+  logic id_exe_instr_misaligned;
+  logic id_exe_illegal_instr;
+  logic id_exe_sfence_vma;
+
+  /* ====================== EXE ====================== */
+
+  // logic [31:0] rf_regs_debug[0:31];  // [debug]
+
   regfile regfile (
     .clk(sys_clk),
     .rst(sys_rst),
-    .rf_raddr_a(rf_raddr_a),
+    // .rf_regs_debug(rf_regs_debug),
+
+    .rf_raddr_a(id_exe_rf_raddr_a),
     .rf_rdata_a(rf_rdata_a),
-    .rf_raddr_b(rf_raddr_b),
+    .rf_raddr_b(id_exe_rf_raddr_b),
     .rf_rdata_b(rf_rdata_b),
     .rf_waddr(rf_waddr),
     .rf_wdata(rf_wdata),
     .rf_we(rf_we)
   );
 
-  logic [31:0] id_exe_inst;
-  logic [2:0] id_exe_imm_type;
-  logic [3:0] id_exe_alu_op;
-  logic id_exe_use_rs2;
-  logic id_exe_mem_en;
-  logic id_exe_rf_wen;
-  logic [4:0] id_exe_rf_waddr;
-  logic id_exe_mem_we;
-  logic [3:0] id_exe_mem_sel;
-  logic [31:0] id_exe_pc_now;
-  logic id_exe_use_pc;
-  logic id_exe_comp_op;
-  logic id_exe_jump;
-  logic [2:0] id_exe_csr_op;
-  logic id_exe_ecall;
-  logic id_exe_ebreak;
-  logic id_exe_mret;
-
-  wire [31:0] pc_next_comb;
+  wire [31:0] exe_pc_next_comb;
 
   EXE EXE (
     .clk(sys_clk),
     .rst(sys_rst),
-    .rf_rdata_a_i(rf_rdata_a),
-    .rf_rdata_b_i(rf_rdata_b),
-    .inst_i(id_exe_inst),
-    .imm_type_i(id_exe_imm_type),
-    .use_rs2_i(id_exe_use_rs2),
-    .alu_a_o(alu_a),
-    .alu_b_o(alu_b),
-    .alu_y_i(alu_y),
-    .alu_result_o(exe_mem_alu_result),
-    .mem_en_i(id_exe_mem_en),
-    .mem_en_o(exe_mem_mem_en),
-    .rf_wen_i(id_exe_rf_wen),
-    .rf_wen_o(exe_mem_rf_wen),
-    .rf_waddr_i(id_exe_rf_waddr),
-    .rf_waddr_o(exe_mem_rf_waddr),
-    .mem_we_i(id_exe_mem_we),
-    .mem_we_o(exe_mem_mem_we),
-    .mem_sel_i(id_exe_mem_sel),
-    .mem_sel_o(exe_mem_mem_sel),
-    .mem_dat_o_o(exe_mem_mem_dat_o),
-    .use_pc_i(id_exe_use_pc),
-    .comp_op_i(id_exe_comp_op),
-    .jump_i(id_exe_jump),
-    .pc_now_i(id_exe_pc_now),
-    .pc_next_o(pc_next_comb),
-    .branch_comb(branch_comb),
-    .csr_op_i(id_exe_csr_op),
-    .csr_raddr_o(csr_raddr),
-    .csr_rdata_i(csr_rdata),
-    .csr_waddr_o(csr_waddr),
-    .csr_wdata_o(csr_wdata),
-    .csr_we_o(csr_we),
-    .stall_i(stall[1]),
-    .bubble_i(bubble[1])
+
+    .rf_raddr_a_i           (id_exe_rf_raddr_a),
+    .rf_raddr_b_i           (id_exe_rf_raddr_b),
+    .rf_rdata_a_i           (rf_rdata_a),
+    .rf_rdata_b_i           (rf_rdata_b),
+    .inst_i                 (id_exe_inst),
+    .inst_o                 (exe_mem1_inst),
+    .imm_type_i             (id_exe_imm_type),
+    .use_rs2_i              (id_exe_use_rs2),
+    .alu_a_o                (alu_a),
+    .alu_b_o                (alu_b),
+    .alu_y_i                (alu_y),
+    .alu_result_o           (exe_mem1_alu_result),
+    .rf_wen_i               (id_exe_rf_wen),
+    .rf_wen_o               (exe_mem1_rf_wen),
+    .rf_waddr_i             (id_exe_rf_waddr),
+    .rf_waddr_o             (exe_mem1_rf_waddr),
+    .mem_re_i               (id_exe_mem_re),
+    .mem_re_o               (exe_mem1_mem_re),
+    .mem_we_i               (id_exe_mem_we),
+    .mem_we_o               (exe_mem1_mem_we),
+    .mem_sel_i              (id_exe_mem_sel),
+    .mem_sel_o              (exe_mem1_mem_sel),
+    .mem_wdata_o            (exe_mem1_mem_wdata),
+    .use_pc_i               (id_exe_use_pc),
+    .comp_op_i              (id_exe_comp_op),
+    .load_type_i            (id_exe_load_type),
+    .load_type_o            (exe_mem1_load_type),
+    .jump_i                 (id_exe_jump),
+    .pc_now_i               (id_exe_pc_now),
+    .pc_next_o              (exe_pc_next_comb),
+    .branch_comb_o          (exe_branch_comb),
+    .csr_op_i               (id_exe_csr_op),
+    .csr_op_o               (exe_mem1_csr_op),
+    .csr_data_o             (exe_mem1_csr_data),
+    .instr_page_fault_i     (id_exe_instr_page_fault),
+    .instr_access_fault_i   (id_exe_instr_access_fault),
+    .instr_page_fault_o     (exe_mem1_instr_page_fault),
+    .instr_access_fault_o   (exe_mem1_instr_access_fault),
+    .instr_misaligned_i     (id_exe_instr_misaligned),
+    .instr_misaligned_o     (exe_mem1_instr_misaligned),
+    .illegal_instr_i        (id_exe_illegal_instr),
+    .illegal_instr_o        (exe_mem1_illegal_instr),
+    .ecall_i                (id_exe_ecall),
+    .ebreak_i               (id_exe_ebreak),
+    .mret_i                 (id_exe_mret),
+    .ecall_o                (exe_mem1_ecall),
+    .ebreak_o               (exe_mem1_ebreak),
+    .mret_o                 (exe_mem1_mret),
+    .sret_i                 (id_exe_sret),
+    .sret_o                 (exe_mem1_sret),
+    .sfence_vma_i           (id_exe_sfence_vma),
+    .sfence_vma_o           (exe_mem1_sfence_vma),
+    .pc_now_o               (exe_mem1_pc_now),
+    
+    // data forwarding
+    .exe_mem1_rf_waddr_i    (exe_mem1_rf_waddr),
+    .exe_mem1_alu_result_i  (exe_mem1_alu_result),
+    .mem1_mem2_rf_waddr_i   (mem1_mem2_rf_waddr),
+    .mem1_mem2_rf_wdata_i   (mem1_mem2_rf_wdata),
+
+    // stall & bubble
+    .stall_i                (exe_stall),
+    .bubble_i               (exe_bubble)
   );
 
-  logic [31:0] alu_a;
-  logic [31:0] alu_b;
-  logic [31:0] alu_y;
+  logic [DATA_WIDTH-1:0] alu_a;
+  logic [DATA_WIDTH-1:0] alu_b;
+  logic [DATA_WIDTH-1:0] alu_y;
 
   alu_32 alu_32 (
     .a(alu_a),
@@ -571,14 +1071,183 @@ module thinpad_top (
     .y(alu_y)
   );
 
-  logic [11:0] csr_raddr;
-  logic [31:0] csr_rdata;
-  logic [11:0] csr_waddr;
-  logic [31:0] csr_wdata;
+  /* ====================== EXE/MEM1 regs ====================== */
+
+  logic [ADDR_WIDTH-1:0]      exe_mem1_pc_now;
+  logic                       exe_mem1_rf_wen;
+  logic [REG_ADDR_WIDTH-1:0]  exe_mem1_rf_waddr;
+  logic [DATA_WIDTH-1:0]      exe_mem1_alu_result;
+  logic                       exe_mem1_mem_re;
+  logic                       exe_mem1_mem_we;
+  logic [DATA_WIDTH/8-1:0]    exe_mem1_mem_sel;
+  logic [DATA_WIDTH-1:0]      exe_mem1_mem_wdata;
+  logic                       exe_mem1_load_type;
+  logic [2:0]                 exe_mem1_csr_op;
+  logic [DATA_WIDTH-1:0]      exe_mem1_inst;
+  logic [DATA_WIDTH-1:0]      exe_mem1_csr_data;
+  logic                       exe_mem1_instr_page_fault;
+  logic                       exe_mem1_instr_access_fault;
+  logic                       exe_mem1_instr_misaligned;
+  logic                       exe_mem1_illegal_instr;
+  logic                       exe_mem1_ecall;
+  logic                       exe_mem1_ebreak;
+  logic                       exe_mem1_mret;
+  logic                       exe_mem1_sret;
+  logic                       exe_mem1_sfence_vma;
+
+  /* ====================== MEM1 ====================== */
+  logic                       mem_mmu_ack;
+  logic                       mem1_trap;
+
+  assign mem1_trap = exe_mem1_instr_page_fault | exe_mem1_instr_access_fault | exe_mem1_instr_misaligned | exe_mem1_illegal_instr;
+
+  mmu mem_mmu (
+    .clk(sys_clk),
+    .rst(sys_rst),
+
+    .mode_i                 (csr_mode),
+    .satp_i                 (csr_satp),
+    .mstatus_sum_i          (mstatus_sum),
+    .vaddr_i                (exe_mem1_alu_result),
+    .paddr_o                (mem1_mem2_paddr),
+    .ack_o                  (mem_mmu_ack),
+
+    .mem_sel_i              (exe_mem1_mem_sel),
+    .enable_i               ((exe_mem1_mem_re | exe_mem1_mem_we) & ~mem1_trap),
+    .read_en_i              (exe_mem1_mem_re),
+    .write_en_i             (exe_mem1_mem_we),
+    .exe_en_i               (1'b0),
+    .load_page_fault_o      (mem1_mem2_load_page_fault),
+    .store_page_fault_o     (mem1_mem2_store_page_fault),
+    .instr_page_fault_o     (),
+    .load_access_fault_o    (mem1_mem2_load_access_fault),
+    .store_access_fault_o   (mem1_mem2_store_access_fault),
+    .instr_access_fault_o   (),
+    .load_misaligned_o      (mem1_mem2_load_misaligned),
+    .store_misaligned_o     (mem1_mem2_store_misaligned),
+    .instr_misaligned_o     (),
+
+    .tlb_reset_i            (exe_mem1_sfence_vma),
+    .stall_i                (mem1_stall),
+    .bubble_i               (mem1_bubble),
+
+    .wb_cyc_o(wbm1_cyc_o),
+    .wb_stb_o(wbm1_stb_o),
+    .wb_ack_i(wbm1_ack_i),
+    .wb_adr_o(wbm1_adr_o),
+    .wb_dat_o(wbm1_dat_o),
+    .wb_dat_i(wbm1_dat_i),
+    .wb_sel_o(wbm1_sel_o),
+    .wb_we_o(wbm1_we_o),
+
+    // data direct pass
+    .exe_mem1_pc_now              (exe_mem1_pc_now),
+    .exe_mem1_rf_wen              (exe_mem1_rf_wen),
+    .exe_mem1_rf_waddr            (exe_mem1_rf_waddr),
+    .exe_mem1_alu_result          (exe_mem1_alu_result),
+    .exe_mem1_mem_re              (exe_mem1_mem_re),
+    .exe_mem1_mem_we              (exe_mem1_mem_we),
+    .exe_mem1_mem_sel             (exe_mem1_mem_sel),
+    .exe_mem1_mem_wdata           (exe_mem1_mem_wdata),
+    .exe_mem1_load_type           (exe_mem1_load_type),
+    .exe_mem1_inst                (exe_mem1_inst),
+    .exe_mem1_csr_op              (exe_mem1_csr_op),
+    .exe_mem1_csr_data            (exe_mem1_csr_data),
+    .exe_mem1_instr_page_fault    (exe_mem1_instr_page_fault),
+    .exe_mem1_instr_access_fault  (exe_mem1_instr_access_fault),
+    .exe_mem1_instr_misaligned    (exe_mem1_instr_misaligned),
+    .exe_mem1_illegal_instr       (exe_mem1_illegal_instr),
+    .exe_mem1_ecall               (exe_mem1_ecall),
+    .exe_mem1_ebreak              (exe_mem1_ebreak),
+    .exe_mem1_mret                (exe_mem1_mret),
+    .exe_mem1_sret                (exe_mem1_sret),
+
+    .mem1_mem2_pc_now             (mem1_mem2_pc_now),
+    .mem1_mem2_rf_wen             (mem1_mem2_rf_wen),
+    .mem1_mem2_rf_waddr           (mem1_mem2_rf_waddr),
+    .mem1_mem2_rf_wdata           (mem1_mem2_rf_wdata),
+    .mem1_mem2_mem_vaddr          (mem1_mem2_mem_vaddr),
+    .mem1_mem2_load_type          (mem1_mem2_load_type),
+    .mem1_mem2_mem_re             (mem1_mem2_mem_re),
+    .mem1_mem2_mem_we             (mem1_mem2_mem_we),
+    .mem1_mem2_mem_sel            (mem1_mem2_mem_sel),
+    .mem1_mem2_mem_wdata          (mem1_mem2_mem_wdata),
+    .mem1_mem2_inst               (mem1_mem2_inst),
+    .mem1_mem2_csr_op             (mem1_mem2_csr_op),
+    .mem1_mem2_csr_data           (mem1_mem2_csr_data),
+    .mem1_mem2_instr_page_fault   (mem1_mem2_instr_page_fault),
+    .mem1_mem2_instr_access_fault (mem1_mem2_instr_access_fault),
+    .mem1_mem2_instr_misaligned   (mem1_mem2_instr_misaligned),
+    .mem1_mem2_illegal_instr      (mem1_mem2_illegal_instr),
+    .mem1_mem2_ecall              (mem1_mem2_ecall),
+    .mem1_mem2_ebreak             (mem1_mem2_ebreak),
+    .mem1_mem2_mret               (mem1_mem2_mret),
+    .mem1_mem2_sret               (mem1_mem2_sret)
+
+    // // [debug]
+    // .state_o        (mem_mmu_state),
+    // .cur_level_o    (mem_mmu_cur_level),
+    // .direct_trans_o (mem_mmu_direct_trans),
+    // .fault_case_o   (mem_mmu_fault_case)
+  );
+  // // [debug]
+  // logic [2:0] mem_mmu_state;
+  // logic       mem_mmu_cur_level;
+  // logic       mem_mmu_direct_trans;
+  // logic [4:0] mem_mmu_fault_case;
+
+  /* ====================== MEM1/MEM2 regs ====================== */
+
+  logic [ADDR_WIDTH-1:0]      mem1_mem2_paddr;
+
+  logic [ADDR_WIDTH-1:0]      mem1_mem2_pc_now;
+  logic                       mem1_mem2_rf_wen;
+  logic [REG_ADDR_WIDTH-1:0]  mem1_mem2_rf_waddr;
+  logic [DATA_WIDTH-1:0]      mem1_mem2_rf_wdata;
+  logic [ADDR_WIDTH-1:0]      mem1_mem2_mem_vaddr;
+  logic                       mem1_mem2_mem_re;
+  logic                       mem1_mem2_mem_we;
+  logic [DATA_WIDTH/8-1:0]    mem1_mem2_mem_sel;
+  logic [DATA_WIDTH-1:0]      mem1_mem2_mem_wdata;
+  logic                       mem1_mem2_load_type;
+  logic [2:0]                 mem1_mem2_csr_op;
+  logic [DATA_WIDTH-1:0]      mem1_mem2_inst;
+  logic [DATA_WIDTH-1:0]      mem1_mem2_csr_data;
+  logic                       mem1_mem2_load_page_fault;
+  logic                       mem1_mem2_store_page_fault;
+  logic                       mem1_mem2_load_access_fault;
+  logic                       mem1_mem2_store_access_fault;
+  logic                       mem1_mem2_load_misaligned;
+  logic                       mem1_mem2_store_misaligned;
+  logic                       mem1_mem2_instr_page_fault;
+  logic                       mem1_mem2_instr_access_fault;
+  logic                       mem1_mem2_instr_misaligned;
+  logic                       mem1_mem2_illegal_instr;
+  logic                       mem1_mem2_ecall;
+  logic                       mem1_mem2_ebreak;
+  logic                       mem1_mem2_mret;
+  logic                       mem1_mem2_sret;
+
+
+  /* ====================== MEM2 ====================== */
+  logic [CSR_ADDR_WIDTH-1:0]  csr_raddr;
+  logic [DATA_WIDTH-1:0]      csr_rdata;
+  logic [CSR_ADDR_WIDTH-1:0]  csr_waddr;
+  logic [DATA_WIDTH-1:0]      csr_wdata;
   logic csr_we;
 
   logic [31:0] csr_pc_next;
   logic csr_branch;
+
+  logic [1:0] csr_mode;
+  satp_t csr_satp;
+  logic mstatus_sum;
+
+  logic [31:0] csr_tval;
+  assign csr_tval = (mem1_mem2_instr_page_fault | mem1_mem2_instr_access_fault | mem1_mem2_instr_misaligned) ? mem1_mem2_pc_now :
+                      mem1_mem2_illegal_instr ? mem1_mem2_inst :
+                     (mem1_mem2_load_page_fault | mem1_mem2_load_access_fault | mem1_mem2_load_misaligned 
+                     | mem1_mem2_store_page_fault | mem1_mem2_store_access_fault | mem1_mem2_store_misaligned) ? mem1_mem2_mem_vaddr : 32'b0; 
 
   csrfile csrfile (
     .clk(sys_clk),
@@ -588,37 +1257,54 @@ module thinpad_top (
     .waddr_i(csr_waddr),
     .wdata_i(csr_wdata),
     .we_i(csr_we),
-    .pc_now_i(id_exe_pc_now),
+    .pc_now_i(mem1_mem2_pc_now),
     .pc_next_o(csr_pc_next),
     .branch_o(csr_branch),
-    .ecall_i(id_exe_ecall),
-    .ebreak_i(id_exe_ebreak),
-    .mret_i(id_exe_mret)
-  );
+    .ecall_i(mem1_mem2_ecall),
+    .ebreak_i(mem1_mem2_ebreak),
+    .mret_i(mem1_mem2_mret),
+    .sret_i(mem1_mem2_sret),
+    .time_interrupt_i(time_interrupt),
+    // .time_interrupt_i(1'b0),      // [debug]
+    .satp_o(csr_satp),
+    .sum_o(mstatus_sum),
+    .mode_o(csr_mode),
+    .mtime_i(mtime),
+    .tval_i(csr_tval),
+    .if_illegal_i(mem1_mem2_illegal_instr),
+    .if_page_fault_i(mem1_mem2_instr_page_fault),
+    .if_access_fault_i(mem1_mem2_instr_access_fault),
+    .if_misaligned_i(mem1_mem2_instr_misaligned),
+    .load_page_fault_i(mem1_mem2_load_page_fault),
+    .load_access_fault_i(mem1_mem2_load_access_fault),
+    .load_misaligned_i(mem1_mem2_load_misaligned),
+    .store_page_fault_i(mem1_mem2_store_page_fault),
+    .store_access_fault_i(mem1_mem2_store_access_fault),
+    .store_misaligned_i(mem1_mem2_store_misaligned),
 
-  logic exe_mem_mem_en;
-  logic [4:0] exe_mem_rf_waddr;
-  logic [31:0] exe_mem_alu_result;
-  logic exe_mem_rf_wen;
-  logic exe_mem_mem_we;
-  logic [3:0] exe_mem_mem_sel;
-  logic [31:0] exe_mem_mem_dat_o;
+    .stall_i(mem1_stall)
+  );
 
   MEM MEM (
     .clk(sys_clk),
     .rst(sys_rst),
-    .mem_en_i(exe_mem_mem_en),
-    .alu_result_i(exe_mem_alu_result),
-    .rf_wen_i(exe_mem_rf_wen),
-    .rf_waddr_i(exe_mem_rf_waddr),
+
+    .rf_wdata_i(mem1_mem2_rf_wdata),
+    .rf_wen_i(mem1_mem2_rf_wen),
+    .rf_waddr_i(mem1_mem2_rf_waddr),
     .rf_wdata_o(rf_wdata),
     .rf_wen_o(rf_we),
     .rf_waddr_o(rf_waddr),
-    .mem_we_i(exe_mem_mem_we),
-    .mem_sel_i(exe_mem_mem_sel),
-    .mem_dat_o_i(exe_mem_mem_dat_o),
-    .stall_i(stall[0]),
-    .bubble_i(bubble[0]),
+    .mem_re_i(mem1_mem2_mem_re & ~csr_branch),
+    .mem_we_i(mem1_mem2_mem_we & ~csr_branch),
+    .mem_addr_i(mem1_mem2_paddr),
+    .mem_sel_i(mem1_mem2_mem_sel),
+    .mem_wdata_i(mem1_mem2_mem_wdata),
+    .load_type_i(mem1_mem2_load_type),
+    .inst_i(mem1_mem2_inst),
+
+    .stall_i(mem2_stall),
+    .bubble_i(mem2_bubble),
 
     .wb_cyc_o(wbm0_cyc_o),
     .wb_stb_o(wbm0_stb_o),
@@ -627,12 +1313,199 @@ module thinpad_top (
     .wb_dat_o(wbm0_dat_o),
     .wb_dat_i(wbm0_dat_i),
     .wb_sel_o(wbm0_sel_o),
-    .wb_we_o(wbm0_we_o)
+    .wb_we_o(wbm0_we_o),
+
+    .csr_op_i(mem1_mem2_csr_op),
+    .csr_data_i(mem1_mem2_csr_data),
+    .csr_raddr_o(csr_raddr),
+    .csr_rdata_i(csr_rdata),
+    .csr_waddr_o(csr_waddr),
+    .csr_wdata_o(csr_wdata),
+    .csr_we_o(csr_we)
+
+    // // [debug]
+    // .pc_now_i(mem1_mem2_pc_now),
+    // .pc_now_o(mem2_wb_pc_now)
   );
 
+  /* ====================== MEM2/WB regs ====================== */
+  // logic [31:0] mem2_wb_pc_now;  // [debug]
 
+  /* ====================== Flash & Block RAM ====================== */
+  assign flash_vpen = 1'b1;
+  assign flash_we_n = 1'b1;
+  assign flash_byte_n = 1'b0;
+  
+  flash_controller flash_controller (
+      .clk(sys_clk),
+      .rst(sys_rst),
 
-  // // ²»Ê¹ÓÃÄÚ´æ¡¢´®¿ÚÊ±£¬½ûÓÃÆäÊ¹ÄÜĞÅºÅ
+      .wb_cyc_i(wbs4_cyc_o),
+      .wb_stb_i(wbs4_stb_o),
+      .wb_ack_o(wbs4_ack_i),
+      .wb_adr_i(wbs4_adr_o),
+      .wb_dat_i(wbs4_dat_o),
+      .wb_dat_o(wbs4_dat_i),
+      .wb_sel_i(wbs4_sel_o),
+      .wb_we_i (wbs4_we_o),
+
+      .flash_a_o(flash_a),
+      .flash_d(flash_d),
+      .flash_rp_o(flash_rp_n),
+      .flash_ce_o(flash_ce_n),
+      .flash_oe_o(flash_oe_n)
+  );
+
+  logic [BRAM_DATA_WIDTH-1:0] bram_0_wdata;
+  logic [BRAM_ADDR_WIDTH-1:0] bram_0_waddr;
+  logic bram_0_wea;
+
+  logic [BRAM_DATA_WIDTH-1:0] bram_1_wdata;
+  logic [BRAM_ADDR_WIDTH-1:0] bram_1_waddr;
+  logic bram_1_wea;
+  logic [BRAM_ADDR_WIDTH-1:0] bram_raddr;
+
+  bram_controller bram_controller_0 (
+      .clk(sys_clk),
+      .rst(sys_rst),
+
+      .wb_cyc_i(wbs5_cyc_o),
+      .wb_stb_i(wbs5_stb_o),
+      .wb_ack_o(wbs5_ack_i),
+      .wb_adr_i(wbs5_adr_o),
+      .wb_dat_i(wbs5_dat_o),
+      .wb_dat_o(wbs5_dat_i),
+      .wb_sel_i(wbs5_sel_o),
+      .wb_we_i (wbs5_we_o),
+
+      // BRAM read (not supported, always read 0)
+      .bram_addr_b_o(),
+      .bram_rdata_b_i({BRAM_DATA_WIDTH{1'b0}}),
+
+      // BRAM write
+      .bram_addr_a_o(bram_0_waddr),
+      .bram_wdata_a_o(bram_0_wdata),
+      .bram_we_a_o(bram_0_wea)
+  );
+
+  bram_controller bram_controller_1 (
+      .clk(sys_clk),
+      .rst(sys_rst),
+
+      .wb_cyc_i(wbs6_cyc_o),
+      .wb_stb_i(wbs6_stb_o),
+      .wb_ack_o(wbs6_ack_i),
+      .wb_adr_i(wbs6_adr_o),
+      .wb_dat_i(wbs6_dat_o),
+      .wb_dat_o(wbs6_dat_i),
+      .wb_sel_i(wbs6_sel_o),
+      .wb_we_i (wbs6_we_o),
+
+      // BRAM read (not supported, always read 0)
+      .bram_addr_b_o(),
+      .bram_rdata_b_i({BRAM_DATA_WIDTH{1'b0}}),
+
+      // BRAM write
+      .bram_addr_a_o(bram_1_waddr),
+      .bram_wdata_a_o(bram_1_wdata),
+      .bram_we_a_o(bram_1_wea)
+  );
+
+  logic [BRAM_DATA_WIDTH-1:0] bram_0_rdata;
+  logic [BRAM_DATA_WIDTH-1:0] bram_1_rdata;
+  logic [BRAM_DATA_WIDTH-1:0] real_bram_rdata;
+  logic vga_ack;
+  logic [2:0] vga_scale;
+  
+  vga_controller vga_controller (
+    .clk(sys_clk),
+    .rst(sys_rst),
+
+    .wb_cyc_i(wbs7_cyc_o),
+    .wb_stb_i(wbs7_stb_o),
+    .wb_ack_o(wbs7_ack_i),
+    .wb_adr_i(wbs7_adr_o),
+    .wb_dat_i(wbs7_dat_o),
+    .wb_dat_o(wbs7_dat_i),
+    .wb_sel_i(wbs7_sel_o),
+    .wb_we_i (wbs7_we_o),
+  
+    .bram_0_rdata_i(bram_0_rdata),
+    .bram_1_rdata_i(bram_1_rdata),
+    .bram_rdata_o(real_bram_rdata),
+
+    .vga_ack_i(vga_ack),
+    .vga_scale_o(vga_scale)
+  );
+
+  gpio_controller gpio_controller (
+      .clk(sys_clk),
+      .rst(sys_rst),
+
+      .wb_cyc_i(wbs8_cyc_o),
+      .wb_stb_i(wbs8_stb_o),
+      .wb_ack_o(wbs8_ack_i),
+      .wb_adr_i(wbs8_adr_o),
+      .wb_dat_i(wbs8_dat_o),
+      .wb_dat_o(wbs8_dat_i),
+      .wb_sel_i(wbs8_sel_o),
+      .wb_we_i (wbs8_we_o),
+
+      .dip_sw_i(dip_sw),
+      .touch_btn_i(touch_btn),
+      .push_btn_i(push_btn)
+  );
+
+  assign video_clk = clk_50M;
+
+  // [debug]
+  wire [12-1:0] hdata_o;
+  wire [12-1:0] vdata_o;
+
+  vga #(12, 800, 856, 976, 1040, 600, 637, 643, 666, 1, 1) vga800x600at75 (
+    .vga_clk(clk_50M),
+    .sys_rst(sys_rst),
+    .vga_scale_i(vga_scale),
+    .bram_raddr_o(bram_raddr),
+    .bram_data_i(real_bram_rdata),
+    .vga_ack_o(vga_ack),
+    .video_red_o(video_red),
+    .video_green_o(video_green),
+    .video_blue_o(video_blue),
+    .video_hsync_o(video_hsync),
+    .video_vsync_o(video_vsync),
+    .video_de_o(video_de),
+
+    // [debug]
+    .hdata_o(hdata_o),
+    .vdata_o(vdata_o) 
+  );
+
+  bram0 bram_0 (
+    .clka (sys_clk),
+    .ena  (1'b1),
+    .wea  (bram_0_wea),
+    .addra(bram_0_waddr),
+    .dina (bram_0_wdata),
+    .clkb (clk_50M),
+    .enb  (1'b1),
+    .addrb(bram_raddr),
+    .doutb(bram_0_rdata)
+  );
+
+  bram1 bram_1 (
+    .clka (sys_clk),
+    .ena  (1'b1),
+    .wea  (bram_1_wea),
+    .addra(bram_1_waddr),
+    .dina (bram_1_wdata),
+    .clkb (clk_50M),
+    .enb  (1'b1),
+    .addrb(bram_raddr),
+    .doutb(bram_1_rdata)
+  );
+
+  // // ä¸ä½¿ç”¨å†…å­˜ï¿½?ï¿½ä¸²å£æ—¶ï¼Œç¦ç”¨å…¶ä½¿èƒ½ä¿¡å·
   // assign base_ram_ce_n = 1'b1;
   // assign base_ram_oe_n = 1'b1;
   // assign base_ram_we_n = 1'b1;
@@ -644,7 +1517,7 @@ module thinpad_top (
   // assign uart_rdn = 1'b1;
   // assign uart_wrn = 1'b1;
 
-  // // ÊıÂë¹ÜÁ¬½Ó¹ØÏµÊ¾ÒâÍ¼£¬dpy1 Í¬Àí
+  // // Ä‡Â•Â°Ã§Â ÂÃ§Å½Ä„ÄÅ¼ÂÄ‡ÂÄ½ÄºÂ…Å‚Ã§Å‚Å¥Ã§Â¤ÅŸÄ‡Â„ÂÄºÂ›Å¾ÄÅºÂŒdpy1 ÄºÂÂŒÃ§ÂÂ†
   // // p=dpy0[0] // ---a---
   // // c=dpy0[1] // |     |
   // // d=dpy0[2] // f     b
@@ -655,29 +1528,29 @@ module thinpad_top (
   // // g=dpy0[7] // |     |
   // //           // ---d---  p
 
-  // // 7 ¶ÎÊıÂë¹ÜÒëÂëÆ÷ÑİÊ¾£¬½« number ÓÃ 16 ½øÖÆÏÔÊ¾ÔÚÊıÂë¹ÜÉÏÃæ
+  // // 7 æ®µæ•°ç ç®¡è¯‘ç å™¨æ¼”ç¤ºï¼Œï¿½????????? number ï¿½????????? 16 è¿›åˆ¶æ˜¾ç¤ºåœ¨æ•°ç ç®¡ä¸Šé¢
   // logic [7:0] number;
   // SEG7_LUT segL (
   //     .oSEG1(dpy0),
   //     .iDIG (number[3:0])
-  // );  // dpy0 ÊÇµÍÎ»ÊıÂë¹Ü
+  // );  // dpy0 Ä‡Â˜Å»Ã¤ËÂÃ¤ËÂÄ‡Â•Â°Ã§Â ÂÃ§Å½Ä„
   // SEG7_LUT segH (
   //     .oSEG1(dpy1),
   //     .iDIG (number[7:4])
-  // );  // dpy1 ÊÇ¸ßÎ»ÊıÂë¹Ü
+  // );  // dpy1 Ä‡Â˜Å»Ã©Å¤Â˜Ã¤ËÂÄ‡Â•Â°Ã§Â ÂÃ§Å½Ä„
 
   // logic [15:0] led_bits;
   // assign leds = led_bits;
 
   // always_ff @(posedge push_btn or posedge reset_btn) begin
-  //   if (reset_btn) begin  // ¸´Î»°´ÏÂ£¬ÉèÖÃ LED Îª³õÊ¼Öµ
+  //   if (reset_btn) begin  // å¤ä½æŒ‰ä¸‹ï¼Œè®¾ï¿½????????? LED ä¸ºåˆå§‹ï¿½??
   //     led_bits <= 16'h1;
-  //   end else begin  // Ã¿´Î°´ÏÂ°´Å¥¿ª¹Ø£¬LED Ñ­»·×óÒÆ
+  //   end else begin  // æ¯æ¬¡æŒ‰ä¸‹æŒ‰é’®ï¿½?????????å…³ï¼ŒLED å¾ªç¯å·¦ç§»
   //     led_bits <= {led_bits[14:0], led_bits[15]};
   //   end
   // end
 
-  // // Ö±Á¬´®¿Ú½ÓÊÕ·¢ËÍÑİÊ¾£¬´ÓÖ±Á¬´®¿ÚÊÕµ½µÄÊı¾İÔÙ·¢ËÍ³öÈ¥
+  // // ç›´è¿ä¸²å£æ¥æ”¶å‘ï¿½?ï¿½æ¼”ç¤ºï¼Œä»ç›´è¿ä¸²å£æ”¶åˆ°çš„æ•°æ®å†å‘é€å‡ºï¿½?????????
   // logic [7:0] ext_uart_rx;
   // logic [7:0] ext_uart_buffer, ext_uart_tx;
   // logic ext_uart_ready, ext_uart_clear, ext_uart_busy;
@@ -685,20 +1558,20 @@ module thinpad_top (
 
   // assign number = ext_uart_buffer;
 
-  // // ½ÓÊÕÄ£¿é£¬9600 ÎŞ¼ìÑéÎ»
+  // // æ¥æ”¶æ¨¡å—ï¿½?????????9600 æ— æ£€éªŒä½
   // async_receiver #(
   //     .ClkFrequency(50000000),
   //     .Baud(9600)
   // ) ext_uart_r (
-  //     .clk           (clk_50M),         // Íâ²¿Ê±ÖÓĞÅºÅ
-  //     .RxD           (rxd),             // Íâ²¿´®ĞĞĞÅºÅÊäÈë
-  //     .RxD_data_ready(ext_uart_ready),  // Êı¾İ½ÓÊÕµ½±êÖ¾
-  //     .RxD_clear     (ext_uart_clear),  // Çå³ı½ÓÊÕ±êÖ¾
-  //     .RxD_data      (ext_uart_rx)      // ½ÓÊÕµ½µÄÒ»×Ö½ÚÊı¾İ
+  //     .clk           (clk_50M),         // å¤–éƒ¨æ—¶é’Ÿä¿¡å·
+  //     .RxD           (rxd),             // å¤–éƒ¨ä¸²è¡Œä¿¡å·è¾“å…¥
+  //     .RxD_data_ready(ext_uart_ready),  // æ•°æ®æ¥æ”¶åˆ°æ ‡ï¿½?????????
+  //     .RxD_clear     (ext_uart_clear),  // æ¸…é™¤æ¥æ”¶æ ‡å¿—
+  //     .RxD_data      (ext_uart_rx)      // æ¥æ”¶åˆ°çš„ï¿½?????????å­—èŠ‚æ•°æ®
   // );
 
-  // assign ext_uart_clear = ext_uart_ready; // ÊÕµ½Êı¾İµÄÍ¬Ê±£¬Çå³ı±êÖ¾£¬ÒòÎªÊı¾İÒÑÈ¡µ½ ext_uart_buffer ÖĞ
-  // always_ff @(posedge clk_50M) begin  // ½ÓÊÕµ½»º³åÇø ext_uart_buffer
+  // assign ext_uart_clear = ext_uart_ready; // æ”¶åˆ°æ•°æ®çš„åŒæ—¶ï¼Œæ¸…é™¤æ ‡å¿—ï¼Œå› ä¸ºæ•°æ®å·²å–åˆ° ext_uart_buffer ï¿½?????????
+  // always_ff @(posedge clk_50M) begin  // æ¥æ”¶åˆ°ç¼“å†²åŒº ext_uart_buffer
   //   if (ext_uart_ready) begin
   //     ext_uart_buffer <= ext_uart_rx;
   //     ext_uart_avai   <= 1;
@@ -706,7 +1579,7 @@ module thinpad_top (
   //     ext_uart_avai <= 0;
   //   end
   // end
-  // always_ff @(posedge clk_50M) begin  // ½«»º³åÇø ext_uart_buffer ·¢ËÍ³öÈ¥
+  // always_ff @(posedge clk_50M) begin  // å°†ç¼“å†²åŒº ext_uart_buffer å‘ï¿½?ï¿½å‡ºï¿½?????????
   //   if (!ext_uart_busy && ext_uart_avai) begin
   //     ext_uart_tx <= ext_uart_buffer;
   //     ext_uart_start <= 1;
@@ -715,32 +1588,19 @@ module thinpad_top (
   //   end
   // end
 
-  // // ·¢ËÍÄ£¿é£¬9600 ÎŞ¼ìÑéÎ»
+  // // å‘ï¿½?ï¿½æ¨¡å—ï¼Œ9600 æ— æ£€éªŒä½
   // async_transmitter #(
   //     .ClkFrequency(50000000),
   //     .Baud(9600)
   // ) ext_uart_t (
-  //     .clk      (clk_50M),         // Íâ²¿Ê±ÖÓĞÅºÅ
-  //     .TxD      (txd),             // ´®ĞĞĞÅºÅÊä³ö
-  //     .TxD_busy (ext_uart_busy),   // ·¢ËÍÆ÷Ã¦×´Ì¬Ö¸Ê¾
-  //     .TxD_start(ext_uart_start),  // ¿ªÊ¼·¢ËÍĞÅºÅ
-  //     .TxD_data (ext_uart_tx)      // ´ı·¢ËÍµÄÊı¾İ
+  //     .clk      (clk_50M),         // å¤–éƒ¨æ—¶é’Ÿä¿¡å·
+  //     .TxD      (txd),             // ä¸²è¡Œä¿¡å·è¾“å‡º
+  //     .TxD_busy (ext_uart_busy),   // å‘ï¿½?ï¿½å™¨å¿™çŠ¶æ€æŒ‡ï¿½?????????
+  //     .TxD_start(ext_uart_start),  // ï¿½?????????å§‹å‘é€ä¿¡ï¿½?????????
+  //     .TxD_data (ext_uart_tx)      // å¾…å‘é€çš„æ•°æ®
   // );
 
-  // // Í¼ÏñÊä³öÑİÊ¾£¬·Ö±æÂÊ 800x600@75Hz£¬ÏñËØÊ±ÖÓÎª 50MHz
-  // logic [11:0] hdata;
-  // assign video_red   = hdata < 266 ? 3'b111 : 0;  // ºìÉ«ÊúÌõ
-  // assign video_green = hdata < 532 && hdata >= 266 ? 3'b111 : 0;  // ÂÌÉ«ÊúÌõ
-  // assign video_blue  = hdata >= 532 ? 2'b11 : 0;  // À¶É«ÊúÌõ
-  // assign video_clk   = clk_50M;
-  // vga #(12, 800, 856, 976, 1040, 600, 637, 643, 666, 1, 1) vga800x600at75 (
-  //     .clk        (clk_50M),
-  //     .hdata      (hdata),        // ºá×ø±ê
-  //     .vdata      (),             // ×İ×ø±ê
-  //     .hsync      (video_hsync),
-  //     .vsync      (video_vsync),
-  //     .data_enable(video_de)
-  // );
   /* =========== Demo code end =========== */
+
 
 endmodule

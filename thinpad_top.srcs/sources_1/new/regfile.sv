@@ -1,14 +1,18 @@
 module regfile (
     input wire clk,
     input wire rst,
-    input wire  [4:0]  rf_raddr_a,
+    // output reg [31:0] rf_regs_debug[0:31],
+    
+    input wire [ 4:0] rf_raddr_a,
     output reg [31:0] rf_rdata_a,
-    input wire  [4:0]  rf_raddr_b,
+    input wire [ 4:0] rf_raddr_b,
     output reg [31:0] rf_rdata_b,
-    input wire  [4:0]  rf_waddr,
-    input wire  [31:0] rf_wdata,
+    input wire [ 4:0] rf_waddr,
+    input wire [31:0] rf_wdata,
     input wire  rf_we
 );
+
+    // assign rf_regs_debug = rf_regs;
 
     reg [31:0] rf_regs [0:31];
 
